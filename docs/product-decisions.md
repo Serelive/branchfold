@@ -22,3 +22,73 @@ choose a lightweight representation compatible with human-edited Markdown then.
 
 This concerns the development plan and review references. Application task nodes
 already use stable UUIDs; no application schema change is requested here.
+
+## v2 N2: interaction revision before broader evaluation
+
+Source: [v2 N2 review](archive/v2_n2_review.md). The structural foundation is
+**provisionally accepted**; overall interaction acceptance remains open. Preserve
+working tree operations and regression tests while revising the interaction layer.
+The earlier implementation report's 14 passing tests/build are historical automated
+evidence, not proof that Ubuntu keyboard, drag, or IME behavior works.
+
+The retained foundation includes stable-ID subtree moves with cycle rejection,
+independent completion, deletion and import recovery through session undo/redo,
+collapse/subtree views, and validated version 1 JSON persistence/backups. Current
+limits are 100 session-only history steps, 2 MB replacement imports, and single-tab
+usage. Unreadable startup data must remain protected and failed saves must remain
+visible. View state is currently temporary; the redesign should preserve context
+within the session rather than reset the full outline after every operation.
+
+### Interaction model and open choices
+
+- Keep selected node, editing node, view root (`viewRootId`), and dragged node
+  independent. Selecting a row must not implicitly edit or zoom.
+- Editing Enter commits the title and creates/edits a sibling after its subtree;
+  Tab/Shift+Tab indents/outdents where applicable; Escape returns to navigation.
+  New nodes receive a caret. Ordinary text editing and IME composition must not
+  trigger whole-node commands.
+- Navigation arrows traverse visible nodes; Left collapses or visits the parent,
+  Right expands or visits the first child. Provide direct create sibling/child,
+  completion, movement, and edit commands.
+- Navigation Enter remains **unresolved**: trial Enter-to-edit with a separate sibling
+  command (B is a candidate) against Enter-to-create with F2-to-edit. The review
+  prefers the former as a starting hypothesis; neither is an accepted default.
+- Alt+Up/Down failing in manual use is an observed bug despite jsdom passes.
+  Reproduce in an actual Ubuntu browser and investigate event interception, DOM
+  focus, mode, and handler delivery. Ctrl+Up/Down is only a candidate remedy;
+  verify conflicts and retain a visible menu fallback. Prefer Tab indentation in
+  outline editing, while checking accessibility and normal text behavior.
+
+### Pointer movement and context
+
+Keep checkbox, chevron, title edit, row selection, drag handle, and subtree-focus
+controls distinct. Common actions should be visible and direct; reserve the
+secondary menu for less frequent operations and shortcut discovery. Favor immediate
+response, clear spatial feedback, subtle affordances, and reversibility.
+
+Drag previews must distinguish a line before the target, a line after its whole
+subtree, and an inside-parent highlight. Preserve subtree IDs/content/order/state,
+reject self/descendant drops, support autoscroll, collapsed branches, and the view
+root, and retain keyboard/accessibility alternatives. Defer searchable distant
+Move to commands until local movement is sound.
+
+Use ancestor breadcrumbs and a route to the forest. Preserve view/collapse across
+moves and undo where possible; if a node leaves the view, offer **Go to moved node**
+instead of jumping automatically. Escape may step from editing to navigation to a
+parent view only if the mode is clear. Deletion must communicate descendant removal;
+structural changes must remain reversible.
+
+### Import investigation and acceptance
+
+Empty-forest imports currently present replacement language. Reproduce whether this
+is wording alone or behavioral failure. Import into an empty forest should not warn
+that existing tasks will be overwritten. Nonempty replacement must retain validation
+and explicit destructive confirmation. Test both paths, cancellation, and undo.
+
+Sequence the work: keyboard/editing and mode trials, then pointer movement, then
+context preservation and real-browser verification. Reconstruct a 30+ node sample
+mostly by keyboard without the secondary menu. Verify Ubuntu browser shortcuts,
+dragging, Chinese IME including Fcitx5, accidental deletion, and storage reload.
+Success means materially more fluid creation/revision/reorganization without
+structural regression, not a larger shortcut list. No AI, accounts, collaboration,
+cloud sync, rich text, or unrelated features are included.

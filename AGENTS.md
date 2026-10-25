@@ -110,6 +110,8 @@ Current focus: Build the smallest working tree-editing slice.
 
 Keep `AGENTS.md` for **durable instructions**, `BRANCHES.md` for **evolving work state**, and `README.md` for **human-facing project documentation**. Do not put temporary environment notes, today's blockers, or session-specific requirements in `AGENTS.md`.
 
+Review documents use `vX_nY_<type>[_keyword].md`; unqualified node references belong to the latest development version. See `docs/development-workflow.md` for the current version and conventions. Archiving means absorbing durable information, removing temporary information from active guidance, and preserving the raw source in `docs/archive/`.
+
 ## Engineering standards
 
 - Prefer readable, maintainable code and small coherent changes over premature abstractions.

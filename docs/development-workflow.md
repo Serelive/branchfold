@@ -23,16 +23,24 @@ explicit request.
 
 ## Review references and archival
 
-`Node x-y-z-...-w` refers to the subtree at root x, child y, grandchild z, and so on;
-positions are one-based. Its short name is `Nx-y-z-...-w`. Review-related Markdown
-files use `<node>_<type>[_keyword].md`, such as `archive/N2_review_draft.md`. A requested revision
-may use `N2_review-r1.md`.
+Development is currently at **version 2** (two delivered iterations). This review
+version is independent of package versions and the version 1 JSON storage format.
+A node reference belongs to a particular development version; an unqualified node
+means a node of the latest version. Version-qualified references must retain the
+reviewed task title/context because positions can still change within a living plan.
 
-These positional references are temporary: moving tasks changes their meaning.
-Record the reviewed task's title and context in reviews rather than assuming the
-same position will identify it later. After digesting a review, move its original
-text unchanged into `docs/archive/`, link to it from durable documentation, and keep
-active revision reports in `docs/` until their review is complete.
+Use `vX_nY_<type>[_keyword].md` for version X, node Y documents, for example
+`v2_n2_review.md`, `v2_n2_review-r1.md`, and `v2_n2_report_implementation.md`.
+Nested nodes may extend the positional path, e.g. `v2_n2-1_review.md`; positions are
+one-based. Earlier unversioned archives remain historical records; do not guess their
+version or rewrite their contents to make them appear current.
+
+**Archiving** means absorbing important information into durable documents and the
+working plan, dropping temporary information from active guidance, and preserving
+the raw source in `docs/archive/`. Active revision responses stay in `docs/` until
+reviewed. Keep historical evidence distinct from present acceptance, unresolved
+questions, and unverified claims. Repair relative links in relocated reports when
+needed; preserve raw review text unchanged.
 
 When the user requests re-review before continuing, leave an explicit unchecked
 review gate in BRANCHES.md and stop after the requested changes and validation.
