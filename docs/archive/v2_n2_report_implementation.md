@@ -2,7 +2,7 @@
 
 This N2 refers to **Deliver a flexible outline editor** in BRANCHES.md, not the
 positional N2 referenced by the older archived review. The user accepted that review
-response, which is now [archived](archive/N2_review-r1.md), and N1 is closed.
+response, which is now [archived](N2_review-r1.md), and N1 is closed.
 
 ## Delivered behavior
 
