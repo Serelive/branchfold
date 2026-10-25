@@ -77,3 +77,20 @@ it('deletes only the requested subtree and keeps the original available for reco
   expect(findNode(tree, 'leaf')).toBeTruthy();
   expect(deleteNode(tree, 'missing')).toBe(tree);
 });
+
+import { moveRelative, nodePath, visibleNodes } from '../web/tree';
+it('resolves before/after/inside drops after removal, including ancestor targets', () => {
+  const tree = sample();
+  expect(moveRelative(tree, 'a', 'b', 'after').map(n => n.id)).toEqual(['b', 'a']);
+  expect(moveRelative(tree, 'b', 'a', 'before').map(n => n.id)).toEqual(['b', 'a']);
+  expect(moveRelative(tree, 'b', 'a', 'inside')[0].children.map(n => n.id)).toEqual(['child', 'b']);
+  const out = moveRelative(tree, 'child', 'a', 'after');
+  expect(out.map(n => n.id)).toEqual(['a', 'child', 'b']);
+  expect(out[1].children[0].id).toBe('leaf');
+  for (const position of ['before', 'after', 'inside'] as const) {
+    expect(moveRelative(tree, 'a', 'leaf', position)).toBe(tree);
+    expect(moveRelative(tree, 'a', 'a', position)).toBe(tree);
+  }
+  expect(nodePath(tree, 'leaf').map(n => n.id)).toEqual(['a', 'child', 'leaf']);
+  expect(visibleNodes(tree, new Set(['a'])).map(n => n.id)).toEqual(['a', 'b']);
+});

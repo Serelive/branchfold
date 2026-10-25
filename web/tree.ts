@@ -90,3 +90,28 @@ export function outlineMove(forest: Forest, id: string, direction: OutlineMove):
   const parent = nodeLocation(forest, parentId)!;
   return moveNode(forest, id, parent.parentId, parent.index + 1);
 }
+
+export type DropPosition = 'before' | 'after' | 'inside';
+export function moveRelative(forest: Forest, id: string, targetId: string, position: DropPosition): Forest {
+  const source = findNode(forest, id);
+  if (!source || id === targetId || findNode(source.children, targetId)) return forest;
+  // Resolve the target after removal so same-parent moves have correct indices.
+  const remaining = deleteNode(forest, id);
+  const target = nodeLocation(remaining, targetId);
+  if (!target) return forest;
+  if (position === 'inside') return moveNode(forest, id, targetId, findNode(remaining, targetId)!.children.length);
+  return moveNode(forest, id, target.parentId, target.index + (position === 'after' ? 1 : 0));
+}
+
+export function nodePath(forest: Forest, id: string): TaskNode[] {
+  for (const node of forest) {
+    if (node.id === id) return [node];
+    const childPath = nodePath(node.children, id);
+    if (childPath.length) return [node, ...childPath];
+  }
+  return [];
+}
+
+export function visibleNodes(forest: Forest, collapsed: ReadonlySet<string>): TaskNode[] {
+  return forest.flatMap(node => [node, ...(collapsed.has(node.id) ? [] : visibleNodes(node.children, collapsed))]);
+}
