@@ -79,13 +79,14 @@ Avoid unnecessary global installations or system-level changes. Prefer small, re
 
 ## Development task tree — `BRANCHES.md`
 
-**Use Branchfold's own method to develop Branchfold.** Maintain a lightweight, human-readable development task tree in the repository root as `BRANCHES.md`. This is an **agent/user coordination scaffold**, not the application's internal task database and not a replacement for source-code tests.
+**Use Branchfold's own method to develop Branchfold.** Maintain a lightweight, human-readable development task tree in the repository root as `BRANCHES.md`. This is an **agent-maintained planning and execution scaffold**, not the application's internal task database and not a replacement for source-code tests.
 
 - If `BRANCHES.md` is missing when substantive implementation begins, create it **before** major code changes. Read an existing version before planning or continuing work.
 - Organize work as nested Markdown task-list items (`- [ ]` and `- [x]`). Start with the **current goal and nearby milestones**, not an exhaustive speculative roadmap.
 - State a single **Current focus** near the top; reflect the actionable leaf or immediate decision. Mark uncertain items in ordinary text, e.g., `(needs decomposition)` or `(blocked: reason)`.
 - Where useful, first identify the important children of a goal, then expand only the next relevant branch. Do not force every node to be fully decomposed before acting.
-- Update the file when work is accepted, a meaningful step is completed, a blocker appears, or the plan changes. **Do not rewrite it after every command or trivial edit.**
+- Inspect and revise the tree at the beginning and end of every work round without requesting permission. Create, delete, restructure, or expand tasks as understanding, priorities, blockers, or useful ideas change—not only when checking off completed work. Keep revisions meaningful rather than rewriting after every command.
+- Keep the forest lightweight: use only the title, Current focus, and task tree. Express actionable validation or limitations as tasks; put supporting evidence and explanations in appropriate documentation.
 - Check a leaf only when its stated outcome has been achieved and, when applicable, validated. Check a parent only when **its own goal** is satisfied; all children being checked can instead mean it is *ready to verify*.
 - Revise or prune obsolete branches; preserve useful context without allowing completed history to overwhelm active work. Never erase user-authored decisions or tasks casually.
 - Treat `BRANCHES.md` as an editable plan, **not authorization** to implement everything it mentions. The user's latest instruction determines the actual work scope.
@@ -116,7 +117,7 @@ Keep `AGENTS.md` for **durable instructions**, `BRANCHES.md` for **evolving work
 - Test pure tree operations independently, especially reorder/reparent, subtree deletion, persistence round trips, and completion semantics.
 - Handle user data conservatively: no silent destructive resets, migrations, or lossy imports. Make limitations explicit.
 - Do not transmit task content to external services by default.
-- Preserve unrelated files and uncommitted work. Do not rewrite Git history, commit, or push unless instructed.
+- Maintain the Git working tree autonomously: inspect diffs and status, ignore generated files, and preserve unrelated changes. Commit each coherent, validated modification promptly rather than waiting for the whole work round to finish. Do not rewrite history or push unless explicitly requested.
 - Where requirements are ambiguous, use the smallest reversible interpretation and disclose assumptions.
 
 ## Working protocol for coding agents
@@ -124,7 +125,7 @@ Keep `AGENTS.md` for **durable instructions**, `BRANCHES.md` for **evolving work
 **Before implementing:**
 
 1. Inspect the repository, tooling, and Git status; do not presume a framework or current state.
-2. Read `BRANCHES.md` if present; otherwise, initialize it for substantive work.
+2. Inspect and revise `BRANCHES.md` for the current work round; initialize it if missing.
 3. Identify the immediate deliverable, its acceptance checks, and the smallest coherent implementation slice. Align the task tree with that slice.
 
 **During implementation:**
