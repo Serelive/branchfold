@@ -50,9 +50,10 @@ within the session rather than reset the full outline after every operation.
 - Navigation arrows traverse visible nodes; Left collapses or visits the parent,
   Right expands or visits the first child. Provide direct create sibling/child,
   completion, movement, and edit commands.
-- Navigation Enter remains **unresolved**: trial Enter-to-edit with a separate sibling
-  command (B is a candidate) against Enter-to-create with F2-to-edit. The review
-  prefers the former as a starting hypothesis; neither is an accepted default.
+- The user selected **Enter-to-edit and B-to-create** as the starting navigation
+  mapping. Editing Enter creates the next sibling; F2 also edits. This mapping passed
+  a 32-node Firefox entry workflow. Ergonomic acceptance on the user’s real task tree
+  remains open; do not represent the alternative mapping as trialed.
 - Alt+Up/Down failing in manual use is an observed bug despite jsdom passes.
   Reproduce in an actual Ubuntu browser and investigate event interception, DOM
   focus, mode, and handler delivery. Ctrl+Up/Down is only a candidate remedy;
@@ -92,3 +93,13 @@ dragging, Chinese IME including Fcitx5, accidental deletion, and storage reload.
 Success means materially more fluid creation/revision/reorganization without
 structural regression, not a larger shortcut list. No AI, accounts, collaboration,
 cloud sync, rich text, or unrelated features are included.
+
+### Implemented revision and remaining acceptance
+
+See [v2 N2 interaction report](v2_n2_report_interaction.md). The accepted review response
+is [archived](archive/v2_n2_review-r1.md). The implementation preserves the domain
+foundation and adds explicit modes, pointer-captured movement, breadcrumbs, view-aware
+history, and empty/nonempty import language. Ctrl+Up/Down is the implemented navigation
+binding and was verified in Firefox with row and checkbox focus. Alt+arrows are no
+longer structural bindings in text inputs. Headless browser results do not establish
+absence of desktop window-manager conflicts or Fcitx5 candidate-selection correctness.

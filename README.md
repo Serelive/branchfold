@@ -21,21 +21,62 @@ export PATH="$PWD/.tools/node-v22.23.4-linux-x64/bin:$PATH"
 
 `.tools/` is ignored and is not included in a checkout. Install a compatible Node runtime separately on another machine. The existing uv/Python scaffold is preserved; it is not used by the browser application.
 
-## Use and storage
+## Outline interaction
 
-- Add a root task, type a title, and use **+ Child** to decompose it. Empty titles are allowed.
-- Titles save on every edit. Tab navigates controls; Enter leaves a title field. New tasks receive keyboard focus.
-- Open a row's **•••** actions to move it up/down, indent under the previous sibling, outdent immediately after its parent, or **Move into** any eligible parent. Moves carry the whole subtree. Self/descendant destinations are excluded to prevent cycles.
-- In a title field, **Alt + ↑/↓** reorders siblings and **Alt + →/←** indents/outdents. The moved title keeps keyboard focus. Tab still navigates controls normally.
-- Use the triangle to collapse or expand children. **Focus subtree** hides other branches; **All tasks** and **Parent subtree** provide the way back. The highlighted row indicates current editing focus.
-- **Delete subtree** removes a task and its descendants. **Undo/Redo** or **Ctrl/Cmd + Z / Shift + Z** recovers edits, moves, deletion, and imports. Up to 100 changes are retained in memory; continuous title editing is one undo step until focus leaves the title. A new change discards redo history. Reloading clears undo history.
-- Moving a node returns to the full outline so its destination remains visible. Undo/redo also returns to the expanded full outline. Focus and collapse are view state and are not persisted or included in history.
-- Check a task to complete it; uncheck it to reopen it. Parent and child completion are independent.
-- Data is saved under `branchfold.tree.v1` in this browser's localStorage, including stable IDs, hierarchy, and array-based sibling order. Reloading the same origin restores it.
-- **Export JSON** downloads the current tree as a versioned backup. Browser storage is not durable: clearing site data, using another browser profile, or changing the server origin can hide or remove it. Keep exports for important work. Export always includes the whole forest, even while focused on a subtree.
-- **Import JSON** accepts version 1 backups up to 2 MB. Invalid data leaves the tree untouched. Review the task/root counts and sample root titles, then explicitly **Replace tree**, or cancel. Import replaces rather than merges; export current work first if needed. Undo can recover the prior tree during the session.
-- Invalid saved data or unavailable storage at startup pauses editing without overwriting the original. Save failures during editing keep changes in memory and prompt export before leaving.
-- Use one tab at a time: simultaneous editors are not coordinated. Task content is never sent to a service.
+Click a row background to **select** a node, or its title to **edit**. The mode line
+shows which behavior is active. Selection, title editing, subtree view, and dragging
+are independent. New tasks always start with the caret in their title.
+
+| Context | Keys | Action |
+| --- | --- | --- |
+| Navigation | Enter or F2 | Edit selected title |
+| Navigation | B / C | Create sibling / child and edit it |
+| Navigation | ↑ / ↓ | Select previous / next visible node |
+| Navigation | ← / → | Collapse or select parent / expand or select first child |
+| Navigation | Space / Delete | Toggle completion / delete (confirm when there are descendants) |
+| Navigation, including checkbox/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
+| Editing | Enter | Commit title and create a sibling after the current subtree |
+| Editing | Tab / Shift+Tab | Indent under previous sibling / outdent after parent |
+| Editing | Escape | Leave the caret and select the node |
+| Navigation in a subtree view | Escape | Return to the parent view |
+| Navigation | Ctrl/Cmd + Z, with Shift to redo | Undo / redo outline changes |
+
+Ordinary text editing and native text undo remain available inside title fields.
+Whole-node shortcuts are suppressed during composition. Escape exits editing before
+Tab is used to reach other controls. Visible actions and the secondary menu provide
+fallbacks when desktop shortcuts conflict.
+
+Drag the **⠿ handle** to move a whole subtree. An insertion line marks **before** or
+**after the target's entire subtree**; a highlighted row marks **inside**. Holding
+near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
+be dropped on. **+ Next**, **+ Child**, the chevron, and **↗** subtree focus are direct
+row controls. The secondary menu retains reorder, indent/outdent, parent selection,
+and deletion commands.
+
+Ancestor breadcrumbs return to any ancestor or **All tasks**. Moves preserve the
+current view and collapsed branches; **Go to moved node** reveals a moved task that
+is no longer visible. Undo/redo restores the saved view context with the tree.
+Creating a sibling of the current view root steps to its parent view to edit the new
+sibling. View state itself is temporary and resets on reload.
+
+## Storage and recovery
+
+- Titles save on every edit. Empty titles are allowed. Completion is independent of
+  parent/child completion; moving a node preserves its entire subtree and stable IDs.
+- Undo keeps up to 100 changes in memory. Continuous title editing is grouped until
+  focus leaves it; a new edit discards redo. Reloading clears history. Parent deletion
+  names the number of descendants before confirmation; Undo recovers the subtree.
+- The version 1 tree is saved in localStorage under `branchfold.tree.v1`. Reloading
+  the same origin restores it. Use one tab: simultaneous editors are not coordinated.
+- **Export JSON** includes the full forest even in a subtree view. Browser storage
+  can be cleared or differ across origins/profiles; keep exports for important work.
+- **Import JSON** validates version 1 backups up to 2 MB and previews their contents.
+  An empty outline offers **Import tree**; a nonempty one requires **Replace tree**
+  and warns about replacing current work. Cancel changes nothing. Confirmed imports
+  can be undone during the session. Export important work before replacing it.
+- Invalid startup data pauses editing without overwriting the original. Write errors
+  retain edits in memory and show a warning to export before leaving.
+- No task content is transmitted to a service.
 
 ## Validate
 
@@ -45,6 +86,33 @@ npm run build
 npm run preview
 ```
 
-Tests cover immutable tree edits, cycle rejection, reorder/reparent boundaries, subtree deletion, independent completion, persistence round trips, malformed data, and rendered UI workflows for editing, focus/collapse, recovery, and confirmed imports. The production build checks TypeScript and produces a static `dist/` bundle.
+Unit and rendered UI tests cover tree invariants, navigation/editing modes,
+composition guards, context preservation, storage failures, deletion recovery, and
+empty/nonempty imports. The production build checks TypeScript and emits `dist/`.
 
-Planning states, outcome verification, Markdown import/export, cross-tab coordination, and durable undo are not implemented. The real-work trial remains separate from automated validation. See [BRANCHES.md](BRANCHES.md) for the living development plan.
+For real Firefox regressions, use the installed Firefox and geckodriver plus Python
+3's standard library (no Python packages or backend). In separate terminals:
+
+```sh
+npm run dev -- --port 5174 --strictPort
+geckodriver --host 127.0.0.1 --port 4444
+```
+
+Then run:
+
+```sh
+python3 tests/browser_regression.py
+```
+
+The suite creates a separate headless profile, uses disposable data on the test
+origin, closes its browser session, and writes screenshots/profile files under ignored
+`.tools/browser-regression/`. It covers 32-node keyboard entry, real pointer gestures,
+edge scrolling, cancellation, imports, history, and reload. Use an idle geckodriver
+server; it accepts one session at a time. Stop both test servers when finished.
+
+Desktop Fcitx5 candidate selection and desktop shortcut conflicts still need a
+hands-on trial. Synthetic composition events do not validate the OS input method.
+See [the interaction report](docs/v2_n2_report_interaction.md) for evidence and limits.
+Planning states, outcome verification, Markdown portability, cross-tab coordination,
+and durable undo remain outside this iteration. [BRANCHES.md](BRANCHES.md) tracks
+remaining acceptance work and the real-task-tree trial.
