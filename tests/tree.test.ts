@@ -40,3 +40,40 @@ describe('task tree', () => {
     expect(() => saveForest({ setItem() { throw new Error('quota'); } }, forest)).toThrow('quota');
   });
 });
+
+import { deleteNode, findNode, moveNode, outlineMove } from '../web/tree';
+
+const sample = () => addNode(addNode(addNode(addNode([], null, 'a'), 'a', 'child'), 'child', 'leaf'), null, 'b');
+it('moves whole subtrees across roots, preserves identity and rejects cycles or invalid destinations', () => {
+  const tree = sample();
+  const moved = moveNode(tree, 'child', 'b', 0);
+  expect(moved[0].children).toEqual([]);
+  expect(moved[1].children[0]).toBe(tree[0].children[0]);
+  expect(findNode(moved, 'leaf')).toBeTruthy();
+  expect(tree[0].children).toHaveLength(1);
+  for (const [id, parent, index] of [['a', 'leaf', 0], ['a', 'a', 0], ['a', 'missing', 0], ['missing', null, 0], ['b', null, 9], ['b', null, -1]] as const) {
+    expect(moveNode(tree, id, parent, index)).toBe(tree);
+  }
+  expect(parseForest(serializeForest(moved))).toEqual(moved);
+});
+it('reorders in both directions and indents/outdents with predictable sibling order', () => {
+  const tree = sample();
+  expect(outlineMove(tree, 'b', 'up').map(n => n.id)).toEqual(['b', 'a']);
+  expect(outlineMove(tree, 'a', 'down').map(n => n.id)).toEqual(['b', 'a']);
+  const indented = outlineMove(tree, 'b', 'indent');
+  expect(indented[0].children.map(n => n.id)).toEqual(['child', 'b']);
+  expect(outlineMove(indented, 'b', 'outdent')).toEqual(tree);
+  expect(outlineMove(tree, 'a', 'up')).toBe(tree);
+  expect(outlineMove(tree, 'a', 'indent')).toBe(tree);
+  expect(outlineMove(tree, 'b', 'down')).toBe(tree);
+  expect(outlineMove(tree, 'a', 'outdent')).toBe(tree);
+});
+it('deletes only the requested subtree and keeps the original available for recovery', () => {
+  const tree = sample();
+  const removed = deleteNode(tree, 'child');
+  expect(removed[0].children).toEqual([]);
+  expect(removed[1]).toEqual(tree[1]);
+  expect(findNode(removed, 'leaf')).toBeUndefined();
+  expect(findNode(tree, 'leaf')).toBeTruthy();
+  expect(deleteNode(tree, 'missing')).toBe(tree);
+});

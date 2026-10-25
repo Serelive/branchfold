@@ -40,3 +40,53 @@ export function parseForest(raw: string): Forest {
 export function serializeForest(nodes: Forest): string {
   return JSON.stringify({ version: 1, nodes }, null, 2);
 }
+
+export function findNode(forest: Forest, id: string): TaskNode | undefined {
+  for (const node of forest) {
+    if (node.id === id) return node;
+    const found = findNode(node.children, id);
+    if (found) return found;
+  }
+}
+
+export function nodeLocation(forest: Forest, id: string, parentId: string | null = null):
+  { siblings: Forest; index: number; parentId: string | null } | undefined {
+  for (let index = 0; index < forest.length; index++) {
+    if (forest[index].id === id) return { siblings: forest, index, parentId };
+    const found = nodeLocation(forest[index].children, id, forest[index].id);
+    if (found) return found;
+  }
+}
+
+export function deleteNode(forest: Forest, id: string): Forest {
+  if (!findNode(forest, id)) return forest;
+  return forest.filter(node => node.id !== id).map(node => ({ ...node, children: deleteNode(node.children, id) }));
+}
+
+// index is the insertion position in the destination AFTER removing the source.
+export function moveNode(forest: Forest, id: string, parentId: string | null, index: number): Forest {
+  const node = findNode(forest, id);
+  if (!node || parentId === id || (parentId !== null &&
+      (!findNode(forest, parentId) || findNode(node.children, parentId)))) return forest;
+  const removed = deleteNode(forest, id);
+  const destination = parentId === null ? removed : findNode(removed, parentId)!.children;
+  if (!Number.isInteger(index) || index < 0 || index > destination.length) return forest;
+  const children = [...destination.slice(0, index), node, ...destination.slice(index)];
+  return parentId === null ? children : updateNode(removed, parentId, parent => ({ ...parent, children }));
+}
+
+export type OutlineMove = 'up' | 'down' | 'indent' | 'outdent';
+export function outlineMove(forest: Forest, id: string, direction: OutlineMove): Forest {
+  const location = nodeLocation(forest, id);
+  if (!location) return forest;
+  const { siblings, index, parentId } = location;
+  if (direction === 'up') return index > 0 ? moveNode(forest, id, parentId, index - 1) : forest;
+  if (direction === 'down') return index < siblings.length - 1 ? moveNode(forest, id, parentId, index + 1) : forest;
+  if (direction === 'indent') {
+    const previous = siblings[index - 1];
+    return previous ? moveNode(forest, id, previous.id, previous.children.length) : forest;
+  }
+  if (parentId === null) return forest;
+  const parent = nodeLocation(forest, parentId)!;
+  return moveNode(forest, id, parent.parentId, parent.index + 1);
+}
