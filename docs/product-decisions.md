@@ -96,10 +96,27 @@ cloud sync, rich text, or unrelated features are included.
 
 ### Implemented revision and remaining acceptance
 
-See [v2 N2 interaction report](v2_n2_report_interaction.md). The accepted review response
+See [v2 N2 interaction report](archive/v2_n2_report_interaction.md). The accepted review response
 is [archived](archive/v2_n2_review-r1.md). The implementation preserves the domain
 foundation and adds explicit modes, pointer-captured movement, breadcrumbs, view-aware
 history, and empty/nonempty import language. Ctrl+Up/Down is the implemented navigation
 binding and was verified in Firefox with row and checkbox focus. Alt+arrows are no
 longer structural bindings in text inputs. Headless browser results do not establish
 absence of desktop window-manager conflicts or Fcitx5 candidate-selection correctness.
+
+## v3 N2: refine hierarchy and empty-title deletion
+
+The [v3 review](archive/v3_n2_review.md) reports successful Fcitx5 Chinese input and
+accepts the current key mappings as natural overall. This supersedes the earlier
+pending user checks; the broader comparison with Markdown remains a separate trial.
+Preserve the interaction model and tested structural operations.
+
+Use aligned circular drag anchors and sibling guides: one consistent indentation
+system makes grouping visible without introducing competing nested background layers.
+The review's color-layer alternative is not an additional requirement. Keep generous
+handle hit targets despite the smaller visual dots.
+
+Navigation Delete remains unchanged. In editing, unmodified Backspace deletes an
+exactly empty title's node; nonempty titles retain normal text editing. Composition
+events must never trigger deletion. Descendants require confirmation, and deletion
+remains recoverable through session undo/redo.

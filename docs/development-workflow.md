@@ -23,7 +23,7 @@ explicit request.
 
 ## Review references and archival
 
-Development is currently at **version 2** (two delivered iterations). This review
+Development is currently at **version 3** (the interaction revision has been reviewed). This review
 version is independent of package versions and the version 1 JSON storage format.
 A node reference belongs to a particular development version; an unqualified node
 means a node of the latest version. Version-qualified references must retain the

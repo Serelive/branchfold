@@ -1,7 +1,7 @@
 # v2 N2 — interaction implementation report
 
 Reviewed node: **Deliver a fluid, flexible outline editor**. The user accepted
-[v2_n2_review-r1](archive/v2_n2_review-r1.md) and selected Enter-to-edit / B-to-create as
+[v2_n2_review-r1](v2_n2_review-r1.md) and selected Enter-to-edit / B-to-create as
 the starting navigation mapping. Implementation is delivered; final interaction
 acceptance remains open for desktop IME and the real-task-tree trial.
 

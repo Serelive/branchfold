@@ -110,9 +110,9 @@ origin, closes its browser session, and writes screenshots/profile files under i
 edge scrolling, cancellation, imports, history, and reload. Use an idle geckodriver
 server; it accepts one session at a time. Stop both test servers when finished.
 
-Desktop Fcitx5 candidate selection and desktop shortcut conflicts still need a
-hands-on trial. Synthetic composition events do not validate the OS input method.
-See [the interaction report](docs/v2_n2_report_interaction.md) for evidence and limits.
+The v3 user review reports successful Fcitx5 input and satisfactory key mappings.
+Synthetic composition tests supplement that feedback; they do not emulate the OS input method.
+See [the interaction report](docs/archive/v2_n2_report_interaction.md) for evidence and limits.
 Planning states, outcome verification, Markdown portability, cross-tab coordination,
 and durable undo remain outside this iteration. [BRANCHES.md](BRANCHES.md) tracks
 remaining acceptance work and the real-task-tree trial.
