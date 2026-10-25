@@ -17,8 +17,10 @@ button:hover { background: #edf2e7; }
 button:focus-visible, input:focus-visible { outline: 2px solid #42744b; outline-offset: 3px; }
 .primary { background: #2c513a; color: white; border-color: #2c513a; margin-top: 22px; }
 .primary:hover { background: #3c664b; }
-.nodes { list-style: none; padding: 0; margin: 18px 0 0; }
-.nodes .nodes { margin: 0 0 0 17px; padding-left: 22px; border-left: 1px solid #d6dfd1; }
+.nodes { --indent: 28px; --anchor-x: 12px; list-style: none; padding: 0; margin: 18px 0 0; }
+/* Each sibling group's guide shares the center of its 24px drag anchors. */
+.nodes .nodes { position: relative; margin: 0 0 0 var(--indent); padding: 0; }
+.nodes .nodes::before { content: ''; position: absolute; top: 0; bottom: 6px; left: calc(var(--anchor-x) - 1px); width: 2px; background: #bdcaba; pointer-events: none; }
 .node { display: flex; align-items: center; gap: 12px; min-width: 270px; padding: 8px 0; border-bottom: 1px solid #edf0e8; }
 .node input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; accent-color: #365e40; }
 .title { flex: 1; min-width: 80px; width: 100%; border: 0; background: transparent; padding: 9px 4px; color: inherit; font: inherit; font-size: 15px; }
@@ -31,7 +33,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid #42744b; outline-
 .hint { color: #6b756a; margin: 5px 0; }
 .warning { background: #fff0d2; border: 1px solid #d6b675; padding: 20px; border-radius: 8px; color: #674c20; line-height: 1.6; }
 footer { margin-top: 52px; border-top: 1px solid #d7dcd0; padding-top: 20px; color: #7a8376; font-size: 12px; }
-@media (max-width: 540px) { main { padding: 22px 14px; } .workspace { padding: 16px; } .badge { display: none; } .intro { padding-top: 36px; } .nodes .nodes { padding-left: 12px; margin-left: 10px; } }
+@media (max-width: 540px) { main { padding: 22px 14px; } .workspace { padding: 16px; } .badge { display: none; } .intro { padding-top: 36px; } }
 .toolbar { flex-wrap: wrap; }
 .toolbar-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
 .node { position: relative; gap: 8px; flex-wrap: wrap; }
@@ -53,13 +55,17 @@ nav { padding-top: 16px; font-size: 14px; display: flex; gap: 8px; align-items: 
 
 .node .title { width: auto; }
 .intro { padding-top: 36px; }
-.node { flex-wrap: wrap; min-width: 330px; }
+.node { flex-wrap: nowrap; min-width: 420px; }
+.node:has(> .actions[open]) { flex-wrap: wrap; }
 .node[role=treeitem]:focus-visible { outline: 2px solid #42744b; outline-offset: 1px; }
 .node .title { min-width: 100px; }
 .title[readonly] { cursor: text; }
 .title:not([readonly]) { background: #fff; box-shadow: inset 0 -2px #66846c; }
 .row-action { border-color: transparent; font-size: 12px; padding: 6px; color: #506c57; }
-.drag-handle { border: 0; padding: 4px; cursor: grab; color: #7e8e7e; touch-action: none; }
+.drag-handle { position: relative; z-index: 1; flex: 0 0 24px; width: 24px; height: 28px; border: 0; padding: 0; display: grid; place-items: center; cursor: grab; touch-action: none; border-radius: 50%; }
+.task-anchor { display: block; width: 7px; height: 7px; border-radius: 50%; background: #688065; box-shadow: 0 0 0 4px #fffefa; pointer-events: none; }
+.drag-handle:hover .task-anchor, .drag-handle:focus-visible .task-anchor { background: #2c513a; box-shadow: 0 0 0 4px #e2eadc; }
+.drag-handle:active { cursor: grabbing; }
 .dragging { opacity: .45; }
 .branch { position: relative; }
 .branch.drop-before::before, .branch.drop-after::after { content: ''; position: absolute; left: 0; right: 0; height: 3px; background: #3571c1; z-index: 3; pointer-events: none; }

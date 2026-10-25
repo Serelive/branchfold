@@ -197,7 +197,10 @@ export default function App() {
     if (!id || event.altKey || event.metaKey) return;
     if (isTitle) {
       if (event.ctrlKey) return;
-      if (event.key === 'Enter') { event.preventDefault(); sibling(id); }
+      if (event.key === 'Backspace' && !event.shiftKey && findNode(forest, id)?.title === '') {
+        event.preventDefault(); requestDelete(id);
+      }
+      else if (event.key === 'Enter') { event.preventDefault(); sibling(id); }
       else if (event.key === 'Tab' && !event.ctrlKey) { event.preventDefault(); move(id, event.shiftKey ? 'outdent' : 'indent', true); }
       else if (event.key === 'Escape') { event.preventDefault(); editGroup.current = null; focus(id); }
       return;
@@ -289,7 +292,7 @@ export default function App() {
           >
           <button className="drag-handle" aria-label={`Drag ${label}`} title="Drag before, inside, or after a branch"
             onPointerDown={event => pointerDown(event, node.id)} onPointerMove={pointerMove} onPointerUp={pointerUp}
-            onPointerCancel={endDrag} onLostPointerCapture={endDrag}>⠿</button>
+            onPointerCancel={endDrag} onLostPointerCapture={endDrag}><span className="task-anchor" aria-hidden="true" /></button>
           <button className="fold" disabled={!node.children.length} aria-label={`${closed ? 'Expand' : 'Collapse'} ${label}`}
             onClick={() => toggleFold(node.id, !closed)}>{node.children.length ? (closed ? '▸' : '▾') : '·'}</button>
           <input type="checkbox" checked={node.done} aria-label={`Complete ${label}`}
@@ -354,7 +357,7 @@ export default function App() {
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
       <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. Delete removes a selected subtree; parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the secondary menu remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Each checkbox completes only its own task.</p></details>
+      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. Delete removes a selected subtree. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the secondary menu remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Each checkbox completes only its own task.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>
   </main>;

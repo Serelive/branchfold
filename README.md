@@ -37,6 +37,7 @@ are independent. New tasks always start with the caret in their title.
 | Navigation, including checkbox/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
 | Editing | Enter | Commit title and create a sibling after the current subtree |
 | Editing | Tab / Shift+Tab | Indent under previous sibling / outdent after parent |
+| Editing | Backspace on an empty title | Delete the node; confirm if it has descendants |
 | Editing | Escape | Leave the caret and select the node |
 | Navigation in a subtree view | Escape | Return to the parent view |
 | Navigation | Ctrl/Cmd + Z, with Shift to redo | Undo / redo outline changes |
@@ -46,7 +47,7 @@ Whole-node shortcuts are suppressed during composition. Escape exits editing bef
 Tab is used to reach other controls. Visible actions and the secondary menu provide
 fallbacks when desktop shortcuts conflict.
 
-Drag the **⠿ handle** to move a whole subtree. An insertion line marks **before** or
+Drag the **circular task anchor** to move a whole subtree. An insertion line marks **before** or
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
 near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
 be dropped on. **+ Next**, **+ Child**, the chevron, and **↗** subtree focus are direct

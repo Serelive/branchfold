@@ -223,3 +223,48 @@ it('reorders from checkbox focus and keeps a visible selection when collapsing i
   await user.click(screen.getByRole('button', { name: 'Collapse Alpha' }));
   expect(screen.getByRole('treeitem', { name: 'Alpha' }).getAttribute('aria-selected')).toBe('true');
 });
+
+it('deletes an empty edited leaf with Backspace and restores it through undo/redo', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('button', { name: /Add root task/ }));
+  const empty = screen.getAllByRole('textbox').at(-1)!;
+  const id = (empty as HTMLElement).dataset.nodeId;
+  await user.keyboard('{Backspace}');
+  expect(screen.getAllByRole('textbox')).toHaveLength(3);
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.some((n: { id: string }) => n.id === id)).toBe(false);
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.getAllByRole('textbox').at(-1)!.getAttribute('data-node-id')).toBe(id);
+  await user.click(screen.getByRole('button', { name: 'Redo' }));
+  expect(screen.getAllByRole('textbox')).toHaveLength(3);
+});
+
+it('safeguards empty parents, preserves children on cancel, and restores their subtree on undo', async () => {
+  localStorage.setItem(STORAGE_KEY, serializeForest([{ ...fixture[0], title: '' }, fixture[1]]));
+  const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getAllByRole('textbox')[0]); await user.keyboard('{Backspace}');
+  expect(screen.getByRole('region', { name: 'Delete confirmation' }).textContent).toContain('1 descendants');
+  await user.click(screen.getByRole('button', { name: 'Cancel deletion' }));
+  expect(screen.getByDisplayValue('Child')).toBeTruthy();
+  await user.click(screen.getAllByRole('textbox')[0]); await user.keyboard('{Backspace}');
+  await user.click(screen.getByRole('button', { name: 'Delete with descendants' }));
+  expect(screen.queryByDisplayValue('Child')).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect((screen.getByRole('checkbox', { name: 'Complete Child' }) as HTMLInputElement).checked).toBe(true);
+});
+
+it('keeps ordinary Backspace and composition input separate from subtree deletion', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  const title = screen.getByDisplayValue('Beta'); await user.click(title);
+  await user.keyboard('{End}{Backspace}');
+  expect((title as HTMLInputElement).value).toBe('Bet');
+  await user.clear(title);
+  fireEvent.compositionStart(title);
+  fireEvent.keyDown(title, { key: 'Backspace' });
+  fireEvent.compositionEnd(title);
+  fireEvent.keyDown(title, { key: 'Backspace', isComposing: true });
+  fireEvent.keyDown(title, { key: 'Backspace', keyCode: 229 });
+  expect(screen.getAllByRole('textbox')).toHaveLength(3);
+  expect(screen.queryByRole('region', { name: 'Delete confirmation' })).toBeNull();
+  await user.keyboard('{Backspace}');
+  expect(screen.getAllByRole('textbox')).toHaveLength(2);
+});

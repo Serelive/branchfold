@@ -169,6 +169,44 @@ print('Drag edge autoscroll and Escape cancellation passed.')
 load(fixture);click('[data-node-id=b]');keys(*' added');keys(('\ue009','z'))
 assert stored()[1]['title']=='Beta'
 print('Native text undo passed.')
-req('/window/rect',{'width':390,'height':844});load(fixture)
+# Empty-title deletion: normal text, composition, leaf recovery and parent safeguard.
+load(fixture);click('[data-node-id=b]');keys('\ue003');assert stored()[1]['title']=='Bet'
+keys(('\ue009','a'),'\ue003');assert stored()[1]['title']==''
+js('const e=document.activeElement;e.dispatchEvent(new CompositionEvent("compositionstart",{bubbles:true}));e.dispatchEvent(new KeyboardEvent("keydown",{key:"Backspace",bubbles:true}));e.dispatchEvent(new CompositionEvent("compositionend",{bubbles:true}));e.dispatchEvent(new KeyboardEvent("keydown",{key:"Backspace",keyCode:229,bubbles:true}));')
+assert len(stored())==2
+keys('\ue003');assert len(stored())==1
+button('Undo');assert stored()[1]['id']=='b';button('Redo');assert len(stored())==1
+empty_parent=[{**fixture[0],'title':''},fixture[1]]
+load(empty_parent);click('[data-node-id=a]');keys('\ue003')
+assert js('return document.querySelector("[aria-label=\'Delete confirmation\']")') is not None
+button('Cancel deletion');assert stored()==empty_parent
+click('[data-node-id=a]');keys('\ue003');button('Delete with descendants');assert stored()==[fixture[1]]
+button('Undo');assert stored()==empty_parent
+print('Empty-title Backspace, composition protection, parent safeguards and recovery passed.')
+# Measure the guide/anchor axis at multiple levels, then inspect representative views.
+hierarchy=[{'id':'project','title':'Prepare the workshop','done':False,'children':[
+ {'id':'plan','title':'Plan the session','done':False,'children':[
+  {'id':'audience','title':'Define the audience','done':True,'children':[]},
+  {'id':'agenda','title':'Draft the agenda','done':False,'children':[]}]},
+ {'id':'materials','title':'Prepare materials','done':False,'children':[
+  {'id':'slides','title':'Write slides','done':False,'children':[]},
+  {'id':'examples','title':'Choose examples','done':False,'children':[]}]}]},
+ {'id':'followup','title':'Collect feedback','done':False,'children':[]}]
+load(hierarchy)
+def check_alignment():
+ errors=js("""return [...document.querySelectorAll('.nodes .nodes')].map(list=>{
+ const line=getComputedStyle(list,'::before');
+ const axis=list.getBoundingClientRect().left+parseFloat(line.left)+parseFloat(line.width)/2;
+ return [...list.children].map(branch=>{
+ const r=branch.querySelector('.task-anchor').getBoundingClientRect();return Math.abs(r.left+r.width/2-axis);
+ });}).flat()""")
+ assert errors and max(errors)<1,errors
+check_alignment()
+(ARTIFACTS/'hierarchy-desktop.png').write_bytes(base64.b64decode(req('/screenshot')))
+click('button[aria-label="Collapse Plan the session"]');check_alignment()
+click('button[aria-label="Focus subtree Prepare materials"]');check_alignment()
+req('/window/rect',{'width':390,'height':844});load(hierarchy);check_alignment()
+print('Guide/anchor alignment passed at nested levels, with collapse, subtree focus and narrow viewport.')
+
 (ARTIFACTS/'mobile.png').write_bytes(base64.b64decode(req('/screenshot')))
 print('All Firefox regressions passed. Screenshots:',ARTIFACTS)
