@@ -52,3 +52,25 @@ button:disabled { opacity: .4; cursor: default; }
 nav { padding-top: 16px; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
 .node .title { width: auto; }
+.intro { padding-top: 36px; }
+.node { flex-wrap: wrap; min-width: 330px; }
+.node[role=treeitem]:focus-visible { outline: 2px solid #42744b; outline-offset: 1px; }
+.node .title { min-width: 100px; }
+.title[readonly] { cursor: text; }
+.title:not([readonly]) { background: #fff; box-shadow: inset 0 -2px #66846c; }
+.row-action { border-color: transparent; font-size: 12px; padding: 6px; color: #506c57; }
+.drag-handle { border: 0; padding: 4px; cursor: grab; color: #7e8e7e; touch-action: none; }
+.dragging { opacity: .45; }
+.branch { position: relative; }
+.branch.drop-before::before, .branch.drop-after::after { content: ''; position: absolute; left: 0; right: 0; height: 3px; background: #3571c1; z-index: 3; pointer-events: none; }
+.branch.drop-before::before { top: 0; }
+.branch.drop-after::after { bottom: 0; }
+.branch.drop-inside > .node { outline: 2px solid #3571c1; background: #e4efff; }
+.drop-tail { height: 6px; }
+.is-dragging { user-select: none; }
+.mode { font-size: 12px; line-height: 1.6; color: #526a58; }
+.drag-status { position: sticky; bottom: 8px; background: #253b32; color: white; padding: 10px; border-radius: 6px; }
+.goto { margin-top: 12px; background: #e4efff; }
+.help { font-size: 13px; color: #617060; line-height: 1.6; }
+.help summary { cursor: pointer; }
+nav button[aria-current] { font-weight: 700; border-color: #66846c; }

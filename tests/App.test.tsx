@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, render, screen, within, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../web/App';
 import { STORAGE_KEY } from '../web/storage';
@@ -66,17 +66,17 @@ it('moves by keyboard, preserves focus, and restores edits with undo and redo', 
   seed(); const user = userEvent.setup(); render(<App />);
   const beta = screen.getByDisplayValue('Beta');
   await user.click(beta);
-  await user.keyboard('{Alt>}{ArrowUp}{/Alt}');
+  await user.keyboard('{Escape}{Control>}{ArrowUp}{/Control}');
   expect(screen.getAllByRole('textbox').map(n => (n as HTMLInputElement).value)).toEqual(['Beta', 'Alpha', 'Child']);
-  expect(document.activeElement).toBe(screen.getByDisplayValue('Beta'));
+  expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'Beta' }));
   await user.keyboard('{Control>}z{/Control}');
   expect(screen.getAllByRole('textbox').map(n => (n as HTMLInputElement).value)).toEqual(['Alpha', 'Child', 'Beta']);
   await user.click(screen.getByRole('button', { name: 'Redo' }));
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].id).toBe('b');
   await user.click(screen.getByDisplayValue('Alpha'));
-  await user.keyboard('{Alt>}{ArrowRight}{/Alt}');
+  await user.keyboard('{Tab}');
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].children[0].id).toBe('a');
-  await user.keyboard('{Alt>}{ArrowLeft}{/Alt}');
+  await user.keyboard('{Shift>}{Tab}{/Shift}');
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.map((n: { id: string }) => n.id)).toEqual(['b', 'a']);
 });
 
@@ -86,7 +86,7 @@ it('collapses, focuses, reparents and recovers deleted subtrees through pointer 
   expect(screen.queryByDisplayValue('Child')).toBeNull();
   await user.click(screen.getByRole('button', { name: 'Expand Alpha' }));
   await actions(user, 'Alpha');
-  await user.click(within(screen.getByLabelText('Actions for Alpha').parentElement!).getByRole('button', { name: 'Focus subtree' }));
+  await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
   expect(screen.queryByDisplayValue('Beta')).toBeNull();
   expect(screen.getByRole('navigation', { name: 'Subtree navigation' }).textContent).toContain('Alpha');
   await user.click(screen.getByRole('button', { name: 'All tasks' }));
@@ -98,6 +98,8 @@ it('collapses, focuses, reparents and recovers deleted subtrees through pointer 
   // Moving remounts this row under its new parent, closing its details menu.
   await actions(user, 'Alpha');
   await user.click(within(screen.getByLabelText('Actions for Alpha').parentElement!).getByRole('button', { name: 'Delete subtree' }));
+  expect(screen.getByRole('region', { name: 'Delete confirmation' }).textContent).toContain('1 descendants');
+  await user.click(screen.getByRole('button', { name: 'Delete with descendants' }));
   expect(screen.queryByDisplayValue('Alpha')).toBeNull();
   expect(screen.queryByDisplayValue('Child')).toBeNull();
   await user.click(screen.getByRole('button', { name: 'Undo' }));
@@ -134,7 +136,7 @@ it('validates and previews backups, cancels safely, imports only on confirmation
 it('groups title editing for undo, clears redo on a new edit, and persists the result on remount', async () => {
   seed(); const user = userEvent.setup(); const view = render(<App />);
   const title = screen.getByDisplayValue('Alpha');
-  await user.clear(title); await user.type(title, 'Renamed objective');
+  await user.click(title); await user.clear(title); await user.type(title, 'Renamed objective');
   await user.click(screen.getByRole('button', { name: 'Undo' }));
   expect(screen.getByDisplayValue('Alpha')).toBeTruthy();
   await user.click(screen.getByRole('button', { name: 'Redo' }));
@@ -145,4 +147,79 @@ it('groups title editing for undo, clears redo on a new edit, and persists the r
   view.unmount(); render(<App />);
   expect((screen.getByRole('checkbox', { name: 'Complete Alpha' }) as HTMLInputElement).checked).toBe(true);
   expect((screen.getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(true);
+});
+
+it('keeps selection, editing and view independent and creates siblings after complete subtrees', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('treeitem', { name: 'Alpha' }));
+  expect((screen.getByDisplayValue('Alpha') as HTMLInputElement).readOnly).toBe(true);
+  await user.keyboard('{ArrowRight}');
+  expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'Child' }));
+  await user.keyboard('{ArrowLeft}{Enter}');
+  expect(document.activeElement).toBe(screen.getByDisplayValue('Alpha'));
+  await user.keyboard('{Enter}');
+  expect(screen.getAllByRole('textbox').map(n => (n as HTMLInputElement).value)).toEqual(['Alpha', 'Child', '', 'Beta']);
+  await user.keyboard('New sibling{Escape}');
+  expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'New sibling' }));
+  await user.keyboard('c');
+  await user.keyboard('New child{Escape}');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[1].children[0].title).toBe('New child');
+});
+
+it('ignores composition keys and normal text shortcuts, with explicit escape to navigation', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  const title = screen.getByDisplayValue('Alpha'); await user.click(title);
+  fireEvent.compositionStart(title);
+  for (const key of ['Enter', 'Tab', 'Escape', 'ArrowUp']) fireEvent.keyDown(title, { key, ctrlKey: key === 'ArrowUp', isComposing: true });
+  fireEvent.compositionEnd(title);
+  fireEvent.keyDown(title, { key: 'Enter', keyCode: 229 });
+  expect(screen.getAllByRole('textbox')).toHaveLength(3);
+  expect(document.activeElement).toBe(title);
+  await user.keyboard('{Control>}{ArrowDown}{/Control}');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].id).toBe('a');
+  await user.keyboard('{Escape}{Control>}{ArrowDown}{/Control}');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].id).toBe('b');
+});
+
+it('preserves subtree context and collapsed branches across outdent and undo', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
+  await actions(user, 'Child');
+  await user.click(within(screen.getByLabelText('Actions for Child').parentElement!).getByRole('button', { name: 'Outdent' }));
+  expect(screen.queryByDisplayValue('Beta')).toBeNull();
+  expect(screen.queryByDisplayValue('Child')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Go to moved node' })).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.getByDisplayValue('Child')).toBeTruthy();
+  expect(screen.queryByDisplayValue('Beta')).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Collapse Alpha' }));
+  await user.click(screen.getByRole('checkbox', { name: 'Complete Alpha' }));
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.queryByDisplayValue('Child')).toBeNull();
+});
+
+it('imports into an empty forest without replacement wording and supports cancel and undo', async () => {
+  const user = userEvent.setup(); render(<App />);
+  const file = new File([serializeForest(fixture)], 'tasks.json', { type: 'application/json' });
+  Object.defineProperty(file, 'text', { value: async () => serializeForest(fixture) });
+  await user.upload(screen.getByLabelText('JSON backup'), file);
+  expect((await screen.findByRole('region', { name: 'Backup preview' })).textContent).not.toContain('replaced');
+  expect(screen.queryByRole('button', { name: 'Replace tree' })).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Cancel import' }));
+  expect(screen.queryByRole('textbox')).toBeNull();
+  await user.upload(screen.getByLabelText('JSON backup'), file);
+  await user.click(await screen.findByRole('button', { name: 'Import tree' }));
+  expect(screen.getByDisplayValue('Alpha')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.queryByRole('textbox')).toBeNull();
+});
+
+it('reorders from checkbox focus and keeps a visible selection when collapsing its ancestor', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('checkbox', { name: 'Complete Beta' }));
+  await user.keyboard('{Control>}{ArrowUp}{/Control}');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].id).toBe('b');
+  await user.click(screen.getByRole('treeitem', { name: 'Child' }));
+  await user.click(screen.getByRole('button', { name: 'Collapse Alpha' }));
+  expect(screen.getByRole('treeitem', { name: 'Alpha' }).getAttribute('aria-selected')).toBe('true');
 });
