@@ -106,3 +106,10 @@ logs/
 # out/
 # data/*
 # !data/.gitkeep
+
+# Local JavaScript tooling and generated frontend files
+.tools/
+node_modules/
+*.tsbuildinfo
+test-results/
+playwright-report/
