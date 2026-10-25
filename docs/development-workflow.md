@@ -25,7 +25,7 @@ explicit request.
 
 `Node x-y-z-...-w` refers to the subtree at root x, child y, grandchild z, and so on;
 positions are one-based. Its short name is `Nx-y-z-...-w`. Review-related Markdown
-files use `<node>_<type>[_keyword].md`, such as `N2_review.md`. A requested revision
+files use `<node>_<type>[_keyword].md`, such as `archive/N2_review_draft.md`. A requested revision
 may use `N2_review-r1.md`.
 
 These positional references are temporary: moving tasks changes their meaning.
