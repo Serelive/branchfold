@@ -32,3 +32,23 @@ button:focus-visible, input:focus-visible { outline: 2px solid #42744b; outline-
 .warning { background: #fff0d2; border: 1px solid #d6b675; padding: 20px; border-radius: 8px; color: #674c20; line-height: 1.6; }
 footer { margin-top: 52px; border-top: 1px solid #d7dcd0; padding-top: 20px; color: #7a8376; font-size: 12px; }
 @media (max-width: 540px) { main { padding: 22px 14px; } .workspace { padding: 16px; } .badge { display: none; } .intro { padding-top: 36px; } .nodes .nodes { padding-left: 12px; margin-left: 10px; } }
+.toolbar { flex-wrap: wrap; }
+.toolbar-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.node { position: relative; gap: 8px; flex-wrap: wrap; }
+.node.active { background: #edf2e780; box-shadow: -3px 0 #66846c; }
+.fold { border: 0; padding: 5px; width: 24px; flex-shrink: 0; }
+button:disabled { opacity: .4; cursor: default; }
+.actions summary { cursor: pointer; padding: 8px; list-style: none; border-radius: 6px; }
+.actions summary:focus-visible, select:focus-visible { outline: 2px solid #42744b; outline-offset: 2px; }
+.action-panel { background: #fffefa; border: 1px solid #ccd4c8; border-radius: 8px; padding: 10px; display: grid; gap: 6px; }
+.actions[open] { width: 100%; }
+.actions[open] summary { text-align: right; }
+.actions[open] .action-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.action-panel label { grid-column: 1 / -1; font-size: 13px; }
+.action-panel select { width: 100%; margin-top: 4px; padding: 7px; font: inherit; }
+.danger { color: #9b3a30; }
+.import-preview { padding: 16px; background: #eef1e6; border-radius: 8px; margin-top: 18px; font-size: 14px; }
+.import-preview button { margin-right: 8px; }
+nav { padding-top: 16px; font-size: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.node .title { width: auto; }
