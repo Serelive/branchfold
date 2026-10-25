@@ -33,6 +33,7 @@ are independent. New tasks always start with the caret in their title.
 | Navigation | B / C | Create sibling / child and edit it |
 | Navigation | ↑ / ↓ | Select previous / next visible node |
 | Navigation | ← / → | Collapse or select parent / expand or select first child |
+| Navigation | Backspace | Directly delete the selected node and subtree; Undo restores it |
 | Navigation | Space / Delete | Toggle completion / delete (confirm when there are descendants) |
 | Navigation, including checkbox/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
 | Editing | Enter | Commit title and create a sibling after the current subtree |

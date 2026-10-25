@@ -268,3 +268,19 @@ it('keeps ordinary Backspace and composition input separate from subtree deletio
   await user.keyboard('{Backspace}');
   expect(screen.getAllByRole('textbox')).toHaveLength(2);
 });
+
+it('directly deletes a nonempty selected subtree with navigation Backspace and supports undo/redo', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('treeitem', { name: 'Alpha' }));
+  fireEvent.keyDown(document.activeElement!, { key: 'Backspace', isComposing: true });
+  expect(screen.getByDisplayValue('Alpha')).toBeTruthy();
+  await user.keyboard('{Backspace}');
+  expect(screen.queryByDisplayValue('Alpha')).toBeNull();
+  expect(screen.queryByDisplayValue('Child')).toBeNull();
+  expect(screen.queryByRole('region', { name: 'Delete confirmation' })).toBeNull();
+  expect(screen.getByDisplayValue('Beta')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(fixture);
+  await user.click(screen.getByRole('button', { name: 'Redo' }));
+  expect(screen.queryByDisplayValue('Alpha')).toBeNull();
+});

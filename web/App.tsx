@@ -230,6 +230,7 @@ export default function App() {
       case 'b': case 'B': event.preventDefault(); sibling(id); break;
       case 'c': case 'C': event.preventDefault(); create(id); break;
       case ' ': event.preventDefault(); change(updateNode(forest, id, n => ({ ...n, done: !n.done }))); break;
+      case 'Backspace': event.preventDefault(); remove(id); break;
       case 'Delete': event.preventDefault(); requestDelete(id); break;
       case 'Escape': if (viewRootId) { event.preventDefault(); zoom(nodeLocation(forest, viewRootId)?.parentId ?? null); } break;
     }
@@ -357,7 +358,7 @@ export default function App() {
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
       <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. Delete removes a selected subtree. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the secondary menu remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Each checkbox completes only its own task.</p></details>
+      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the secondary menu remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Each checkbox completes only its own task.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>
   </main>;
