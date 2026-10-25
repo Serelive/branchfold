@@ -1,6 +1,8 @@
-# N2 review response — awaiting re-review
+# N2 review response — accepted
 
-Source: [original N2 review, archived unchanged](archive/N2_review.md).
+Accepted by the user; the historical response below records the completed review round.
+
+Source: [original N2 review, archived unchanged](N2_review.md).
 The original Node 2 referred to the real-task-tree trial. Positions have changed in
 the reconstructed plan; this report retains N2 as the original review reference.
 
@@ -39,8 +41,8 @@ re-review before moving forward.
 
 ## Re-review scope
 
-Review the new commit policy in [AGENTS.md](../AGENTS.md), the ordering and review gate
-in [BRANCHES.md](../BRANCHES.md), and the retained decisions in
-[development-workflow.md](development-workflow.md) and
-[product-decisions.md](product-decisions.md). The review task remains unchecked;
+Review the new commit policy in [AGENTS.md](../../AGENTS.md), the ordering and review gate
+in [BRANCHES.md](../../BRANCHES.md), and the retained decisions in
+[development-workflow.md](../development-workflow.md) and
+[product-decisions.md](../product-decisions.md). The review task remains unchecked;
 completion of implementation is not treated as review acceptance.
