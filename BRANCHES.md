@@ -1,12 +1,12 @@
 # Branchfold Development Branches — v2
 
-Current focus: Await re-review of v2_n2_review-r1; interaction implementation is blocked until acceptance.
+Current focus: Implement independent navigation/editing states and continuous outline writing, then pointer movement and browser verification.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [ ] Deliver a fluid, flexible outline editor (v2 N2; structural foundation provisionally accepted)
   - [x] Preserve create/edit/complete, safe subtree operations, session recovery, and JSON persistence/backup
   - [x] Absorb the v2 N2 review and reconstruct the interaction plan
-  - [ ] Accept v2_n2_review-r1 before further implementation
+  - [x] Accept v2_n2_review-r1 before further implementation
   - [ ] Revise keyboard navigation and continuous editing
     - [ ] Specify independent selection, editing, view-root, and drag states
     - [ ] Trial navigation Enter-to-edit versus Enter-to-create; keep the choice open
