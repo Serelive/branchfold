@@ -43,6 +43,8 @@ export default function App() {
   const importVersion = useRef(0);
   const editGroup = useRef<string | null>(null);
   const composing = useRef(false);
+  const textBackspace = useRef(false);
+  const backwardBackspace = useRef(false);
   const pointer = useRef<{ id: string; x: number; y: number; startX: number; startY: number; active: boolean } | null>(null);
   const dropRef = useRef<Drop | null>(null);
   const displayForest = completionPreview ? toggleCompletion(forest, completionPreview) : forest;
@@ -153,11 +155,13 @@ export default function App() {
     setCollapsed(next);
     if (close && selectedId && findNode(findNode(forest, id)?.children ?? [], selectedId)) focus(id);
   }
-  function remove(id: string) {
+  function remove(id: string, preferPrevious = false) {
     const path = nodePath(forest, id);
     const location = nodeLocation(forest, id)!;
     const next = deleteNode(forest, id);
-    const target = location.siblings[location.index + 1]?.id ?? location.siblings[location.index - 1]?.id ?? location.parentId;
+    const previous = location.siblings[location.index - 1]?.id;
+    const following = location.siblings[location.index + 1]?.id;
+    const target = preferPrevious ? previous ?? location.parentId ?? following : following ?? previous ?? location.parentId;
     change(next); setPendingDelete(null); setEditingId(null);
     if (viewRootId && !findNode(next, viewRootId)) setViewRootId(path.at(-2)?.id ?? null);
     if (target) focus(target); else setSelectedId(null);
@@ -188,6 +192,17 @@ export default function App() {
     const id = row?.dataset.rowId;
     const isTitle = target.matches('input[data-node-id]');
     const isRow = target === row;
+    if (event.key === 'Backspace') {
+      // A physical press that starts with text may erase text, never its task.
+      // A fresh keydown resets this even if keyup occurred outside the editor.
+      if (!event.repeat) {
+        textBackspace.current = isTitle && (target as HTMLInputElement).value !== '';
+        backwardBackspace.current = isTitle && !textBackspace.current;
+      }
+      if (event.repeat && textBackspace.current && (!isTitle || (target as HTMLInputElement).value === '')) {
+        event.preventDefault(); return;
+      }
+    }
     if (!isTitle && !isRow) {
       // A node control/button can select a node without putting a caret in its title.
       // Ctrl+arrows work here too; other keys retain the control's native behavior.
@@ -206,7 +221,9 @@ export default function App() {
     if (isTitle) {
       if (event.ctrlKey) return;
       if (event.key === 'Backspace' && !event.shiftKey && findNode(forest, id)?.title === '') {
-        event.preventDefault(); requestDelete(id);
+        event.preventDefault();
+        if (findNode(forest, id)!.children.length) requestDelete(id);
+        else remove(id, true);
       }
       else if (event.key === 'Enter') { event.preventDefault(); sibling(id); }
       else if (event.key === 'Tab' && !event.ctrlKey) { event.preventDefault(); move(id, event.shiftKey ? 'outdent' : 'indent', true); }
@@ -238,7 +255,7 @@ export default function App() {
       case 'b': case 'B': event.preventDefault(); sibling(id); break;
       case 'c': case 'C': event.preventDefault(); create(id); break;
       case ' ': event.preventDefault(); change(toggleCompletion(forest, id)); break;
-      case 'Backspace': event.preventDefault(); remove(id); break;
+      case 'Backspace': event.preventDefault(); remove(id, backwardBackspace.current); break;
       case 'Delete': event.preventDefault(); requestDelete(id); break;
       case 'Escape': if (viewRootId) { event.preventDefault(); zoom(nodeLocation(forest, viewRootId)?.parentId ?? null); } break;
     }
@@ -379,7 +396,7 @@ export default function App() {
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
       <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.</p></details>
+      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, a Backspace press starting with text only erases text, even when held. Release and press again on an empty title to remove the task; holding then continues deleting upward. Empty parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>
   </main>;

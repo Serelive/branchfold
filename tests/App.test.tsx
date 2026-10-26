@@ -245,6 +245,29 @@ it('deletes an empty edited leaf with Backspace and restores it through undo/red
   expect(screen.getAllByRole('textbox')).toHaveLength(3);
 });
 
+it('stops a held text Backspace at an empty title until a fresh press', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  const title = screen.getByDisplayValue('Beta'); await user.click(title);
+  await user.keyboard('{End}{Backspace>8}');
+  expect((title as HTMLInputElement).value).toBe('');
+  expect(screen.getAllByRole('textbox')).toHaveLength(3);
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[1].title).toBe('');
+  await user.keyboard('{/Backspace}{Backspace}');
+  expect(screen.getAllByRole('textbox')).toHaveLength(2);
+});
+
+it('repeats deletion upward when Backspace starts on a blank edited cell', async () => {
+  localStorage.setItem(STORAGE_KEY, serializeForest(['First', 'Second', '', 'Last'].map((title, i) =>
+    ({ id: String(i), title, done: false, children: [] }))));
+  const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getAllByRole('textbox')[2]);
+  await user.keyboard('{Backspace>3/}');
+  expect(screen.getAllByRole('textbox')).toHaveLength(1);
+  expect(screen.getByDisplayValue('Last')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.getByDisplayValue('First')).toBeTruthy();
+});
+
 it('safeguards empty parents, preserves children on cancel, and restores their subtree on undo', async () => {
   localStorage.setItem(STORAGE_KEY, serializeForest([{ ...fixture[0], title: '' }, fixture[1]]));
   const user = userEvent.setup(); render(<App />);
