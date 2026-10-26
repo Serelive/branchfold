@@ -52,6 +52,7 @@ export default function App() {
   const displayForest = completionPreview ? toggleCompletion(forest, completionPreview) : forest;
   const scope = viewRootId ? findNode(displayForest, viewRootId) : undefined;
   const shown = scope ? [scope] : displayForest;
+  const selectedPath = new Set(selectedId ? nodePath(shown, selectedId).map(node => node.id) : []);
   const visible = visibleNodes(shown, collapsed);
   const selected = selectedId ? findNode(forest, selectedId) : undefined;
   const deletion = pendingDelete ? findNode(forest, pendingDelete) : undefined;
@@ -315,14 +316,16 @@ export default function App() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
   }
   function renderNodes(nodes: Forest, level = 1) {
-    return <ul className="nodes" role={level === 1 ? 'tree' : 'group'} aria-label={level === 1 ? 'Outline' : undefined}>{nodes.map(node => {
+    const pathIndex = nodes.findIndex(node => selectedPath.has(node.id));
+    return <ul className="nodes" role={level === 1 ? 'tree' : 'group'} aria-label={level === 1 ? 'Outline' : undefined}>{nodes.map((node, index) => {
       const location = nodeLocation(forest, node.id)!;
       const label = node.title || 'untitled task';
       const closed = collapsed.has(node.id);
       const preview = drop?.id === node.id ? `drop-${drop.position}` : '';
       const actionsOpen = actionsId === node.id;
       const act = (action: () => void) => { setActionsId(null); action(); };
-      return <li key={node.id} role="none" className={`branch ${preview}`}>
+      const pathClass = selectedPath.has(node.id) ? `on-path ${node.id !== selectedId ? 'path-ancestor' : ''}` : '';
+      return <li key={node.id} role="none" className={`branch ${preview} ${pathClass} ${level > 1 && index < pathIndex ? 'before-path' : ''}`}>
         <span className="tree-stem" aria-hidden="true" />
         <span className="tree-junction" aria-hidden="true" />
         <div className={`row-shell ${actionsOpen ? 'revealed' : ''}`}>

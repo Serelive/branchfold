@@ -58,7 +58,7 @@ it('retains editing and offers export when saving fails', async () => {
   expect(screen.getByRole('button', { name: 'Export JSON' })).toBeTruthy();
 });
 
-import { serializeForest } from '../web/tree';
+import { serializeForest, type Forest } from '../web/tree';
 const fixture = [
   { id: 'a', title: 'Alpha', done: false, children: [{ id: 'c', title: 'Child', done: true, children: [] }] },
   { id: 'b', title: 'Beta', done: false, children: [] },
@@ -432,4 +432,21 @@ it('reveals only one action tray and closes it with Escape', async () => {
   await user.keyboard('{Escape}');
   expect(screen.queryByRole('group', { name: 'Actions for Beta' })).toBeNull();
   expect(document.activeElement).toBe(screen.getByRole('treeitem', { name: 'Beta' }));
+});
+
+it('tracks the selected ancestor path separately from passing sibling trunks', async () => {
+  const n = (id: string, children: Forest = []) => ({ id, title: id, done: false, children });
+  localStorage.setItem(STORAGE_KEY, serializeForest([n('Root', [n('Earlier', [n('Other')]), n('Branch', [n('Target')]), n('Later')])]));
+  const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Directory guides' }));
+  await user.click(screen.getByDisplayValue('Target'));
+  const onPath = () => [...document.querySelectorAll('.branch.on-path > .row-shell > .node')].map(row => row.getAttribute('aria-label'));
+  expect(onPath()).toEqual(['Root', 'Branch', 'Target']);
+  expect(screen.getByDisplayValue('Earlier').closest('.branch')!.classList.contains('before-path')).toBe(true);
+  expect(screen.getByDisplayValue('Other').closest('.branch')!.classList.contains('on-path')).toBe(false);
+  await user.click(screen.getByRole('button', { name: 'Focus subtree Branch' }));
+  await user.click(screen.getByDisplayValue('Target'));
+  expect(onPath()).toEqual(['Branch', 'Target']);
+  await user.click(screen.getByRole('button', { name: 'Directory guides' }));
+  expect(document.querySelector('.directory-guides')).toBeNull();
 });

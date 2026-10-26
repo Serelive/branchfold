@@ -1,6 +1,6 @@
 # Branchfold Development Branches — v3
 
-Current focus: Continue the real-task-tree trial with directory guides and optional leaf drawings.
+Current focus: Continue the real-task-tree trial with highlighted directory paths.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [x] Refine the flexible outline editor (v3 N2)
@@ -22,5 +22,6 @@ Current focus: Continue the real-task-tree trial with directory guides and optio
   - [x] QuickFix: accelerate held text Backspace to three characters per repeat; verify Unicode, cell protection, and native undo
   - [x] QuickFeature/QuickFix: offer leaf drawings, thicken plain leaf rings, preserve checked icons, and document the verified implementation
   - [x] QuickFix: retain standalone outlined leaves and connector-aligned stalks; restore original checked circle/check marks
+  - [x] QuickFeature: highlight selected path connectors, handles, and titles; verify branching and focused views
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

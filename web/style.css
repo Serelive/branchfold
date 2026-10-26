@@ -116,3 +116,13 @@ nav button[aria-current] { font-weight: 700; border-color: #66846c; }
 .directory-guides .tree-junction::after { content: ''; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: calc(50% - 1px); width: calc(var(--indent) - var(--anchor-x) + 7px); height: 2px; background: #bdcaba; }
 .directory-guides .nodes .nodes > .branch:not(:last-child) > .tree-stem { display: block; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: 0; bottom: 0; width: 2px; background: #bdcaba; }
 button[aria-pressed=true]:not(.node-control) { background: #e0e8db; border-color: #66846c; }
+
+/* Highlight only the connecting route, including trunks passing earlier siblings. */
+.directory-guides .nodes .nodes > .branch.before-path > .tree-stem,
+.directory-guides .branch.on-path > .tree-junction::before,
+.directory-guides .branch.on-path > .tree-junction::after,
+.directory-guides .branch.path-ancestor > .row-shell > .node::after { background: #42673e; }
+.directory-guides .branch.on-path > .row-shell .task-anchor { border-color: #2c513a; }
+.directory-guides .branch.on-path > .row-shell .task-anchor.checked { background: #2c513a; }
+.directory-guides .branch.on-path > .row-shell .anchor-leaf { stroke: #2c513a; }
+.directory-guides .branch.on-path > .row-shell .title { color: #253b32; background-color: #f3e6b1; border-radius: 3px; }

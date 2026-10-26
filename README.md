@@ -50,6 +50,8 @@ fallbacks when desktop shortcuts conflict.
 
 Use **Directory guides** in the toolbar to switch between indentation guides and directory-style branch connectors. This changes only the view for the current session.
 
+In Directory guides mode, selecting a task highlights its titles, handles, and connecting route back to the visible root.
+
 Use **Leaf drawings** to switch leaf handles from plain rings to standalone leaf outlines. Checked handles keep the filled circle and check mark in both modes. This preference also lasts for the current session.
 
 The **single left control** expands/collapses branches or checks/unchecks leaves on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks act immediately; long-press and drag do not change expansion. An insertion line marks **before** or
