@@ -7,6 +7,7 @@ import { STORAGE_KEY } from '../web/storage';
 
 beforeEach(() => {
   localStorage.clear();
+  document.elementFromPoint ??= () => null;
   HTMLElement.prototype.setPointerCapture ??= () => {};
   HTMLElement.prototype.hasPointerCapture ??= () => false;
   HTMLElement.prototype.releasePointerCapture ??= () => {};
@@ -309,9 +310,11 @@ it('long-press checks and unchecks without folding, while clicks fold immediatel
     await user.pointer({ target: control, keys: '[MouseLeft>]' });
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
     expect(control.getAttribute('aria-pressed')).toBe(done);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].done).toBe(done !== 'true');
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 100)); });
     expect(control.getAttribute('aria-pressed')).toBe(done);
     await user.pointer({ keys: '[/MouseLeft]' });
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].done).toBe(done === 'true');
     expect(control.getAttribute('aria-expanded')).toBe('true');
   }
   await user.click(control);
@@ -322,6 +325,21 @@ it('long-press checks and unchecks without folding, while clicks fold immediatel
   fireEvent.pointerCancel(control);
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
   expect(control.getAttribute('aria-pressed')).toBe('false');
+});
+
+it('cancels held completion into a drag without saving a completion or history step', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  const control = screen.getByRole('button', { name: 'Node control Alpha' });
+  await user.pointer({ target: control, keys: '[MouseLeft>]', coords: { clientX: 20, clientY: 20 } });
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
+  expect(control.getAttribute('aria-pressed')).toBe('true');
+  // Even a small deliberate movement after the hold enters drag mode.
+  await user.pointer({ target: control, coords: { clientX: 21, clientY: 20 } });
+  expect(control.getAttribute('aria-pressed')).toBe('false');
+  expect(screen.getByRole('treeitem', { name: 'Alpha' }).classList.contains('dragging')).toBe(true);
+  await user.pointer({ keys: '[/MouseLeft]' });
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(fixture);
+  expect((screen.getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(true);
 });
 
 it('reveals only one action tray and closes it with Escape', async () => {

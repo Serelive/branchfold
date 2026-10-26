@@ -1,6 +1,6 @@
 # Branchfold Development Branches — v3
 
-Current focus: Continue the real-task-tree trial with long-press completion and sliding actions.
+Current focus: Continue the real-task-tree trial with provisional long-press completion and drag attachment.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [x] Refine the flexible outline editor (v3 N2)
@@ -14,6 +14,6 @@ Current focus: Continue the real-task-tree trial with long-press completion and 
   - [x] QuickFix: unify drag/expand/complete and reveal row actions without changing layout
   - [x] QuickFix: animate concentric circle controls, shorten folding delay, and lighten edge actions
   - [x] QuickFix: use a light bold ring when expanded and a dark bold ring when folded
-  - [x] QuickFix: long-press checks/unchecks without folding or dragging; ordinary clicks fold immediately
+  - [x] QuickFix: preview completion on hold, commit on release, or cancel into dragging on movement; clicks still fold
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

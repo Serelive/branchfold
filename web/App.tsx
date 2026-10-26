@@ -265,10 +265,10 @@ export default function App() {
     event.currentTarget.setPointerCapture(event.pointerId);
     focus(id);
   }
-  function pointerMove(event: PointerEvent) {
+  function pointerMove(event: PointerEvent, forceDrag = false) {
     const current = pointer.current; if (!current) return;
     current.x = event.clientX; current.y = event.clientY;
-    if (!current.active && Math.hypot(current.x - current.startX, current.y - current.startY) < 5) return;
+    if (!forceDrag && !current.active && Math.hypot(current.x - current.startX, current.y - current.startY) < 5) return;
     current.active = true; suppressControlClick.current = current.id; setDraggedId(current.id); previewDrop(current.x, current.y);
   }
   function endDrag() { pointer.current = null; dropRef.current = null; setDraggedId(null); setDrop(null); }
@@ -371,7 +371,7 @@ export default function App() {
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
       <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands on click, checks or unchecks on long-press, and moves on drag. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Completion applies only to the task itself.</p></details>
+      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands on click, previews checking or unchecking on long-press, and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Completion applies only to the task itself.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>
   </main>;

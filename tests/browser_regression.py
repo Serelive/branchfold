@@ -228,6 +228,24 @@ req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointer
 assert stored()[0]['done'] is True
 assert js('return document.querySelector("[data-row-id=a]").getAttribute("aria-expanded")')=='true'
 click(control);wait('document.querySelector("[data-row-id=a]").getAttribute("aria-expanded")==="false"')
+# A held preview is not persisted; moving cancels it and attaches the subtree.
+load(fixture)
+point=js('const r=document.querySelector(arguments[0]).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}',control)
+req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[
+ {'type':'pointerMove','x':int(point['x']),'y':int(point['y'])},{'type':'pointerDown','button':0},{'type':'pause','duration':650}]}]})
+assert js('return document.querySelector(arguments[0]).getAttribute("aria-pressed")',control)=='true'
+assert stored()==fixture
+end=js('const r=document.querySelector("[data-row-id=b]").getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}')
+req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[
+ {'type':'pointerMove','duration':200,'x':int(end['x']),'y':int(end['y'])}]}]})
+assert js('return document.querySelector(arguments[0]).getAttribute("aria-pressed")',control)=='false'
+assert stored()==fixture
+req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[{'type':'pointerUp','button':0}]}]})
+assert stored()[0]['id']=='b' and stored()[0]['children'][0]['id']=='a'
+assert stored()[0]['children'][0]['done'] is False
+button('Undo');assert stored()==fixture
+assert js('return [...document.querySelectorAll("button")].find(b=>b.textContent==="Undo").disabled')
+print('Held preview cancels into subtree attachment with no extra completion history.')
 # Actions slide over a fixed-height row; other rows keep their position.
 load(fixture)
 positions=js('return [...document.querySelectorAll(".row-shell")].map(e=>({top:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}))')

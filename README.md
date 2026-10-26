@@ -48,7 +48,7 @@ Whole-node shortcuts are suppressed during composition. Escape exits editing bef
 Tab is used to reach other controls. Visible actions and the sliding tray provide
 fallbacks when desktop shortcuts conflict.
 
-The **single left control** expands/collapses on click, toggles completion on a 500 ms long-press, and moves the whole subtree on drag. Single clicks fold immediately; long-press and drag do not change expansion. An insertion line marks **before** or
+The **single left control** expands/collapses on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks fold immediately; long-press and drag do not change expansion. An insertion line marks **before** or
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
 near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
 be dropped on. **+ Next**, **+ Child**, and **↗** subtree focus are direct
