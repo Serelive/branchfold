@@ -13,6 +13,6 @@ Current focus: Continue the real-task-tree trial with refined circle controls an
   - [x] QuickFix: directly delete selected subtrees with navigation Backspace and preserve undo
   - [x] QuickFix: unify drag/expand/complete and reveal row actions without changing layout
   - [x] QuickFix: animate concentric circle controls, shorten folding delay, and lighten edge actions
-  - [x] QuickFix: use close concentric rings when expanded and a solid bold ring when folded
+  - [x] QuickFix: use a light bold ring when expanded and a dark bold ring when folded
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)
