@@ -19,5 +19,6 @@ Current focus: Continue the real-task-tree trial with switchable directory guide
   - [x] QuickFix: switch between indentation guides and CSS directory connectors without changing tree interactions
   - [x] QuickFix: match downward and incoming directory connector gaps at 3px; verify desktop/narrow layouts and folding
   - [x] QuickFix: protect nonempty titles for the entire Backspace press; verify fresh-press deletion and upward blank-cell repeat deletion
+  - [x] QuickFix: accelerate held text Backspace to three characters per repeat; verify Unicode, cell protection, and native undo
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

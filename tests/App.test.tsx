@@ -256,6 +256,19 @@ it('stops a held text Backspace at an empty title until a fresh press', async ()
   expect(screen.getAllByRole('textbox')).toHaveLength(2);
 });
 
+it('accelerates held text deletion with intact graphemes and preserves the suffix and cell', async () => {
+  localStorage.setItem(STORAGE_KEY, serializeForest([{ id: 'a', title: 'Ae\u0301👩‍💻中Z tail', done: false, children: [] }]));
+  const user = userEvent.setup(); render(<App />);
+  const title = screen.getByRole('textbox') as HTMLInputElement;
+  await user.click(title);
+  title.setSelectionRange(title.value.indexOf(' tail'), title.value.indexOf(' tail'));
+  await user.keyboard('{Backspace>2/}');
+  expect(title.value).toBe('A tail');
+  await user.keyboard('{Backspace>4/}');
+  expect(title.value).toBe(' tail');
+  expect(screen.getAllByRole('textbox')).toHaveLength(1);
+});
+
 it('repeats deletion upward when Backspace starts on a blank edited cell', async () => {
   localStorage.setItem(STORAGE_KEY, serializeForest(['First', 'Second', '', 'Last'].map((title, i) =>
     ({ id: String(i), title, done: false, children: [] }))));

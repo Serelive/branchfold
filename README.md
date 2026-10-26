@@ -38,7 +38,7 @@ are independent. New tasks always start with the caret in their title.
 | Navigation, including node-control/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
 | Editing | Enter | Commit title and create a sibling after the current subtree |
 | Editing | Tab / Shift+Tab | Indent under previous sibling / outdent after parent |
-| Editing | Backspace | A press starting with text only erases text, even when held. A fresh press on an empty title deletes the node (confirm if it has descendants); holding continues deleting upward. |
+| Editing | Backspace | A tap erases one character; held repeats erase three characters at a time. A press starting with text never deletes the cell. A fresh press on an empty title deletes the node (confirm if it has descendants); holding continues deleting upward. |
 | Editing | Escape | Leave the caret and select the node |
 | Navigation in a subtree view | Escape | Return to the parent view |
 | Navigation | Ctrl/Cmd + Z, with Shift to redo | Undo / redo outline changes |

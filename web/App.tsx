@@ -10,6 +10,7 @@ function download(content: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 const flatten = (nodes: Forest) => visibleNodes(nodes, new Set());
+const titleCharacters = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 type Snapshot = { forest: Forest; viewRootId: string | null; collapsed: Set<string>; selectedId: string | null };
 type Drop = { id: string; position: DropPosition };
 
@@ -220,6 +221,16 @@ export default function App() {
     if (!id || event.altKey || event.metaKey) return;
     if (isTitle) {
       if (event.ctrlKey) return;
+      if (event.key === 'Backspace' && event.repeat && !event.shiftKey && textBackspace.current) {
+        const input = target as HTMLInputElement;
+        const end = input.selectionEnd ?? 0;
+        if (end > 0 && input.selectionStart === end) {
+          // Let native deletion handle the selection, including text undo.
+          // Grapheme boundaries keep emoji and combining characters intact.
+          const characters = Array.from(titleCharacters.segment(input.value.slice(0, end)));
+          input.setSelectionRange(characters[Math.max(0, characters.length - 3)].index, end);
+        }
+      }
       if (event.key === 'Backspace' && !event.shiftKey && findNode(forest, id)?.title === '') {
         event.preventDefault();
         if (findNode(forest, id)!.children.length) requestDelete(id);
@@ -396,7 +407,7 @@ export default function App() {
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
       <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, a Backspace press starting with text only erases text, even when held. Release and press again on an empty title to remove the task; holding then continues deleting upward. Empty parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.</p></details>
+      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace erases one character per tap or three per held repeat. A press starting with text never deletes the cell. Release and press again on an empty title to remove the task; holding then continues deleting upward. Empty parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>
   </main>;
