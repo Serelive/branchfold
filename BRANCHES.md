@@ -1,6 +1,6 @@
 # Branchfold Development Branches — v3
 
-Current focus: Continue the real-task-tree trial with the navigation Backspace QuickFix available.
+Current focus: Continue the real-task-tree trial with unified node controls and sliding actions.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [x] Refine the flexible outline editor (v3 N2)
@@ -11,5 +11,6 @@ Current focus: Continue the real-task-tree trial with the navigation Backspace Q
   - [x] Delete empty titles with Backspace while protecting composition and descendants
   - [x] Verify deletion undo/redo, ordinary text editing, hierarchy rendering, and existing interactions
   - [x] QuickFix: directly delete selected subtrees with navigation Backspace and preserve undo
+  - [x] QuickFix: unify drag/expand/complete and reveal row actions without changing layout
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

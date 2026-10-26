@@ -35,7 +35,7 @@ are independent. New tasks always start with the caret in their title.
 | Navigation | ← / → | Collapse or select parent / expand or select first child |
 | Navigation | Backspace | Directly delete the selected node and subtree; Undo restores it |
 | Navigation | Space / Delete | Toggle completion / delete (confirm when there are descendants) |
-| Navigation, including checkbox/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
+| Navigation, including node-control/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
 | Editing | Enter | Commit title and create a sibling after the current subtree |
 | Editing | Tab / Shift+Tab | Indent under previous sibling / outdent after parent |
 | Editing | Backspace on an empty title | Delete the node; confirm if it has descendants |
@@ -45,15 +45,17 @@ are independent. New tasks always start with the caret in their title.
 
 Ordinary text editing and native text undo remain available inside title fields.
 Whole-node shortcuts are suppressed during composition. Escape exits editing before
-Tab is used to reach other controls. Visible actions and the secondary menu provide
+Tab is used to reach other controls. Visible actions and the sliding tray provide
 fallbacks when desktop shortcuts conflict.
 
-Drag the **circular task anchor** to move a whole subtree. An insertion line marks **before** or
+The **single left control** expands/collapses on click, toggles completion on double-click, and moves the whole subtree on drag. A short single-click delay distinguishes it from double-click; double-click and drag do not change expansion. An insertion line marks **before** or
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
 near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
-be dropped on. **+ Next**, **+ Child**, the chevron, and **↗** subtree focus are direct
-row controls. The secondary menu retains reorder, indent/outdent, parent selection,
-and deletion commands.
+be dropped on. **+ Next**, **+ Child**, and **↗** subtree focus are direct
+row controls. Tap the **dark right edge** to slide a row left and reveal reorder,
+indent/outdent, parent selection, and deletion actions behind it. This does not move
+other rows. Tap the edge again or press Escape to close; opening another row closes
+the previous tray.
 
 Ancestor breadcrumbs return to any ancestor or **All tasks**. Moves preserve the
 current view and collapsed branches; **Go to moved node** reveals a moved task that

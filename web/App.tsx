@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type PointerEvent, type KeyboardEvent } from 'react';
 import { addNode, updateNode, serializeForest, parseForest, findNode, nodeLocation, nodePath, visibleNodes, deleteNode, moveNode, moveRelative, outlineMove, type OutlineMove, type Forest, type DropPosition } from './tree';
 import { loadForest, saveForest } from './storage';
+import NodeControl from './NodeControl';
 
 function download(content: string) {
   const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
@@ -24,6 +25,8 @@ export default function App() {
   const [selectedId, setSelectedId] = useState<string | null>(initial.nodes[0]?.id ?? null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewRootId, setViewRootId] = useState<string | null>(null);
+  const [actionsId, setActionsId] = useState<string | null>(null);
+  const suppressControlClick = useRef<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [drop, setDrop] = useState<Drop | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
@@ -82,6 +85,7 @@ export default function App() {
     setFuture([]); save(next); setNotice('');
   }
   function focus(id: string, edit = false) {
+    setActionsId(null);
     setSelectedId(id); setEditingId(edit ? id : null); setFocusRequest({ id, edit });
   }
   function restore(direction: 'undo' | 'redo') {
@@ -170,6 +174,7 @@ export default function App() {
     }
   }
   function keyboard(event: KeyboardEvent) {
+    if (actionsId && event.key === 'Escape') { event.preventDefault(); focus(actionsId); return; }
     if (pointer.current?.active) {
       if (event.key === 'Escape') { event.preventDefault(); endDrag(); }
       return;
@@ -181,7 +186,7 @@ export default function App() {
     const isTitle = target.matches('input[data-node-id]');
     const isRow = target === row;
     if (!isTitle && !isRow) {
-      // A checkbox/button can select a node without putting a caret in its title.
+      // A node control/button can select a node without putting a caret in its title.
       // Ctrl+arrows work here too; other keys retain the control's native behavior.
       if (id && !target.matches('select') && !event.altKey && !event.metaKey) {
         if (event.ctrlKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
@@ -255,6 +260,7 @@ export default function App() {
   function pointerDown(event: PointerEvent, id: string) {
     if (event.button !== 0) return;
     event.preventDefault();
+    suppressControlClick.current = null;
     pointer.current = { id, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY, active: false };
     event.currentTarget.setPointerCapture(event.pointerId);
     focus(id);
@@ -263,7 +269,7 @@ export default function App() {
     const current = pointer.current; if (!current) return;
     current.x = event.clientX; current.y = event.clientY;
     if (!current.active && Math.hypot(current.x - current.startX, current.y - current.startY) < 5) return;
-    current.active = true; setDraggedId(current.id); previewDrop(current.x, current.y);
+    current.active = true; suppressControlClick.current = current.id; setDraggedId(current.id); previewDrop(current.x, current.y);
   }
   function endDrag() { pointer.current = null; dropRef.current = null; setDraggedId(null); setDrop(null); }
   function pointerUp(event: PointerEvent) {
@@ -282,7 +288,10 @@ export default function App() {
       const label = node.title || 'untitled task';
       const closed = collapsed.has(node.id);
       const preview = drop?.id === node.id ? `drop-${drop.position}` : '';
+      const actionsOpen = actionsId === node.id;
+      const act = (action: () => void) => { setActionsId(null); action(); };
       return <li key={node.id} role="none" className={`branch ${preview}`}>
+        <div className={`row-shell ${actionsOpen ? 'revealed' : ''}`}>
         <div role="treeitem" aria-label={label} aria-level={level} aria-selected={selectedId === node.id}
           aria-expanded={node.children.length ? !closed : undefined} data-row-id={node.id}
           tabIndex={selectedId === node.id || (!selectedId && visible[0]?.id === node.id) ? 0 : -1}
@@ -291,13 +300,12 @@ export default function App() {
           onFocus={event => { if (event.target === event.currentTarget) { setSelectedId(node.id); setEditingId(null); } }}
           onClick={event => { if (event.target === event.currentTarget) focus(node.id); }}
           >
-          <button className="drag-handle" aria-label={`Drag ${label}`} title="Drag before, inside, or after a branch"
+          <NodeControl title={label} done={node.done} expanded={!closed} hasChildren={!!node.children.length}
+            setExpanded={expanded => toggleFold(node.id, !expanded)}
+            toggleDone={() => change(updateNode(forest, node.id, n => ({ ...n, done: !n.done })))}
+            ignoreClick={() => suppressControlClick.current === node.id}
             onPointerDown={event => pointerDown(event, node.id)} onPointerMove={pointerMove} onPointerUp={pointerUp}
-            onPointerCancel={endDrag} onLostPointerCapture={endDrag}><span className="task-anchor" aria-hidden="true" /></button>
-          <button className="fold" disabled={!node.children.length} aria-label={`${closed ? 'Expand' : 'Collapse'} ${label}`}
-            onClick={() => toggleFold(node.id, !closed)}>{node.children.length ? (closed ? '▸' : '▾') : '·'}</button>
-          <input type="checkbox" checked={node.done} aria-label={`Complete ${label}`}
-            onChange={() => change(updateNode(forest, node.id, n => ({ ...n, done: !n.done })))} />
+            onPointerCancel={endDrag} onLostPointerCapture={endDrag} />
           <input className="title" data-node-id={node.id} aria-label="Task title" placeholder="An unfinished thought…"
             readOnly={editingId !== node.id} tabIndex={editingId === node.id ? 0 : -1}
             value={node.title} onClick={() => focus(node.id, true)}
@@ -307,20 +315,25 @@ export default function App() {
           <button className="row-action" aria-label={`Add sibling after ${label}`} title="Add sibling (B in navigation)" onClick={() => sibling(node.id)}>+ Next</button>
           <button className="row-action" aria-label={`Add child to ${label}`} title="Add child (C in navigation)" onClick={() => create(node.id)}>+ Child</button>
           <button className="row-action" aria-label={`Focus subtree ${label}`} title="Focus subtree" onClick={() => zoom(node.id)}>↗</button>
-          <details className="actions"><summary aria-label={`Actions for ${label}`}>•••</summary><div className="action-panel">
-            <button disabled={location.index === 0} onClick={() => move(node.id, 'up')}>Move up</button>
-            <button disabled={location.index === location.siblings.length - 1} onClick={() => move(node.id, 'down')}>Move down</button>
-            <button disabled={location.index === 0} onClick={() => move(node.id, 'indent')}>Indent</button>
-            <button disabled={location.parentId === null} onClick={() => move(node.id, 'outdent')}>Outdent</button>
-            <label>Move into<select aria-label={`Move ${label} into`} value="" onChange={event => {
-              const parentId = event.target.value === 'root' ? null : event.target.value.slice(5);
-              const destination = parentId === null ? forest : findNode(forest, parentId)!.children;
-              applyMove(moveNode(forest, node.id, parentId, destination.length - (location.parentId === parentId ? 1 : 0)), node.id);
-            }}><option value="" disabled>Choose parent…</option><option value="root">Root level</option>
-              {flatten(forest).filter(item => item.id !== node.id && !findNode(node.children, item.id)).map(item => <option key={item.id} value={`node:${item.id}`}>{nodePath(forest, item.id).map(n => n.title || 'Untitled').join(' / ')}</option>)}
-            </select></label>
-            <button className="danger" onClick={() => requestDelete(node.id)}>Delete subtree</button>
-          </div></details>
+          <button className="actions-trigger" aria-label={`${actionsOpen ? 'Close' : 'Actions for'} ${label}`}
+            aria-expanded={actionsOpen} title={actionsOpen ? 'Close actions' : 'Reveal actions'}
+            onClick={() => setActionsId(actionsOpen ? null : node.id)}>{actionsOpen ? '›' : '‹'}</button>
+        </div>
+        <div className="action-panel" role="group" aria-label={`Actions for ${label}`} aria-hidden={!actionsOpen} inert={!actionsOpen}
+          onFocusCapture={() => setSelectedId(node.id)}>
+          <button aria-label="Move up" title="Move up" disabled={location.index === 0} onClick={() => act(() => move(node.id, 'up'))}>↑</button>
+          <button aria-label="Move down" title="Move down" disabled={location.index === location.siblings.length - 1} onClick={() => act(() => move(node.id, 'down'))}>↓</button>
+          <button aria-label="Indent" title="Indent" disabled={location.index === 0} onClick={() => act(() => move(node.id, 'indent'))}>→</button>
+          <button aria-label="Outdent" title="Outdent" disabled={location.parentId === null} onClick={() => act(() => move(node.id, 'outdent'))}>←</button>
+          <select aria-label={`Move ${label} into`} value="" onChange={event => {
+            const parentId = event.target.value === 'root' ? null : event.target.value.slice(5);
+            const destination = parentId === null ? forest : findNode(forest, parentId)!.children;
+            act(() => applyMove(moveNode(forest, node.id, parentId, destination.length - (location.parentId === parentId ? 1 : 0)), node.id));
+          }}><option value="" disabled>Move into…</option><option value="root">Root level</option>
+            {flatten(forest).filter(item => item.id !== node.id && !findNode(node.children, item.id)).map(item => <option key={item.id} value={`node:${item.id}`}>{nodePath(forest, item.id).map(n => n.title || 'Untitled').join(' / ')}</option>)}
+          </select>
+          <button className="danger" aria-label="Delete subtree" title="Delete subtree" onClick={() => act(() => requestDelete(node.id))}>Delete</button>
+        </div>
         </div>
         {node.children.length > 0 && !closed && renderNodes(node.children, level + 1)}
         <div className="drop-tail" data-tail-id={node.id} aria-hidden="true" />
@@ -358,7 +371,7 @@ export default function App() {
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
       <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the secondary menu remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Each checkbox completes only its own task.</p></details>
+      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands on click, completes on double-click, and moves on drag. The dark right edge slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace removes an empty task; nonempty titles keep normal text behavior. Parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Completion applies only to the task itself.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>
   </main>;

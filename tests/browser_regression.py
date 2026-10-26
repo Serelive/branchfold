@@ -40,8 +40,13 @@ def keys(*values):
   else:a += [{'type':'keyDown','value':value},{'type':'keyUp','value':value}]
  req('/actions',{'actions':[{'type':'key','id':'keys','actions':a}]})
 def button(label):
- ident=js('return [...document.querySelectorAll("button")].find(b=>b.textContent===arguments[0] && b.getClientRects().length && (!b.closest("details") || b.closest("details").open))',label)
+ ident=js('return [...document.querySelectorAll("button")].find(b=>(b.textContent===arguments[0] || b.getAttribute("aria-label")===arguments[0]) && !b.closest("[inert]") && b.getClientRects().length && (!b.closest("details") || b.closest("details").open))',label)
  assert ident,label
+ js('arguments[0].scrollIntoView({block:"nearest",inline:"nearest"})',ident)
+ for _ in range(40):
+  if js('const b=arguments[0],r=b.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest("button")===b',ident):break
+  time.sleep(.05)
+ else:raise AssertionError('Button remained covered: '+label)
  req('/element/'+ident['element-6066-11e4-a52e-4f735466cecf']+'/click',{})
 def load(nodes,url=None):
  if url is None: url=APP_URL
@@ -78,8 +83,8 @@ keys('\ue00c','b'); keys(*'Created with B')
 assert stored()[31]['title']=='Created with B'
 print('32-node keyboard entry, Enter/B mapping, Control+Up, Tab and Shift+Tab passed in Firefox.')
 # Controls and titles have distinct keyboard behavior.
-load(fixture);click('input[aria-label="Complete Beta"]');keys(('\ue009','\ue013'));assert stored()[0]['id']=='b'
-print('Ctrl+Up works from checkbox focus in Firefox.')
+load(fixture);click('button[aria-label="Node control Beta"]');keys(('\ue009','\ue013'));assert stored()[0]['id']=='b'
+print('Ctrl+Up works from node-control selection in Firefox.')
 # Checkbox no longer masquerades as a navigation selection; text edits never reorder.
 load(fixture); click('input[data-node-id="b"]'); keys(('\ue009','\ue013'))
 assert [n['id'] for n in stored()]==['a','b']
@@ -101,7 +106,7 @@ req('/refresh',{});wait('document.querySelector("[data-row-id=a]") !== null');as
 print('Empty/nonempty import, cancellation, undo/redo and reload passed.')
 # Navigation context and deliberate parent deletion.
 click('button[aria-label="Focus subtree Alpha"]')
-click('summary[aria-label="Actions for Child"]');button('Outdent')
+click('button[aria-label="Actions for Child"]');button('Outdent')
 assert js('return document.querySelector("[data-node-id=b]")') is None
 assert js('return document.querySelector("[data-node-id=c]")') is None
 button('Undo');wait('document.querySelector("[data-node-id=c]") !== null')
@@ -124,8 +129,9 @@ def drag(source,target,ratio=.5):
 req('/window/rect',{'width':1280,'height':900})
 for position,ratio in [('before',.1),('after',.9),('inside',.5)]:
  load(fixture)
- if position=='inside':click('button[aria-label="Collapse Alpha"]')
- state=drag('button[aria-label="Drag Alpha"]','[data-row-id=b]',ratio) if position=='after' else drag('button[aria-label="Drag Beta"]','[data-row-id=a]',ratio)
+ if position=='inside':
+  click('button[aria-label="Node control Alpha"]');wait('document.querySelector("[data-row-id=a]").getAttribute("aria-expanded") === "false"')
+ state=drag('button[aria-label="Node control Alpha"]','[data-row-id=b]',ratio) if position=='after' else drag('button[aria-label="Node control Beta"]','[data-row-id=a]',ratio)
  print(position,state,stored())
  if position=='before':assert [n['id'] for n in stored()]==['b','a']
  elif position=='after':
@@ -136,12 +142,12 @@ for position,ratio in [('before',.1),('after',.9),('inside',.5)]:
   assert js('return document.querySelector("[data-node-id=c]")') is None
   button('Go to moved node');assert js('return document.activeElement.dataset.rowId')=='b'
  button('Undo');assert stored()==fixture
-load(fixture);before=stored();state=drag('button[aria-label="Drag Alpha"]','[data-row-id=c]',.5);assert stored()==before
+load(fixture);before=stored();state=drag('button[aria-label="Node control Alpha"]','[data-row-id=c]',.5);assert stored()==before
 print('Cycle rejection:',state)
 # Focused-subtree drag after a child; moving a descendant to the view root boundary.
 fixture[0]['children'].append({'id':'d','title':'Second child','done':False,'children':[]})
 load(fixture);click('button[aria-label="Focus subtree Alpha"]')
-state=drag('button[aria-label="Drag Child"]','[data-row-id=a]',.9)
+state=drag('button[aria-label="Node control Child"]','[data-row-id=a]',.9)
 assert [n['id'] for n in stored()]==['a','c','b']
 assert js('return document.querySelector("[data-node-id=b]")') is None
 button('Undo');assert stored()==fixture
@@ -203,10 +209,44 @@ def check_alignment():
  assert errors and max(errors)<1,errors
 check_alignment()
 (ARTIFACTS/'hierarchy-desktop.png').write_bytes(base64.b64decode(req('/screenshot')))
-click('button[aria-label="Collapse Plan the session"]');check_alignment()
+click('button[aria-label="Node control Plan the session"]');wait('document.querySelector("[data-row-id=plan]").getAttribute("aria-expanded") === "false"');check_alignment()
 click('button[aria-label="Focus subtree Prepare materials"]');check_alignment()
 req('/window/rect',{'width':390,'height':844});load(hierarchy);check_alignment()
 print('Guide/anchor alignment passed at nested levels, with collapse, subtree focus and narrow viewport.')
 
 (ARTIFACTS/'mobile.png').write_bytes(base64.b64decode(req('/screenshot')))
 print('All Firefox regressions passed. Screenshots:',ARTIFACTS)
+
+# Unified control: double-click completes without folding, including after drag.
+req('/window/rect',{'width':1280,'height':900});load(fixture)
+assert js('return document.querySelectorAll("input[type=checkbox], .fold").length')==0
+control='button[aria-label="Node control Alpha"]'
+point=js('const r=document.querySelector(arguments[0]).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}',control)
+req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[
+ {'type':'pointerMove','x':int(point['x']),'y':int(point['y'])},{'type':'pointerDown','button':0},{'type':'pointerUp','button':0},
+ {'type':'pause','duration':80},{'type':'pointerDown','button':0},{'type':'pointerUp','button':0},{'type':'pause','duration':400}]}]})
+assert stored()[0]['done'] is True
+assert js('return document.querySelector("[data-row-id=a]").getAttribute("aria-expanded")')=='true'
+click(control);wait('document.querySelector("[data-row-id=a]").getAttribute("aria-expanded")==="false"')
+# Actions slide over a fixed-height row; other rows keep their position.
+load(fixture)
+positions=js('return [...document.querySelectorAll(".row-shell")].map(e=>({top:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}))')
+click('button[aria-label="Actions for Alpha"]')
+wait('document.querySelector(".row-shell.revealed") !== null')
+req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause','duration':250}]}]})
+assert positions==js('return [...document.querySelectorAll(".row-shell")].map(e=>({top:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}))')
+assert js('return document.querySelector("[data-row-id=a]").getBoundingClientRect().left < document.querySelector(".row-shell").getBoundingClientRect().left')
+(ARTIFACTS/'revealed-actions.png').write_bytes(base64.b64decode(req('/screenshot')))
+button('Move down');assert stored()[1]['id']=='a';assert not stored()[0]['done']
+assert js('return document.querySelector(".row-shell.revealed")') is None
+click('button[aria-label="Actions for Beta"]');keys('\ue00c');assert js('return document.querySelector(".row-shell.revealed")') is None
+print('Unified control double-click/click and fixed-layout slide actions passed.')
+
+load(hierarchy)
+(ARTIFACTS/'unified-controls.png').write_bytes(base64.b64decode(req('/screenshot')))
+req('/window/rect',{'width':500,'height':844});load(fixture)
+click('button[aria-label="Actions for Alpha"]')
+req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause','duration':250}]}]})
+(ARTIFACTS/'revealed-actions-narrow.png').write_bytes(base64.b64decode(req('/screenshot')))
+button('Move down');assert stored()[1]['id']=='a'
+print('Narrow action tray remains usable.')
