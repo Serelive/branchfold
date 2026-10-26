@@ -21,5 +21,6 @@ Current focus: Continue the real-task-tree trial with directory guides and optio
   - [x] QuickFix: protect nonempty titles for the entire Backspace press; verify fresh-press deletion and upward blank-cell repeat deletion
   - [x] QuickFix: accelerate held text Backspace to three characters per repeat; verify Unicode, cell protection, and native undo
   - [x] QuickFeature/QuickFix: offer leaf drawings, thicken plain leaf rings, preserve checked icons, and document the verified implementation
+  - [x] QuickFix: verify standalone outlined leaves, connector-aligned stalks, and transparent leaf cutouts when checked
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

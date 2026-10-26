@@ -66,11 +66,16 @@ nav { padding-top: 16px; font-size: 14px; display: flex; gap: 8px; align-items: 
 .task-anchor.checked .anchor-check { opacity: 1; transform: scale(1); }
 .task-anchor:not(.parent):not(.checked) { border-width: 0; }
 .anchor-leaf { position: absolute; width: 18px; height: 18px; fill: none; stroke: #97ac93; stroke-width: 1.5px; transition: opacity 140ms ease, stroke 140ms ease; }
-.leaf-drawing { display: none; }
+.leaf-drawing, .leaf-completed { display: none; }
 .leaf-drawings .anchor-leaf { stroke-width: 2px; }
-.leaf-drawings .leaf-ring { r: 8px; }
+.leaf-drawings .leaf-ring { display: none; }
 .leaf-drawings .leaf-drawing { display: initial; stroke-linecap: round; stroke-linejoin: round; }
 .task-anchor.checked .anchor-leaf { opacity: 0; }
+.leaf-drawings .task-anchor:not(.parent) { border: 0; background: transparent; }
+.leaf-drawings .task-anchor.checked .anchor-leaf { opacity: 1; }
+.leaf-drawings .task-anchor:not(.parent) .anchor-check,
+.leaf-drawings .task-anchor.checked .leaf-drawing { display: none; }
+.leaf-drawings .task-anchor.checked .leaf-completed { display: initial; fill: #42673e; stroke: none; }
 .drag-handle:hover .anchor-leaf { stroke: #2c513a; }
 .drag-handle:hover .task-anchor { border-color: #2c513a; }
 .drag-handle:active { cursor: grabbing; }

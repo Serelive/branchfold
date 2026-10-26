@@ -1,4 +1,7 @@
-import { useEffect, useRef, type PointerEvent, type PointerEventHandler } from 'react';
+import { useEffect, useId, useRef, type PointerEvent, type PointerEventHandler } from 'react';
+
+const leafOutline = 'M4 9 C5 3 10 5 15 2 C16 9 13 15 8 13 C6 12 5 10 4 9 Z';
+const leafStalk = 'M1 9 H4';
 
 type Props = {
   title: string;
@@ -17,6 +20,7 @@ type Props = {
 };
 
 export default function NodeControl({ title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
+  const leafMask = useId();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const held = useRef(false);
   const pending = useRef(false);
@@ -74,8 +78,21 @@ export default function NodeControl({ title, displayDone, onPreview, expanded, h
     <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${(displayDone) ? 'checked' : ''}`} aria-hidden="true">
       <span className="anchor-inner" />
       {!hasChildren && <svg className="anchor-leaf" viewBox="0 0 18 18" focusable="false">
+        <defs>
+          <mask id={leafMask} maskUnits="userSpaceOnUse" x="0" y="0" width="18" height="18" style={{ maskType: 'luminance' }}>
+            <rect width="18" height="18" fill="white" stroke="none" />
+            <g transform="translate(2.7 2.7) scale(.7)">
+              <path d={leafOutline} fill="black" stroke="none" />
+              <path d={leafStalk} stroke="black" strokeWidth="2" strokeLinecap="round" />
+            </g>
+          </mask>
+        </defs>
         <circle className="leaf-ring" cx="9" cy="9" r="8.25" />
-        <path className="leaf-drawing" d="M6 12 C4 8 7 5 12 5 C13 10 10 13 6 12 Z M6 12 L10 8" />
+        <g className="leaf-drawing">
+          <path d={leafOutline} />
+          <path d={`${leafStalk} M4 9 Q9 10 12 6`} />
+        </g>
+        <circle className="leaf-completed" cx="9" cy="9" r="9" mask={`url(#${leafMask})`} />
       </svg>}
       <span className="anchor-check">✓</span>
     </span>

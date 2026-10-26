@@ -50,7 +50,7 @@ fallbacks when desktop shortcuts conflict.
 
 Use **Directory guides** in the toolbar to switch between indentation guides and directory-style branch connectors. This changes only the view for the current session.
 
-Use **Leaf drawings** to switch unchecked leaf handles from plain rings to rings with a leaf drawing. Checked handles keep their check marks. This preference also lasts for the current session.
+Use **Leaf drawings** to switch leaf handles from plain rings to standalone leaf outlines. In this mode, checked leaves show a filled circle with a transparent leaf cutout; other checked handles keep their check marks. This preference also lasts for the current session.
 
 The **single left control** expands/collapses branches or checks/unchecks leaves on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks act immediately; long-press and drag do not change expansion. An insertion line marks **before** or
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
