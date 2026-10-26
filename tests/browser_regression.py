@@ -323,3 +323,25 @@ button('Directory guides')
 assert js('return document.querySelector(".directory-guides")') is None
 assert stored()==hierarchy
 print('Directory guides preserve geometry, data, folding and subtree focus; switch back passed.')
+
+# Path trunks stay dark through earlier siblings; title highlights are optional.
+load(hierarchy);button('Directory guides');click('[data-node-id=examples]')
+def path_color(id,selector,pseudo=None):
+ return js('return getComputedStyle(document.querySelector(arguments[0]).closest(".branch").querySelector(arguments[1]),arguments[2]).backgroundColor', '[data-row-id='+id+']',selector,pseudo)
+for id in ('plan','slides'):
+ assert path_color(id,':scope > .tree-stem')=='rgb(66, 103, 62)'
+ assert path_color(id,':scope > .tree-junction','::before')=='rgb(66, 103, 62)'
+ assert path_color(id,':scope > .tree-junction','::after')=='rgb(189, 202, 186)'
+for id in ('project','materials'):
+ assert path_color(id,'.title')=='rgb(237, 242, 231)'
+assert path_color('examples','.title')!='rgb(237, 242, 231)'
+assert path_color('examples','.node')=='rgb(237, 242, 231)'
+button('Ancestor titles')
+for id in ('project','materials'):
+ assert path_color(id,'.title')=='rgba(0, 0, 0, 0)'
+assert path_color('slides',':scope > .tree-junction','::before')=='rgb(66, 103, 62)'
+button('Ancestor titles')
+assert path_color('materials','.title')=='rgb(237, 242, 231)'
+assert stored()==hierarchy
+(ARTIFACTS/'ancestor-titles.png').write_bytes(base64.b64decode(req('/screenshot')))
+print('Upper/lower path segments, ancestor-only selection color, and title toggle passed.')

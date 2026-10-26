@@ -23,5 +23,6 @@ Current focus: Continue the real-task-tree trial with highlighted directory path
   - [x] QuickFeature/QuickFix: offer leaf drawings, thicken plain leaf rings, preserve checked icons, and document the verified implementation
   - [x] QuickFix: retain standalone outlined leaves and connector-aligned stalks; restore original checked circle/check marks
   - [x] QuickFeature: highlight selected path connectors, handles, and titles; verify branching and focused views
+  - [x] QuickFix: verify continuous sibling trunks and optional ancestor-only title highlighting
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

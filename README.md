@@ -50,7 +50,7 @@ fallbacks when desktop shortcuts conflict.
 
 Use **Directory guides** in the toolbar to switch between indentation guides and directory-style branch connectors. This changes only the view for the current session.
 
-In Directory guides mode, selecting a task highlights its titles, handles, and connecting route back to the visible root.
+In Directory guides mode, selecting a task darkens its handles and connecting route back to the visible root. **Ancestor titles** toggles ancestor title highlighting in the selection color; the selected task keeps its existing cell highlight.
 
 Use **Leaf drawings** to switch leaf handles from plain rings to standalone leaf outlines. Checked handles keep the filled circle and check mark in both modes. This preference also lasts for the current session.
 

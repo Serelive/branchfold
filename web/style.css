@@ -119,10 +119,11 @@ button[aria-pressed=true]:not(.node-control) { background: #e0e8db; border-color
 
 /* Highlight only the connecting route, including trunks passing earlier siblings. */
 .directory-guides .nodes .nodes > .branch.before-path > .tree-stem,
+.directory-guides .branch.before-path > .tree-junction::before,
 .directory-guides .branch.on-path > .tree-junction::before,
 .directory-guides .branch.on-path > .tree-junction::after,
 .directory-guides .branch.path-ancestor > .row-shell > .node::after { background: #42673e; }
 .directory-guides .branch.on-path > .row-shell .task-anchor { border-color: #2c513a; }
 .directory-guides .branch.on-path > .row-shell .task-anchor.checked { background: #2c513a; }
 .directory-guides .branch.on-path > .row-shell .anchor-leaf { stroke: #2c513a; }
-.directory-guides .branch.on-path > .row-shell .title { color: #253b32; background-color: #f3e6b1; border-radius: 3px; }
+.directory-guides.ancestor-titles .branch.path-ancestor > .row-shell .title { background-color: #edf2e7; border-radius: 3px; }
