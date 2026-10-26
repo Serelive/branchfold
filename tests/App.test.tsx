@@ -342,6 +342,49 @@ it('cancels held completion into a drag without saving a completion or history s
   expect((screen.getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(true);
 });
 
+it('leaf clicks toggle completion and long-press release does not toggle twice', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  const control = screen.getByRole('button', { name: 'Node control Beta' });
+  await user.click(control);
+  expect(control.getAttribute('aria-pressed')).toBe('true');
+  await user.click(control);
+  expect(control.getAttribute('aria-pressed')).toBe('false');
+  await longPress(user, control);
+  expect(control.getAttribute('aria-pressed')).toBe('true');
+  await longPress(user, control);
+  expect(control.getAttribute('aria-pressed')).toBe('false');
+});
+
+it('previews the whole subtree without saving, cancels on drag, and commits as one undo step', async () => {
+  const nodes = [{ id: 'a', title: 'Alpha', done: false, children: [
+    { id: 'c', title: 'Child', done: false, children: [{ id: 'g', title: 'Grandchild', done: true, children: [] }] },
+  ] }, fixture[1]];
+  localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
+  const user = userEvent.setup(); render(<App />);
+  const control = screen.getByRole('button', { name: 'Node control Alpha' });
+  const child = screen.getByRole('button', { name: 'Node control Child' });
+  const grandchild = screen.getByRole('button', { name: 'Node control Grandchild' });
+  await user.pointer({ target: control, keys: '[MouseLeft>]', coords: { clientX: 20, clientY: 20 } });
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
+  expect(child.getAttribute('aria-pressed')).toBe('true');
+  expect(grandchild.getAttribute('aria-pressed')).toBe('true');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
+  await user.pointer({ target: control, coords: { clientX: 21, clientY: 20 } });
+  expect(child.getAttribute('aria-pressed')).toBe('false');
+  expect(grandchild.getAttribute('aria-pressed')).toBe('true');
+  await user.pointer({ keys: '[/MouseLeft]' });
+  expect((screen.getByRole('button', { name: 'Undo' }) as HTMLButtonElement).disabled).toBe(true);
+  await longPress(user, control);
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].children[0].done).toBe(true);
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
+  await user.click(screen.getByRole('button', { name: 'Redo' }));
+  await longPress(user, control);
+  expect(control.getAttribute('aria-pressed')).toBe('false');
+  expect(child.getAttribute('aria-pressed')).toBe('true');
+  expect(grandchild.getAttribute('aria-pressed')).toBe('true');
+});
+
 it('reveals only one action tray and closes it with Escape', async () => {
   seed(); const user = userEvent.setup(); render(<App />);
   expect(screen.queryByRole('group', { name: 'Actions for Alpha' })).toBeNull();

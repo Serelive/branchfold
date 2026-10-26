@@ -48,7 +48,7 @@ Whole-node shortcuts are suppressed during composition. Escape exits editing bef
 Tab is used to reach other controls. Visible actions and the sliding tray provide
 fallbacks when desktop shortcuts conflict.
 
-The **single left control** expands/collapses on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks fold immediately; long-press and drag do not change expansion. An insertion line marks **before** or
+The **single left control** expands/collapses branches or checks/unchecks leaves on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks act immediately; long-press and drag do not change expansion. An insertion line marks **before** or
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
 near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
 be dropped on. **+ Next**, **+ Child**, and **↗** subtree focus are direct
@@ -65,8 +65,8 @@ sibling. View state itself is temporary and resets on reload.
 
 ## Storage and recovery
 
-- Titles save on every edit. Empty titles are allowed. Completion is independent of
-  parent/child completion; moving a node preserves its entire subtree and stable IDs.
+- Titles save on every edit. Empty titles are allowed. Checking a task checks its entire subtree; unchecking affects only that task.
+  Children never automatically complete their parent; moving a node preserves its entire subtree and stable IDs.
 - Undo keeps up to 100 changes in memory. Continuous title editing is grouped until
   focus leaves it; a new edit discards redo. Reloading clears history. Parent deletion
   names the number of descendants before confirmation; Undo recovers the subtree.

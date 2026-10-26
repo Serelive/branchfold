@@ -19,6 +19,14 @@ export function updateNode(forest: Forest, id: string, update: (node: TaskNode) 
   });
 }
 
+// Checking cascades down; reopening changes only the explicitly selected task.
+export function toggleCompletion(forest: Forest, id: string): Forest {
+  const target = findNode(forest, id);
+  if (!target) return forest;
+  const complete = (node: TaskNode): TaskNode => ({ ...node, done: true, children: node.children.map(complete) });
+  return updateNode(forest, id, node => node.done ? { ...node, done: false } : complete(node));
+}
+
 export function parseForest(raw: string): Forest {
   const data: unknown = JSON.parse(raw);
   if (!data || typeof data !== 'object' || !('version' in data) || data.version !== 1 || !('nodes' in data)) {

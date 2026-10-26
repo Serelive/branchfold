@@ -32,7 +32,7 @@ The earlier implementation report's 14 passing tests/build are historical automa
 evidence, not proof that Ubuntu keyboard, drag, or IME behavior works.
 
 The retained foundation includes stable-ID subtree moves with cycle rejection,
-independent completion, deletion and import recovery through session undo/redo,
+explicit completion (updated by the subtree rule below), deletion and import recovery through session undo/redo,
 collapse/subtree views, and validated version 1 JSON persistence/backups. Current
 limits are 100 session-only history steps, 2 MB replacement imports, and single-tab
 usage. Unreadable startup data must remain protected and failed saves must remain
@@ -120,3 +120,5 @@ Navigation Delete remains unchanged. In editing, unmodified Backspace deletes an
 exactly empty title's node; nonempty titles retain normal text editing. Composition
 events must never trigger deletion. Descendants require confirmation, and deletion
 remains recoverable through session undo/redo.
+
+Checking a task explicitly checks its entire subtree; unchecking it preserves descendant states. Leaf handle clicks toggle completion; branch clicks fold. Long-press previews the same completion operation across the subtree, commits on release, and cancels without saving or adding history if movement starts dragging.

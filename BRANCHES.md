@@ -1,6 +1,6 @@
 # Branchfold Development Branches — v3
 
-Current focus: Continue the real-task-tree trial with provisional long-press completion and drag attachment.
+Current focus: Continue the real-task-tree trial with leaf clicks and reversible subtree completion.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [x] Refine the flexible outline editor (v3 N2)
@@ -15,5 +15,6 @@ Current focus: Continue the real-task-tree trial with provisional long-press com
   - [x] QuickFix: animate concentric circle controls, shorten folding delay, and lighten edge actions
   - [x] QuickFix: use a light bold ring when expanded and a dark bold ring when folded
   - [x] QuickFix: preview completion on hold, commit on release, or cancel into dragging on movement; clicks still fold
+  - [x] QuickFix: leaf clicks toggle completion; checking cascades down, unchecking preserves descendants, and drag cancels subtree previews
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

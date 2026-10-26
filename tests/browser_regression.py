@@ -268,3 +268,35 @@ req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause',
 (ARTIFACTS/'revealed-actions-narrow.png').write_bytes(base64.b64decode(req('/screenshot')))
 button('Move down');assert stored()[1]['id']=='a'
 print('Narrow action tray remains usable.')
+
+# Leaf clicks toggle; held subtree completion previews and commits atomically.
+subtree=[{'id':'a','title':'Alpha','done':False,'children':[
+ {'id':'c','title':'Child','done':False,'children':[
+  {'id':'g','title':'Grandchild','done':True,'children':[]}]}]},fixture[1]]
+load(subtree)
+leaf='button[aria-label="Node control Beta"]'
+click(leaf);assert stored()[1]['done'] is True
+click(leaf);assert stored()==subtree
+control='button[aria-label="Node control Alpha"]'
+def hold_control():
+ js('document.querySelector(arguments[0]).scrollIntoView({block:"center"})',control)
+ expected='false' if stored()[0]['done'] else 'true'
+ p=js('const r=document.querySelector(arguments[0]).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}',control)
+ req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[
+  {'type':'pointerMove','x':int(p['x']),'y':int(p['y'])},{'type':'pointerDown','button':0},{'type':'pause','duration':650}]}]})
+ wait('document.querySelector(\'button[aria-label="Node control Alpha"]\').getAttribute("aria-pressed") === '+json.dumps(expected))
+def release_control():
+ req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[{'type':'pointerUp','button':0}]}]})
+hold_control()
+assert js('return document.querySelector("button[aria-label=\\"Node control Child\\"]").getAttribute("aria-pressed")')=='true'
+assert js('return document.querySelector("[data-row-id=c]").classList.contains("done")')
+assert stored()==subtree
+keys('\ue00c');release_control();assert stored()==subtree
+assert js('return document.querySelector("button[aria-label=\\"Node control Child\\"]").getAttribute("aria-pressed")')=='false'
+hold_control();release_control()
+assert stored()[0]['done'] and stored()[0]['children'][0]['done']
+hold_control();release_control()
+assert not stored()[0]['done'] and stored()[0]['children'][0]['done']
+req('/refresh',{});wait('document.querySelector("main") !== null')
+assert not stored()[0]['done'] and stored()[0]['children'][0]['done']
+print('Leaf clicks, descendant previews, cancellation, commit, reopen and reload passed.')

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addNode, updateNode, parseForest, serializeForest } from '../web/tree';
+import { addNode, updateNode, toggleCompletion, parseForest, serializeForest } from '../web/tree';
 import { loadForest, saveForest, STORAGE_KEY } from '../web/storage';
 
 describe('task tree', () => {
@@ -13,13 +13,20 @@ describe('task tree', () => {
     expect(next[0].children[0].title).toBe('');
     expect(parseForest(serializeForest(renamed))).toEqual(renamed);
   });
-  it('completes and reopens nodes independently of parents and children', () => {
-    const forest = addNode(addNode([], null, 'root'), 'root', 'child');
-    const completed = updateNode(forest, 'child', n => ({ ...n, done: true }));
-    expect(completed[0].done).toBe(false);
+  it('checks the entire subtree but reopens only the selected node', () => {
+    const forest = addNode(addNode(addNode(addNode([], null, 'root'), 'root', 'child'), 'child', 'grandchild'), null, 'other');
+    const partiallyDone = toggleCompletion(forest, 'grandchild');
+    expect(partiallyDone[0].done).toBe(false);
+    const completed = toggleCompletion(partiallyDone, 'root');
+    expect(completed[0].done).toBe(true);
     expect(completed[0].children[0].done).toBe(true);
-    expect(updateNode(completed, 'child', n => ({ ...n, done: false }))).toEqual(forest);
-    expect(updateNode(forest, 'root', n => ({ ...n, done: true }))[0].children[0].done).toBe(false);
+    expect(completed[0].children[0].children[0].done).toBe(true);
+    expect(completed[1].done).toBe(false);
+    const reopened = toggleCompletion(completed, 'root');
+    expect(reopened[0].done).toBe(false);
+    expect(reopened[0].children).toEqual(completed[0].children);
+    expect(partiallyDone[0].children[0].done).toBe(false);
+    expect(toggleCompletion(forest, 'missing')).toBe(forest);
   });
   it('rejects malformed, unsupported, and duplicate-ID data', () => {
     for (const raw of ['{', '{"version":2,"nodes":[]}', '{"version":1,"nodes":[{}]}',

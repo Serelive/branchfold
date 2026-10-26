@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type PointerEvent, type PointerEventHandler } from 'react';
+import { useEffect, useRef, type PointerEvent, type PointerEventHandler } from 'react';
 
 type Props = {
   title: string;
-  done: boolean;
+  displayDone: boolean;
+  onPreview: (active: boolean) => void;
   expanded: boolean;
   hasChildren: boolean;
   setExpanded: (expanded: boolean) => void;
@@ -15,24 +16,25 @@ type Props = {
   onLostPointerCapture: PointerEventHandler<HTMLButtonElement>;
 };
 
-export default function NodeControl({ title, done, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
+export default function NodeControl({ title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const held = useRef(false);
   const pending = useRef(false);
   const position = useRef({ x: 0, y: 0 });
-  const [previewDone, setPreviewDone] = useState<boolean | null>(null);
-  const cancelPreview = () => { pending.current = false; setPreviewDone(null); };
+  const previewCallback = useRef(onPreview);
+  previewCallback.current = onPreview;
+  const cancelPreview = () => { pending.current = false; previewCallback.current(false); };
   const clearPress = () => { if (timer.current !== null) clearTimeout(timer.current); timer.current = null; };
   useEffect(() => {
     const cancel = () => { clearPress(); cancelPreview(); held.current = true; };
     const keyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') cancel(); };
     window.addEventListener('blur', cancel);
     window.addEventListener('keydown', keyDown);
-    return () => { clearPress(); window.removeEventListener('blur', cancel); window.removeEventListener('keydown', keyDown); };
+    return () => { clearPress(); previewCallback.current(false); window.removeEventListener('blur', cancel); window.removeEventListener('keydown', keyDown); };
   }, []);
   return <button className="drag-handle node-control" aria-label={`Node control ${title}`}
-    aria-pressed={previewDone ?? done} aria-expanded={hasChildren ? expanded : undefined}
-    title="Click: expand/collapse · Long-press: complete/reopen · Drag: move"
+    aria-pressed={displayDone} aria-expanded={hasChildren ? expanded : undefined}
+    title={`${hasChildren ? 'Click: expand/collapse' : 'Click: complete/reopen'} · Long-press: preview completion · Release: confirm · Drag: move`}
     onPointerDown={event => {
       if (event.button !== 0 || event.isPrimary === false) return;
       clearPress(); cancelPreview(); held.current = false;
@@ -43,7 +45,7 @@ export default function NodeControl({ title, done, expanded, hasChildren, setExp
         if (ignoreClick()) return;
         held.current = true;
         pending.current = true;
-        setPreviewDone(!done);
+        previewCallback.current(true);
       }, 500);
     }}
     onPointerMove={event => {
@@ -67,8 +69,9 @@ export default function NodeControl({ title, done, expanded, hasChildren, setExp
     onClick={event => {
       if (event.detail !== 0 && (held.current || ignoreClick())) return;
       if (hasChildren) setExpanded(!expanded);
+      else toggleDone();
     }}>
-    <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${(previewDone ?? done) ? 'checked' : ''}`} aria-hidden="true">
+    <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${(displayDone) ? 'checked' : ''}`} aria-hidden="true">
       <span className="anchor-inner" />
       <span className="anchor-check">✓</span>
     </span>
