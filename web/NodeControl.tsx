@@ -32,7 +32,7 @@ export default function NodeControl({ title, done, expanded, hasChildren, setExp
       timer.current = setTimeout(() => {
         timer.current = null;
         if (!ignoreClick() && hasChildren) setExpanded(!firstExpanded.current);
-      }, 300);
+      }, 150);
     }}
     onDoubleClick={() => {
       clearClick(); if (ignoreClick()) return;
@@ -40,6 +40,9 @@ export default function NodeControl({ title, done, expanded, hasChildren, setExp
       if (hasChildren) setExpanded(firstExpanded.current);
       toggleDone();
     }}>
-    <span className={`task-anchor ${done ? 'checked' : ''}`} aria-hidden="true">{done ? '✓' : hasChildren ? (expanded ? '▾' : '▸') : '•'}</span>
+    <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${done ? 'checked' : ''}`} aria-hidden="true">
+      <span className="anchor-inner" />
+      <span className="anchor-check">✓</span>
+    </span>
   </button>;
 }

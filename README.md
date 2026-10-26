@@ -52,7 +52,7 @@ The **single left control** expands/collapses on click, toggles completion on do
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
 near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
 be dropped on. **+ Next**, **+ Child**, and **↗** subtree focus are direct
-row controls. Tap the **dark right edge** to slide a row left and reveal reorder,
+row controls. Tap the **right-edge arrow** to slide a row left and reveal reorder,
 indent/outdent, parent selection, and deletion actions behind it. This does not move
 other rows. Tap the edge again or press Escape to close; opening another row closes
 the previous tray.

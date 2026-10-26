@@ -17,7 +17,7 @@ button:hover { background: #edf2e7; }
 button:focus-visible, input:focus-visible { outline: 2px solid #42744b; outline-offset: 3px; }
 .primary { background: #2c513a; color: white; border-color: #2c513a; margin-top: 22px; }
 .primary:hover { background: #3c664b; }
-.nodes { --indent: 28px; --anchor-x: 12px; list-style: none; padding: 0; margin: 18px 0 0; }
+.nodes { --indent: 28px; --anchor-x: 18px; list-style: none; padding: 0; margin: 18px 0 0; }
 /* Each sibling group's guide shares the center of its 24px drag anchors. */
 .nodes .nodes { position: relative; margin: 0 0 0 var(--indent); padding: 0; }
 .nodes .nodes::before { content: ''; position: absolute; top: 0; bottom: 6px; left: calc(var(--anchor-x) - 1px); width: 2px; background: #bdcaba; pointer-events: none; }
@@ -51,9 +51,16 @@ nav { padding-top: 16px; font-size: 14px; display: flex; gap: 8px; align-items: 
 .title[readonly] { cursor: text; }
 .title:not([readonly]) { background: #fff; box-shadow: inset 0 -2px #66846c; }
 .row-action { border-color: transparent; font-size: 12px; padding: 6px; color: #506c57; }
-.drag-handle { position: relative; z-index: 1; flex: 0 0 24px; width: 24px; height: 28px; border: 0; padding: 0; display: grid; place-items: center; cursor: grab; touch-action: none; border-radius: 50%; }
-.task-anchor { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #fffefa; border: 1px solid #97ac93; color: #466642; font-size: 14px; line-height: 1; pointer-events: none; }
-.task-anchor.checked { background: #42673e; border-color: #42673e; color: white; font-size: 12px; }
+.drag-handle { position: relative; z-index: 1; flex: 0 0 24px; width: 24px; height: 24px; margin-left: 6px; border: 0; padding: 0; display: grid; place-items: center; cursor: grab; touch-action: none; border-radius: 50%; transition: background-color 140ms ease; }
+.drag-handle:hover { background: #dce6d6; }
+.task-anchor { position: relative; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #fffefa; border: 1px solid #97ac93; color: white; pointer-events: none; transition: border-color 140ms ease, border-width 140ms ease, background-color 140ms ease; }
+.task-anchor.parent.folded { border-width: 3px; border-color: #577450; }
+.anchor-inner { position: absolute; width: 10px; height: 10px; border: 1px solid #97ac93; border-radius: 50%; opacity: 0; transform: scale(.6); transition: opacity 140ms ease, transform 140ms ease; }
+.task-anchor.parent .anchor-inner { opacity: 1; transform: scale(1); }
+.anchor-check { position: absolute; font-size: 12px; line-height: 1; opacity: 0; transform: scale(.6); transition: opacity 140ms ease, transform 140ms ease; }
+.task-anchor.checked { background: #42673e; border-color: #42673e; }
+.task-anchor.checked .anchor-inner { opacity: 0; transform: scale(.6); }
+.task-anchor.checked .anchor-check { opacity: 1; transform: scale(1); }
 .drag-handle:hover .task-anchor { border-color: #2c513a; }
 .drag-handle:active { cursor: grabbing; }
 .dragging { opacity: .45; }
@@ -75,10 +82,10 @@ nav button[aria-current] { font-weight: 700; border-color: #66846c; }
 .row-shell > .node { width: 100%; background-color: transparent; z-index: 1; transition: transform 180ms ease; }
 .row-shell > .node.active { background-color: #edf2e7; }
 .row-shell.revealed > .node { background-color: #fffefa; transform: translateX(calc(-1 * var(--reveal-width))); }
-.actions-trigger { align-self: stretch; flex: 0 0 28px; border: 0; border-radius: 5px 0 0 5px; background: #354e3d; color: white; font-size: 20px; padding: 0; }
-.actions-trigger:hover { background: #243c2b; }
+.actions-trigger { align-self: stretch; flex: 0 0 28px; border: 0; border-radius: 5px 0 0 5px; background: transparent; color: #60725f; font-size: 20px; padding: 0; }
+.actions-trigger:hover { background: transparent; color: #253b32; }
 .action-panel { position: absolute; z-index: 0; right: 0; top: 0; bottom: 0; width: var(--reveal-width); display: flex; align-items: center; gap: 5px; padding: 5px; background: #e0e8db; overflow-x: auto; visibility: hidden; }
 .row-shell.revealed .action-panel { visibility: visible; }
 .action-panel button { flex-shrink: 0; padding: 7px 6px; background: #fffefa; }
 .action-panel select { flex: 1 0 90px; min-width: 0; max-width: 160px; padding: 7px 3px; font: inherit; font-size: 12px; }
-@media (prefers-reduced-motion: reduce) { .row-shell > .node { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .row-shell > .node, .drag-handle, .task-anchor, .anchor-inner, .anchor-check { transition: none; } }
