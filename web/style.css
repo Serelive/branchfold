@@ -100,6 +100,8 @@ nav button[aria-current] { font-weight: 700; border-color: #66846c; }
 .directory-guides .branch > .row-shell { grid-area: 1 / 1; }
 .directory-guides .branch > .nodes { grid-area: 2 / 1; }
 .directory-guides .branch > .drop-tail { grid-area: 3 / 1; }
+/* Continue the child trunk through its parent's row, leaving a 3px circle gap. */
+.directory-guides .node[aria-expanded=true]::after { content: ''; position: absolute; left: calc(var(--anchor-x) - 1px); top: calc(50% + 12px); bottom: -1px; width: 2px; background: #bdcaba; pointer-events: none; }
 .directory-guides .nodes .nodes > .branch > .tree-junction { display: block; grid-area: 1 / 1; position: relative; width: 0; }
 .directory-guides .tree-junction::before { content: ''; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: 0; bottom: 50%; width: 2px; background: #bdcaba; }
 .directory-guides .tree-junction::after { content: ''; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: calc(50% - 1px); width: calc(var(--indent) - var(--anchor-x) + 7px); height: 2px; background: #bdcaba; }
