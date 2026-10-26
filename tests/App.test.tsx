@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within, fireEvent, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, within, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '../web/App';
 import { STORAGE_KEY } from '../web/storage';
@@ -26,14 +26,14 @@ it('creates, renames, completes, restores and reopens a nested tree', async () =
   await user.type(child, 'Draft');
   await user.clear(child);
   await user.type(child, 'Write draft');
-  await user.dblClick(screen.getByRole('button', { name: 'Node control Write draft' }));
+  await longPress(user, screen.getByRole('button', { name: 'Node control Write draft' }));
   expect(screen.getByRole('button', { name: 'Node control Launch' }).getAttribute("aria-pressed")).toBe("false");
   view.unmount();
   render(<App />);
   expect(screen.getAllByRole('textbox').map(n => (n as HTMLInputElement).value)).toEqual(['Launch', 'Write draft']);
   const restored = screen.getByRole('button', { name: 'Node control Write draft' }) as HTMLInputElement;
   expect(restored.getAttribute("aria-pressed")).toBe("true");
-  await user.dblClick(restored);
+  await longPress(user, restored);
   expect(restored.getAttribute("aria-pressed")).toBe("false");
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].children[0].done).toBe(false);
 });
@@ -148,7 +148,7 @@ it('groups title editing for undo, clears redo on a new edit, and persists the r
   await user.click(screen.getByRole('button', { name: 'Redo' }));
   expect(screen.getByDisplayValue('Renamed objective')).toBeTruthy();
   await user.click(screen.getByRole('button', { name: 'Undo' }));
-  await user.dblClick(screen.getByRole('button', { name: 'Node control Alpha' }));
+  await longPress(user, screen.getByRole('button', { name: 'Node control Alpha' }));
   expect((screen.getByRole('button', { name: 'Redo' }) as HTMLButtonElement).disabled).toBe(true);
   view.unmount(); render(<App />);
   expect(screen.getByRole('button', { name: 'Node control Alpha' }).getAttribute("aria-pressed")).toBe("true");
@@ -199,7 +199,7 @@ it('preserves subtree context and collapsed branches across outdent and undo', a
   expect(screen.getByDisplayValue('Child')).toBeTruthy();
   expect(screen.queryByDisplayValue('Beta')).toBeNull();
   await fold(user, 'Alpha', false);
-  await user.dblClick(screen.getByRole('button', { name: 'Node control Alpha' }));
+  await longPress(user, screen.getByRole('button', { name: 'Node control Alpha' }));
   await user.click(screen.getByRole('button', { name: 'Undo' }));
   expect(screen.queryByDisplayValue('Child')).toBeNull();
 });
@@ -222,7 +222,7 @@ it('imports into an empty forest without replacement wording and supports cancel
 
 it('reorders from node-control focus and keeps a visible selection when collapsing its ancestor', async () => {
   seed(); const user = userEvent.setup(); render(<App />);
-  await user.dblClick(screen.getByRole('button', { name: 'Node control Beta' }));
+  await longPress(user, screen.getByRole('button', { name: 'Node control Beta' }));
   await user.keyboard('{Control>}{ArrowUp}{/Control}');
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].id).toBe('b');
   await user.click(screen.getByRole('treeitem', { name: 'Child' }));
@@ -291,23 +291,37 @@ it('directly deletes a nonempty selected subtree with navigation Backspace and s
   expect(screen.queryByDisplayValue('Alpha')).toBeNull();
 });
 
+async function longPress(user: ReturnType<typeof userEvent.setup>, target: HTMLElement) {
+  await user.pointer({ target, keys: '[MouseLeft>]' });
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
+  await user.pointer({ keys: '[/MouseLeft]' });
+}
+
 async function fold(user: ReturnType<typeof userEvent.setup>, title: string, expanded: boolean) {
   await user.click(screen.getByRole('button', { name: `Node control ${title}` }));
   await waitFor(() => expect(screen.getByRole('button', { name: `Node control ${title}` }).getAttribute('aria-expanded')).toBe(String(expanded)));
 }
 
-it('uses a single left control without letting double-click change expansion', async () => {
+it('long-press checks and unchecks without folding, while clicks fold immediately', async () => {
   seed(); const user = userEvent.setup(); render(<App />);
-  expect(screen.queryByRole('checkbox')).toBeNull();
   const control = screen.getByRole('button', { name: 'Node control Alpha' });
-  await user.dblClick(control);
-  expect(control.getAttribute('aria-pressed')).toBe('true');
-  expect(control.getAttribute('aria-expanded')).toBe('true');
-  expect(screen.getByDisplayValue('Child')).toBeTruthy();
-  await fold(user, 'Alpha', false);
+  for (const done of ['true', 'false']) {
+    await user.pointer({ target: control, keys: '[MouseLeft>]' });
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
+    expect(control.getAttribute('aria-pressed')).toBe(done);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 100)); });
+    expect(control.getAttribute('aria-pressed')).toBe(done);
+    await user.pointer({ keys: '[/MouseLeft]' });
+    expect(control.getAttribute('aria-expanded')).toBe('true');
+  }
+  await user.click(control);
+  expect(control.getAttribute('aria-expanded')).toBe('false');
   await user.dblClick(control);
   expect(control.getAttribute('aria-pressed')).toBe('false');
-  expect(control.getAttribute('aria-expanded')).toBe('false');
+  await user.pointer({ target: control, keys: '[MouseLeft>]' });
+  fireEvent.pointerCancel(control);
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 550)); });
+  expect(control.getAttribute('aria-pressed')).toBe('false');
 });
 
 it('reveals only one action tray and closes it with Escape', async () => {

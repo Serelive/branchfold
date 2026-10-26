@@ -17,28 +17,42 @@ type Props = {
 
 export default function NodeControl({ title, done, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const firstExpanded = useRef(expanded);
-  const clearClick = () => { if (timer.current !== null) clearTimeout(timer.current); timer.current = null; };
-  useEffect(() => () => { if (timer.current !== null) clearTimeout(timer.current); }, []);
-  return <button {...pointerHandlers} className="drag-handle node-control" aria-label={`Node control ${title}`}
+  const held = useRef(false);
+  const clearPress = () => { if (timer.current !== null) clearTimeout(timer.current); timer.current = null; };
+  useEffect(() => {
+    const cancel = () => { clearPress(); held.current = true; };
+    const keyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') cancel(); };
+    window.addEventListener('blur', cancel);
+    window.addEventListener('keydown', keyDown);
+    return () => { clearPress(); window.removeEventListener('blur', cancel); window.removeEventListener('keydown', keyDown); };
+  }, []);
+  return <button className="drag-handle node-control" aria-label={`Node control ${title}`}
     aria-pressed={done} aria-expanded={hasChildren ? expanded : undefined}
-    title="Click: expand/collapse · Double-click: complete/reopen · Drag: move"
-    onClick={event => {
-      // Keyboard activation has no double-click ambiguity.
-      if (event.detail === 0) { clearClick(); if (hasChildren) setExpanded(!expanded); return; }
-      if (ignoreClick()) { clearClick(); return; }
-      if (event.detail !== 1) return;
-      clearClick(); firstExpanded.current = expanded;
+    title="Click: expand/collapse · Long-press: complete/reopen · Drag: move"
+    onPointerDown={event => {
+      if (event.button !== 0 || event.isPrimary === false) return;
+      clearPress(); held.current = false;
+      pointerHandlers.onPointerDown(event);
       timer.current = setTimeout(() => {
         timer.current = null;
-        if (!ignoreClick() && hasChildren) setExpanded(!firstExpanded.current);
-      }, 150);
+        if (ignoreClick()) return;
+        held.current = true;
+        pointerHandlers.onPointerCancel(event);
+        toggleDone();
+      }, 500);
     }}
-    onDoubleClick={() => {
-      clearClick(); if (ignoreClick()) return;
-      // Also restore the original view for slower OS double-click intervals.
-      if (hasChildren) setExpanded(firstExpanded.current);
-      toggleDone();
+    onPointerMove={event => {
+      if (held.current) return;
+      pointerHandlers.onPointerMove(event);
+      if (ignoreClick()) clearPress();
+    }}
+    onPointerUp={event => { clearPress(); pointerHandlers.onPointerUp(event); }}
+    onPointerCancel={event => { clearPress(); held.current = true; pointerHandlers.onPointerCancel(event); }}
+    onLostPointerCapture={event => { clearPress(); pointerHandlers.onLostPointerCapture(event); }}
+    onContextMenu={event => event.preventDefault()}
+    onClick={event => {
+      if (event.detail !== 0 && (held.current || ignoreClick())) return;
+      if (hasChildren) setExpanded(!expanded);
     }}>
     <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${done ? 'checked' : ''}`} aria-hidden="true">
       <span className="anchor-inner" />

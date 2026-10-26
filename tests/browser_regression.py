@@ -217,14 +217,14 @@ print('Guide/anchor alignment passed at nested levels, with collapse, subtree fo
 (ARTIFACTS/'mobile.png').write_bytes(base64.b64decode(req('/screenshot')))
 print('All Firefox regressions passed. Screenshots:',ARTIFACTS)
 
-# Unified control: double-click completes without folding, including after drag.
+# Unified control: long-press completes without folding, including after drag.
 req('/window/rect',{'width':1280,'height':900});load(fixture)
 assert js('return document.querySelectorAll("input[type=checkbox], .fold").length')==0
 control='button[aria-label="Node control Alpha"]'
 point=js('const r=document.querySelector(arguments[0]).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}',control)
 req('/actions',{'actions':[{'type':'pointer','id':'mouse','parameters':{'pointerType':'mouse'},'actions':[
- {'type':'pointerMove','x':int(point['x']),'y':int(point['y'])},{'type':'pointerDown','button':0},{'type':'pointerUp','button':0},
- {'type':'pause','duration':80},{'type':'pointerDown','button':0},{'type':'pointerUp','button':0},{'type':'pause','duration':400}]}]})
+ {'type':'pointerMove','x':int(point['x']),'y':int(point['y'])},{'type':'pointerDown','button':0},
+ {'type':'pause','duration':650},{'type':'pointerUp','button':0},{'type':'pause','duration':100}]}]})
 assert stored()[0]['done'] is True
 assert js('return document.querySelector("[data-row-id=a]").getAttribute("aria-expanded")')=='true'
 click(control);wait('document.querySelector("[data-row-id=a]").getAttribute("aria-expanded")==="false"')
@@ -240,7 +240,7 @@ assert js('return document.querySelector("[data-row-id=a]").getBoundingClientRec
 button('Move down');assert stored()[1]['id']=='a';assert not stored()[0]['done']
 assert js('return document.querySelector(".row-shell.revealed")') is None
 click('button[aria-label="Actions for Beta"]');keys('\ue00c');assert js('return document.querySelector(".row-shell.revealed")') is None
-print('Unified control double-click/click and fixed-layout slide actions passed.')
+print('Unified control long-press/click and fixed-layout slide actions passed.')
 
 load(hierarchy)
 (ARTIFACTS/'unified-controls.png').write_bytes(base64.b64decode(req('/screenshot')))
