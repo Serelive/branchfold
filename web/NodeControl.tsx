@@ -73,6 +73,10 @@ export default function NodeControl({ title, displayDone, onPreview, expanded, h
     }}>
     <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${(displayDone) ? 'checked' : ''}`} aria-hidden="true">
       <span className="anchor-inner" />
+      {!hasChildren && <svg className="anchor-leaf" viewBox="0 0 18 18" focusable="false">
+        <circle className="leaf-ring" cx="9" cy="9" r="8.25" />
+        <path className="leaf-drawing" d="M6 12 C4 8 7 5 12 5 C13 10 10 13 6 12 Z M6 12 L10 8" />
+      </svg>}
       <span className="anchor-check">✓</span>
     </span>
   </button>;

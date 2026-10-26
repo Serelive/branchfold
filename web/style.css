@@ -64,6 +64,14 @@ nav { padding-top: 16px; font-size: 14px; display: flex; gap: 8px; align-items: 
 .task-anchor.checked { background: #42673e; border-color: #42673e; }
 .task-anchor.checked .anchor-inner { opacity: 0; transform: scale(.6); }
 .task-anchor.checked .anchor-check { opacity: 1; transform: scale(1); }
+.task-anchor:not(.parent):not(.checked) { border-width: 0; }
+.anchor-leaf { position: absolute; width: 18px; height: 18px; fill: none; stroke: #97ac93; stroke-width: 1.5px; transition: opacity 140ms ease, stroke 140ms ease; }
+.leaf-drawing { display: none; }
+.leaf-drawings .anchor-leaf { stroke-width: 2px; }
+.leaf-drawings .leaf-ring { r: 8px; }
+.leaf-drawings .leaf-drawing { display: initial; stroke-linecap: round; stroke-linejoin: round; }
+.task-anchor.checked .anchor-leaf { opacity: 0; }
+.drag-handle:hover .anchor-leaf { stroke: #2c513a; }
 .drag-handle:hover .task-anchor { border-color: #2c513a; }
 .drag-handle:active { cursor: grabbing; }
 .dragging { opacity: .45; }
@@ -91,7 +99,7 @@ nav button[aria-current] { font-weight: 700; border-color: #66846c; }
 .row-shell.revealed .action-panel { visibility: visible; }
 .action-panel button { flex-shrink: 0; padding: 7px 6px; background: #fffefa; }
 .action-panel select { flex: 1 0 90px; min-width: 0; max-width: 160px; padding: 7px 3px; font: inherit; font-size: 12px; }
-@media (prefers-reduced-motion: reduce) { .row-shell > .node, .drag-handle, .task-anchor, .anchor-inner, .anchor-check { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .row-shell > .node, .drag-handle, .task-anchor, .anchor-inner, .anchor-check, .anchor-leaf { transition: none; } }
 
 /* Directory connectors occupy the existing gutter, without moving row contents. */
 .tree-stem, .tree-junction { display: none; pointer-events: none; }

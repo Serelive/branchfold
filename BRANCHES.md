@@ -1,6 +1,6 @@
 # Branchfold Development Branches — v3
 
-Current focus: Continue the real-task-tree trial with switchable directory guides.
+Current focus: Continue the real-task-tree trial with directory guides and optional leaf drawings.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [x] Refine the flexible outline editor (v3 N2)
@@ -20,5 +20,6 @@ Current focus: Continue the real-task-tree trial with switchable directory guide
   - [x] QuickFix: match downward and incoming directory connector gaps at 3px; verify desktop/narrow layouts and folding
   - [x] QuickFix: protect nonempty titles for the entire Backspace press; verify fresh-press deletion and upward blank-cell repeat deletion
   - [x] QuickFix: accelerate held text Backspace to three characters per repeat; verify Unicode, cell protection, and native undo
+  - [x] QuickFeature/QuickFix: offer leaf drawings, thicken plain leaf rings, preserve checked icons, and document the verified implementation
 - [ ] Evaluate the revised editor with a real task tree
 - [ ] Add planning and verification states (future)

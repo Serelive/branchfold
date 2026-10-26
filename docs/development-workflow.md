@@ -23,6 +23,10 @@ explicit request.
 
 ## Review references and archival
 
+QuickFix requests use direct implementation without a report or review gate.
+QuickFeature requests also skip reports, but retain a concise implementation
+document for future reference, updated with behavior, relevant code, and validation.
+
 Development is currently at **version 3** (the interaction revision has been reviewed). This review
 version is independent of package versions and the version 1 JSON storage format.
 A node reference belongs to a particular development version; an unqualified node
