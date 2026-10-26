@@ -6,4 +6,6 @@ In Directory guides mode, the selected node and every visible ancestor receive d
 
 Selection uses the existing keyboard, pointer and editing focus behavior. Highlighting changes no task data or history. It supports plain rings, leaf drawings, checked nodes and collapsed branches; a selected collapsed branch highlights only its incoming path.
 
+Pale horizontal arms at earlier siblings start at the right edge of the 2px dark trunk, with their width shortened by 2px to preserve the endpoint. This prevents the arm from overpainting a tiny strip across the highlighted vertical line. The junction fix was visually checked in Firefox and passed the focused browser regression and production build.
+
 Validation: all 33 automated tests and production build pass. A focused Firefox regression covers both upper and lower trunk segments at siblings of ancestors and the selected node, ancestor-only coloring, and the title toggle. Firefox verified trunk continuity through an earlier expanded sibling, isolated sibling styling, the stopping point, title highlighting, focused views, mode switching and unchanged stored data; desktop and narrow screenshots inspected.
