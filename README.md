@@ -48,6 +48,8 @@ Whole-node shortcuts are suppressed during composition. Escape exits editing bef
 Tab is used to reach other controls. Visible actions and the sliding tray provide
 fallbacks when desktop shortcuts conflict.
 
+Use **Directory guides** in the toolbar to switch between indentation guides and directory-style branch connectors. This changes only the view for the current session.
+
 The **single left control** expands/collapses branches or checks/unchecks leaves on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks act immediately; long-press and drag do not change expansion. An insertion line marks **before** or
 **after the target's entire subtree**; a highlighted row marks **inside**. Holding
 near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot

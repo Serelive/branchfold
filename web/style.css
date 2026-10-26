@@ -92,3 +92,16 @@ nav button[aria-current] { font-weight: 700; border-color: #66846c; }
 .action-panel button { flex-shrink: 0; padding: 7px 6px; background: #fffefa; }
 .action-panel select { flex: 1 0 90px; min-width: 0; max-width: 160px; padding: 7px 3px; font: inherit; font-size: 12px; }
 @media (prefers-reduced-motion: reduce) { .row-shell > .node, .drag-handle, .task-anchor, .anchor-inner, .anchor-check { transition: none; } }
+
+/* Directory connectors occupy the existing gutter, without moving row contents. */
+.tree-stem, .tree-junction { display: none; pointer-events: none; }
+.directory-guides .nodes .nodes::before { display: none; }
+.directory-guides .branch { display: grid; grid-template-columns: minmax(0, 1fr); }
+.directory-guides .branch > .row-shell { grid-area: 1 / 1; }
+.directory-guides .branch > .nodes { grid-area: 2 / 1; }
+.directory-guides .branch > .drop-tail { grid-area: 3 / 1; }
+.directory-guides .nodes .nodes > .branch > .tree-junction { display: block; grid-area: 1 / 1; position: relative; width: 0; }
+.directory-guides .tree-junction::before { content: ''; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: 0; bottom: 50%; width: 2px; background: #bdcaba; }
+.directory-guides .tree-junction::after { content: ''; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: calc(50% - 1px); width: calc(var(--indent) - var(--anchor-x) + 7px); height: 2px; background: #bdcaba; }
+.directory-guides .nodes .nodes > .branch:not(:last-child) > .tree-stem { display: block; position: absolute; left: calc(var(--anchor-x) - var(--indent) - 1px); top: 0; bottom: 0; width: 2px; background: #bdcaba; }
+button[aria-pressed=true]:not(.node-control) { background: #e0e8db; border-color: #66846c; }

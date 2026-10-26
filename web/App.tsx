@@ -19,6 +19,7 @@ export default function App() {
     catch { return { nodes: [] as Forest, error: true }; }
   });
   const [forest, setForest] = useState(initial.nodes);
+  const [directoryGuides, setDirectoryGuides] = useState(false);
   const [completionPreview, setCompletionPreview] = useState<string | null>(null);
   const [past, setPast] = useState<Snapshot[]>([]);
   const [future, setFuture] = useState<Snapshot[]>([]);
@@ -293,6 +294,8 @@ export default function App() {
       const actionsOpen = actionsId === node.id;
       const act = (action: () => void) => { setActionsId(null); action(); };
       return <li key={node.id} role="none" className={`branch ${preview}`}>
+        <span className="tree-stem" aria-hidden="true" />
+        <span className="tree-junction" aria-hidden="true" />
         <div className={`row-shell ${actionsOpen ? 'revealed' : ''}`}>
         <div role="treeitem" aria-label={label} aria-level={level} aria-selected={selectedId === node.id}
           aria-expanded={node.children.length ? !closed : undefined} data-row-id={node.id}
@@ -349,8 +352,9 @@ export default function App() {
     <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">LOCAL PROTOTYPE</span></header>
     <section className="intro"><p className="eyebrow">A LITTLE STRUCTURE. ROOM TO CHANGE.</p><h1>Make room for the next step.</h1><p>A living task tree for plans that evolve with action.</p></section>
     {initial.error ? <section role="alert" className="warning"><h2>Your saved tree could not be opened.</h2><p>Editing is paused to protect existing data. Storage may be unavailable, or the saved format may be invalid. No data has been overwritten. Restore browser storage access or recover the original data before reloading.</p></section> : <>
-      <section className={`workspace ${draggedId ? 'is-dragging' : ''}`} aria-label="Task tree" ref={editor}>
+      <section className={`workspace ${directoryGuides ? 'directory-guides' : ''} ${draggedId ? 'is-dragging' : ''}`} aria-label="Task tree" ref={editor}>
         <div className="toolbar"><h2>Your task tree</h2><div className="toolbar-buttons">
+            <button aria-pressed={directoryGuides} onClick={() => setDirectoryGuides(current => !current)}>Directory guides</button>
           <button disabled={!past.length} onClick={() => restore('undo')}>Undo</button><button disabled={!future.length} onClick={() => restore('redo')}>Redo</button>
           <button onClick={() => download(serializeForest(forest))}>Export JSON</button><button onClick={() => fileInput.current?.click()}>Import JSON</button>
           <input ref={fileInput} type="file" hidden accept=".json,application/json" aria-label="JSON backup" onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file); event.target.value = ''; }} />

@@ -300,3 +300,26 @@ assert not stored()[0]['done'] and stored()[0]['children'][0]['done']
 req('/refresh',{});wait('document.querySelector("main") !== null')
 assert not stored()[0]['done'] and stored()[0]['children'][0]['done']
 print('Leaf clicks, descendant previews, cancellation, commit, reopen and reload passed.')
+
+
+# Directory connectors replace guides without changing row geometry or task data.
+req('/window/rect',{'width':1280,'height':1100});load(hierarchy)
+positions=js('return [...document.querySelectorAll(".row-shell")].map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))')
+button('Directory guides')
+assert js('return document.querySelector(".directory-guides") !== null')
+assert positions==js('return [...document.querySelectorAll(".row-shell")].map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))')
+assert js('return getComputedStyle(document.querySelector(".nodes .nodes"),"::before").display')=='none'
+assert js('return getComputedStyle(document.querySelector(".nodes .nodes > .branch:last-child > .tree-stem")).display')=='none'
+assert js('return getComputedStyle(document.querySelector(".nodes .nodes > .branch:not(:last-child) > .tree-stem")).display')=='block'
+assert stored()==hierarchy
+(ARTIFACTS/'directory-guides.png').write_bytes(base64.b64decode(req('/screenshot')))
+click('button[aria-label="Node control Plan the session"]')
+assert js('return document.querySelector("[data-row-id=audience]")') is None
+click('button[aria-label="Focus subtree Prepare materials"]')
+assert js('return document.querySelector("[data-row-id=materials]").getAttribute("aria-level")')=='1'
+req('/window/rect',{'width':500,'height':844})
+(ARTIFACTS/'directory-guides-narrow.png').write_bytes(base64.b64decode(req('/screenshot')))
+button('Directory guides')
+assert js('return document.querySelector(".directory-guides")') is None
+assert stored()==hierarchy
+print('Directory guides preserve geometry, data, folding and subtree focus; switch back passed.')
