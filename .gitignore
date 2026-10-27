@@ -116,3 +116,7 @@ playwright-report/
 
 # Local cloud credentials / environment-owned credential mount
 .aws
+
+# Codex
+
+.codex
