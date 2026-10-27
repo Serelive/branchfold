@@ -120,3 +120,8 @@ playwright-report/
 # Codex
 
 .codex
+
+# Local sandbox project and source backup
+/sandbox/
+/materials/branchfold-backup.json
+/material/branchfold-backup.json

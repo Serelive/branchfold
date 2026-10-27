@@ -8,6 +8,7 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Update contributor guidance and the GitHub README
   - [x] Archive the original v3 plan and start a dedicated development tree
 - [ ] Read a project task document
+  - [x] Prepare an ignored, self-contained sandbox project from the local JSON backup; verify task fidelity and project boundaries
   - [ ] Select a real Markdown document and record the tasks users should accomplish with it
   - [ ] Define supported checklist structures and how surrounding prose, notes, links, and ambiguous input appear
   - [ ] Map supported tasks to source ranges and display a user-selected file in the existing tree view

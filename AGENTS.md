@@ -111,7 +111,8 @@ Keep roles distinct: `AGENTS.md` holds durable agent instructions; `BRANCHES.md`
 - Test Markdown round trips, nested content, unrelated-content preservation, malformed input, external-edit conflicts, artifact-link paths, and data recovery as relevant to the change.
 - Run available tests, type checks, and builds. Automated component tests do not replace a real-browser check for important drag, keyboard, layout, and IME behavior; report when manual/browser validation was not performed.
 - Keep one repository for now. Favor short-lived `feat/`, `fix/`, `refactor/`, or `spike/` branches for coherent work and experiments; integrate validated work into the repository's established stable branch. Do not assume its name.
-- Preserve uncommitted changes and unrelated files. Do not create repositories/remotes, change branches, commit, push, publish, rewrite history, or install global tooling unless the user requests it or explicitly authorizes the action.
+- Automatically commit each coherent modification after it passes relevant validation. Inspect the diff and stage only files belonging to that change; preserve unrelated uncommitted work and keep ignored test data out of commits.
+- Do not create repositories/remotes, change branches, push, publish, rewrite history, or install global tooling unless the user requests it or explicitly authorizes the action.
 - Do not transmit user tasks or project files to external services by default. Avoid hard-coded personal paths and environment-specific assumptions.
 
 ## Writing style — human-oriented technical documentation
