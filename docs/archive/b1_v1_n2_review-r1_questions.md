@@ -45,4 +45,4 @@ For later writes, enable operations only where source boundaries and relationshi
 
 N2-3 will define the flexible Markdown-based format, supported constructs, task/context association, fallback behavior, and extension approach. Its requested document is `b1_v1_n2_design_renderer.md`.
 
-That step is marked **Next** in the review and awaits a separate request. No format specification, parser, renderer, cache, or file-writing implementation is introduced by this response. The original review remains in place; the durable naming, anchor, and workflow agreements are recorded in [development-workflow.md](development-workflow.md).
+That step is marked **Next** in the review and awaits a separate request. No format specification, parser, renderer, cache, or file-writing implementation is introduced by this response. The original review remains in place; the durable naming, anchor, and workflow agreements are recorded in [development-workflow.md](../development-workflow.md).

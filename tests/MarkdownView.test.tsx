@@ -1,0 +1,44 @@
+// @vitest-environment jsdom
+import { afterEach, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import Workspace from '../web/Workspace';
+import { STORAGE_KEY } from '../web/storage';
+afterEach(cleanup);
+it('opens mixed Markdown, focuses and folds without touching the legacy JSON tree', async () => {
+  const user = userEvent.setup();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, nodes: [{ id: 'legacy', title: 'Legacy task', done: false, children: [] }] }));
+  const original = localStorage.getItem(STORAGE_KEY);
+  render(<Workspace />);
+  await user.click(screen.getByText('Open Markdown view'));
+  const source = '# Section\n\nIntro context\n\n- [ ] Parent\n  - [x] Child\n\n  Notes\n\n- [ ] Other\n';
+  const file = new File([source], 'plan.md', { type: 'text/markdown' });
+  file.arrayBuffer = async () => new TextEncoder().encode(source).buffer;
+  await user.upload(screen.getByLabelText('Open Markdown'), file);
+  expect(await screen.findByText('Parent')).toBeTruthy();
+  expect(screen.getByRole('heading', { name: 'Section' })).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Collapse Parent' }));
+  expect(screen.queryByText('Child')).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Expand Parent' }));
+  await user.click(screen.getByRole('button', { name: 'Focus Parent' }));
+  expect(screen.queryByText('Other')).toBeNull();
+  expect(screen.getByText('Child')).toBeTruthy();
+  await user.click(screen.getByText('All tasks'));
+  await user.click(screen.getByRole('button', { name: 'Detailed context' }));
+  expect(screen.getByText('Intro context')).toBeTruthy();
+  expect(localStorage.getItem(STORAGE_KEY)).toBe(original);
+  await user.click(screen.getByText('Legacy JSON editor'));
+  expect(screen.getByDisplayValue('Legacy task')).toBeTruthy();
+});
+it('retains the opened document when a replacement file cannot be decoded', async () => {
+  render(<Workspace />);
+  fireEvent.click(screen.getByText('Open Markdown view'));
+  const input = screen.getByLabelText('Open Markdown');
+  const good = new File([], 'good.md'); good.arrayBuffer = async () => new TextEncoder().encode('- [ ] Keep').buffer;
+  fireEvent.change(input, { target: { files: [good] } });
+  await screen.findByText('Keep');
+  const bad = new File([], 'bad.md'); bad.arrayBuffer = async () => new Uint8Array([255]).buffer;
+  fireEvent.change(input, { target: { files: [bad] } });
+  await waitFor(() => expect(screen.getByRole('status')).toBeTruthy());
+  expect(screen.getByText('Keep')).toBeTruthy();
+});

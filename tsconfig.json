@@ -5,5 +5,5 @@
     "strict": true, "noEmit": true, "skipLibCheck": true,
     "esModuleInterop": true, "noUnusedLocals": true, "noUnusedParameters": true
   },
-  "include": ["web", "tests"]
+  "include": ["web", "tests", "extension/controller.ts"]
 }

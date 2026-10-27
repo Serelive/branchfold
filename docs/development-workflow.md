@@ -27,13 +27,13 @@ QuickFix requests use direct implementation without a report or review gate.
 QuickFeature requests also skip reports, but retain a concise implementation
 document for future reference, updated with behavior, relevant code, and validation.
 
-Development is currently **branch 1, version 1** on `feat/markdown-integration`, inherited from `main`, version 3. These review versions are independent of package versions and the version 1 JSON storage format.
+Development is currently **branch 1, version 2** on `feat/markdown-integration`, inherited from `main`, version 3. These review versions are independent of package versions and the version 1 JSON storage format.
 
 Use `bB_vV_nN_<type>[_topic].md` for branch B, version V, node N documents. For example, `b1_v1_n2_review.md` reviews node 2, “Read a project task document”; `b1_v1_n2_review-r1_questions.md` answers its questions. Nested node paths may use `n2-3`. Keep the task title with positional references because a living plan can change. Existing `vX_nY_...` and unversioned documents retain their historical names.
 
 The **anchor** is `sandbox/BRANCHES.md`, the selected test Markdown document within the independent sandbox project root. The **renderer** is Branchfold's Markdown rendering interface. Keep sandbox artifacts and links within that project root.
 
-A review item marked **Next** needs an additional user request before work begins. The current N2-3 format-design step is such a gate; its eventual output is `b1_v1_n2_design_renderer.md`.
+A review item marked **Next** needs an additional user request before work begins. The N2-3 gate was approved with Nodes 2 and 3. The implemented design is recorded in [the renderer reference](b1_v1_n2_design_renderer.md); the accepted review and response are archived.
 
 **Archiving** means absorbing important information into durable documents and the
 working plan, dropping temporary information from active guidance, and preserving
