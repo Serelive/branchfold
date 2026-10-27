@@ -77,11 +77,11 @@ Python is optional. If Python becomes relevant, use the repository's established
 
 Avoid unnecessary global installations or system-level changes. Prefer small, reversible technology decisions and document important deviations from these defaults.
 
-## Development task tree — `BRANCHES.md`
+## Development task tree — `../../BRANCHES.md`
 
-**Use Branchfold's own method to develop Branchfold.** Maintain a lightweight, human-readable development task tree in the repository root as `BRANCHES.md`. This is an **agent-maintained planning and execution scaffold**, not the application's internal task database and not a replacement for source-code tests.
+**Use Branchfold's own method to develop Branchfold.** Maintain a lightweight, human-readable development task tree in the repository root as `../../BRANCHES.md`. This is an **agent-maintained planning and execution scaffold**, not the application's internal task database and not a replacement for source-code tests.
 
-- If `BRANCHES.md` is missing when substantive implementation begins, create it **before** major code changes. Read an existing version before planning or continuing work.
+- If `../../BRANCHES.md` is missing when substantive implementation begins, create it **before** major code changes. Read an existing version before planning or continuing work.
 - Organize work as nested Markdown task-list items (`- [ ]` and `- [x]`). Start with the **current goal and nearby milestones**, not an exhaustive speculative roadmap.
 - State a single **Current focus** near the top; reflect the actionable leaf or immediate decision. Mark uncertain items in ordinary text, e.g., `(needs decomposition)` or `(blocked: reason)`.
 - Where useful, first identify the important children of a goal, then expand only the next relevant branch. Do not force every node to be fully decomposed before acting.
@@ -89,7 +89,7 @@ Avoid unnecessary global installations or system-level changes. Prefer small, re
 - Keep the forest lightweight: use only the title, Current focus, and task tree. Express actionable validation or limitations as tasks; put supporting evidence and explanations in appropriate documentation.
 - Check a leaf only when its stated outcome has been achieved and, when applicable, validated. Check a parent only when **its own goal** is satisfied; all children being checked can instead mean it is *ready to verify*.
 - Revise or prune obsolete branches; preserve useful context without allowing completed history to overwhelm active work. Never erase user-authored decisions or tasks casually.
-- Treat `BRANCHES.md` as an editable plan, **not authorization** to implement everything it mentions. The user's latest instruction determines the actual work scope.
+- Treat `../../BRANCHES.md` as an editable plan, **not authorization** to implement everything it mentions. The user's latest instruction determines the actual work scope.
 
 Suggested initial shape (adapt to the task; do not copy hypothetical checkmarks as facts):
 
@@ -108,9 +108,9 @@ Current focus: Build the smallest working tree-editing slice.
 - [ ] Add planning and verification states (future)
 ```
 
-Keep `AGENTS.md` for **durable instructions**, `BRANCHES.md` for **evolving work state**, and `README.md` for **human-facing project documentation**. Do not put temporary environment notes, today's blockers, or session-specific requirements in `AGENTS.md`.
+Keep `AGENTS_v3.md` for **durable instructions**, `BRANCHES.md` for **evolving work state**, and `README.md` for **human-facing project documentation**. Do not put temporary environment notes, today's blockers, or session-specific requirements in `AGENTS_v3.md`.
 
-Review documents use `vX_nY_<type>[_keyword].md`; unqualified node references belong to the latest development version. See `docs/development-workflow.md` for the current version and conventions. Archiving means absorbing durable information, removing temporary information from active guidance, and preserving the raw source in `docs/archive/`.
+Review documents use `vX_nY_<type>[_keyword].md`; unqualified node references belong to the latest development version. See `../development-workflow.md` for the current version and conventions. Archiving means absorbing durable information, removing temporary information from active guidance, and preserving the raw source in `docs/archive/`.
 
 ## Engineering standards
 
@@ -127,7 +127,7 @@ Review documents use `vX_nY_<type>[_keyword].md`; unqualified node references be
 **Before implementing:**
 
 1. Inspect the repository, tooling, and Git status; do not presume a framework or current state.
-2. Inspect and revise `BRANCHES.md` for the current work round; initialize it if missing.
+2. Inspect and revise `../../BRANCHES.md` for the current work round; initialize it if missing.
 3. Identify the immediate deliverable, its acceptance checks, and the smallest coherent implementation slice. Align the task tree with that slice.
 
 **During implementation:**
@@ -139,7 +139,7 @@ Review documents use `vX_nY_<type>[_keyword].md`; unqualified node references be
 **After implementation:**
 
 1. Run relevant tests, checks, or builds where available.
-2. Update `BRANCHES.md` to reflect actual verified work, unresolved issues, and next actionable items.
+2. Update `../../BRANCHES.md` to reflect actual verified work, unresolved issues, and next actionable items.
 3. Summarize what changed, how it was checked, and any limitations. Do not claim validation that was not performed.
 
 ## First-prototype success criterion

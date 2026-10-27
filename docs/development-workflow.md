@@ -1,6 +1,6 @@
 # Development workflow
 
-The operating rules live in [AGENTS.md](../AGENTS.md). This document preserves the
+The operating rules live in [AGENTS.md](archive/AGENTS_v3.md). This document preserves the
 reasoning and review conventions agreed in [the N2 review](archive/N2_review.md).
 
 ## Planning and commits

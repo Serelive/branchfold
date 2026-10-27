@@ -41,7 +41,7 @@ re-review before moving forward.
 
 ## Re-review scope
 
-Review the new commit policy in [AGENTS.md](../../AGENTS.md), the ordering and review gate
+Review the new commit policy in [AGENTS.md](AGENTS_v3.md), the ordering and review gate
 in [BRANCHES.md](../../BRANCHES.md), and the retained decisions in
 [development-workflow.md](../development-workflow.md) and
 [product-decisions.md](../product-decisions.md). The review task remains unchecked;
