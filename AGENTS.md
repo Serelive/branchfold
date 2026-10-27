@@ -114,6 +114,20 @@ Keep roles distinct: `AGENTS.md` holds durable agent instructions; `BRANCHES.md`
 - Preserve uncommitted changes and unrelated files. Do not create repositories/remotes, change branches, commit, push, publish, rewrite history, or install global tooling unless the user requests it or explicitly authorizes the action.
 - Do not transmit user tasks or project files to external services by default. Avoid hard-coded personal paths and environment-specific assumptions.
 
+## Writing style — human-oriented technical documentation
+
+Write technical documentation for the people who use and develop Branchfold. Apply these principles to READMEs, guides, implementation references, and other technical prose:
+
+1. **Serve the reader's task.** Help readers understand concepts, follow procedures, perform tasks, and make informed decisions. Organize explanations around their needs rather than hypothetical reviewers' objections.
+2. **Be rigorous and direct.** State well-supported conclusions clearly. Include exceptions, qualifications, and evidentiary caveats when they materially affect a conclusion, procedure, or decision.
+3. **Explain what to do and why.** Prefer affirmative instructions. Use prohibitions for concrete risks or likely mistakes, and avoid repetitive statements about what something does not imply or prove.
+4. **Give information a clear hierarchy.** Keep essential concepts and procedures in the main narrative. Group secondary limitations, boundary conditions, and supplementary details where readers can find them without interrupting the flow.
+5. **Use caution where it matters.** Preserve genuine limitations, meaningful uncertainties, and important technical warnings. Remove invented objections and repeated qualifications that add no useful information.
+6. **Write connected, concise prose.** Favor readability, coherence, and useful information density. Avoid excessive fragmentation, redundant explanations, and unnecessary emphasis while retaining details needed for understanding and implementation.
+7. **Review as a human reader.** Check whether the intended audience can understand the document and act on it. Remove defensive language that adds no substantive value, and favor clarity over rhetorical invulnerability.
+
+Maintain factual accuracy, necessary technical detail, and honest uncertainty. For public-facing documentation, clearly distinguish working functionality from planned capabilities, and provide setup instructions that work from a fresh checkout.
+
 ## Coding-agent workflow
 
 **Before:** Inspect the repository and Git status, read relevant docs and `BRANCHES.md`, identify the smallest requested deliverable, and check what existing functionality must be preserved. Clarify a genuinely blocking ambiguity; otherwise use a conservative, reversible assumption.
