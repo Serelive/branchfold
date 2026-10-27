@@ -1,6 +1,6 @@
-# Branchfold Development Branches — v3
+# Branchfold Development Branches
 
-Current focus: Continue the real-task-tree trial with highlighted directory paths.
+Current focus: Define the first read-only Markdown slice using a real project document, building on the working outline editor.
 
 - [x] Address the earlier workflow review and obtain re-review
 - [x] Refine the flexible outline editor (v3 N2)
@@ -25,5 +25,27 @@ Current focus: Continue the real-task-tree trial with highlighted directory path
   - [x] QuickFeature: highlight selected path connectors, handles, and titles; verify branching and focused views
   - [x] QuickFix: verify continuous sibling trunks and optional ancestor-only title highlighting
   - [x] QuickFix: keep pale sibling connectors from painting over highlighted vertical trunks; verify in Firefox and production build
-- [ ] Evaluate the revised editor with a real task tree
-- [ ] Add planning and verification states (future)
+- [x] Align public documentation and the development plan with the Markdown-native direction
+  - [x] Add human-oriented technical writing guidance to AGENTS.md
+  - [x] Explain current prototype capabilities, setup, and the Markdown roadmap in README.md
+- [ ] Read an existing project task document
+  - [ ] Choose a real document and record the workflow to compare with direct Markdown editing
+  - [ ] Define supported checklist nesting and treatment of surrounding prose, notes, links, and ambiguous input
+  - [ ] Map tasks to source ranges and render a user-selected Markdown file in the existing tree view
+  - [ ] Verify byte-for-byte preservation on read, including mixed content and line endings
+- [ ] Persist one narrow Markdown edit safely
+  - [ ] Choose one host/file integration for the real workflow, including external-change detection
+  - [ ] Rename a supported task with a minimal source edit; preserve unrelated text and nested content
+  - [ ] Detect stale content before saving and present conflicts; provide undo or original-document recovery
+  - [ ] Test nested content, malformed input, external edits, and recovery
+  - [ ] Decide and test compatibility or explicit migration for existing JSON trees, retaining recoverable backups
+- [ ] Connect tasks to project files
+  - [ ] Attach and open an ordinary project-relative Markdown link
+  - [ ] Verify spaces, encoded paths, moved or missing files, and document-relative resolution
+- [ ] Evaluate the Markdown workflow in a real repository
+  - [ ] Compare reading, focusing, editing, and opening artifacts with direct Markdown editing
+  - [ ] Recheck keyboard, drag, IME, and recovery behavior as the editor adopts Markdown
+  - [ ] Use the trial to choose the next host improvement and revise this plan
+- [ ] Revisit later ideas when the trial identifies a concrete need
+  - [ ] Consider planning or verification metadata only with a useful Markdown representation
+  - [ ] Assess project discovery or multi-project views after the single-project workflow is useful
