@@ -1,51 +1,30 @@
-# Branchfold Development Branches
+# Branchfold — Markdown-native project interface
 
-Current focus: Define the first read-only Markdown slice using a real project document, building on the working outline editor.
+Current focus: Define and implement a read-only view of a real project's Markdown task document.
 
-- [x] Address the earlier workflow review and obtain re-review
-- [x] Refine the flexible outline editor (v3 N2)
-  - [x] Preserve verified navigation/editing, subtree movement/focus, history, and persistence
-  - [x] Accept user-reported Fcitx5 input and natural keyboard mappings
-  - [x] Absorb v3 review and archive it with the previous interaction report
-  - [x] Align circular drag anchors and sibling guides with consistent indentation
-  - [x] Delete empty titles with Backspace while protecting composition and descendants
-  - [x] Verify deletion undo/redo, ordinary text editing, hierarchy rendering, and existing interactions
-  - [x] QuickFix: directly delete selected subtrees with navigation Backspace and preserve undo
-  - [x] QuickFix: unify drag/expand/complete and reveal row actions without changing layout
-  - [x] QuickFix: animate concentric circle controls, shorten folding delay, and lighten edge actions
-  - [x] QuickFix: use a light bold ring when expanded and a dark bold ring when folded
-  - [x] QuickFix: preview completion on hold, commit on release, or cancel into dragging on movement; clicks still fold
-  - [x] QuickFix: leaf clicks toggle completion; checking cascades down, unchecking preserves descendants, and drag cancels subtree previews
-  - [x] QuickFix: switch between indentation guides and CSS directory connectors without changing tree interactions
-  - [x] QuickFix: match downward and incoming directory connector gaps at 3px; verify desktop/narrow layouts and folding
-  - [x] QuickFix: protect nonempty titles for the entire Backspace press; verify fresh-press deletion and upward blank-cell repeat deletion
-  - [x] QuickFix: accelerate held text Backspace to three characters per repeat; verify Unicode, cell protection, and native undo
-  - [x] QuickFeature/QuickFix: offer leaf drawings, thicken plain leaf rings, preserve checked icons, and document the verified implementation
-  - [x] QuickFix: retain standalone outlined leaves and connector-aligned stalks; restore original checked circle/check marks
-  - [x] QuickFeature: highlight selected path connectors, handles, and titles; verify branching and focused views
-  - [x] QuickFix: verify continuous sibling trunks and optional ancestor-only title highlighting
-  - [x] QuickFix: keep pale sibling connectors from painting over highlighted vertical trunks; verify in Firefox and production build
-- [x] Align public documentation and the development plan with the Markdown-native direction
-  - [x] Add human-oriented technical writing guidance to AGENTS.md
-  - [x] Explain current prototype capabilities, setup, and the Markdown roadmap in README.md
-- [ ] Read an existing project task document
-  - [ ] Choose a real document and record the workflow to compare with direct Markdown editing
-  - [ ] Define supported checklist nesting and treatment of surrounding prose, notes, links, and ambiguous input
-  - [ ] Map tasks to source ranges and render a user-selected Markdown file in the existing tree view
-  - [ ] Verify byte-for-byte preservation on read, including mixed content and line endings
-- [ ] Persist one narrow Markdown edit safely
-  - [ ] Choose one host/file integration for the real workflow, including external-change detection
-  - [ ] Rename a supported task with a minimal source edit; preserve unrelated text and nested content
-  - [ ] Detect stale content before saving and present conflicts; provide undo or original-document recovery
-  - [ ] Test nested content, malformed input, external edits, and recovery
-  - [ ] Decide and test compatibility or explicit migration for existing JSON trees, retaining recoverable backups
-- [ ] Connect tasks to project files
-  - [ ] Attach and open an ordinary project-relative Markdown link
-  - [ ] Verify spaces, encoded paths, moved or missing files, and document-relative resolution
-- [ ] Evaluate the Markdown workflow in a real repository
-  - [ ] Compare reading, focusing, editing, and opening artifacts with direct Markdown editing
-  - [ ] Recheck keyboard, drag, IME, and recovery behavior as the editor adopts Markdown
-  - [ ] Use the trial to choose the next host improvement and revise this plan
-- [ ] Revisit later ideas when the trial identifies a concrete need
-  - [ ] Consider planning or verification metadata only with a useful Markdown representation
-  - [ ] Assess project discovery or multi-project views after the single-project workflow is useful
+The working outline editor provides the interaction foundation. Its development history is preserved in [the v3 task tree](docs/archive/BRANCHES_v3.md). Product principles and data-integrity requirements live in [AGENTS.md](AGENTS.md).
+
+- [x] Establish the Markdown-native direction and public project documentation
+  - [x] Update contributor guidance and the GitHub README
+  - [x] Archive the original v3 plan and start a dedicated development tree
+- [ ] Read a project task document
+  - [ ] Select a real Markdown document and record the tasks users should accomplish with it
+  - [ ] Define supported checklist structures and how surrounding prose, notes, links, and ambiguous input appear
+  - [ ] Map supported tasks to source ranges and display a user-selected file in the existing tree view
+  - [ ] Preserve selection and subtree focus as view operations
+  - [ ] Verify that reading leaves document bytes unchanged, including mixed content and line endings
+- [ ] Safely persist one task edit
+  - [ ] Choose one host/file integration for the trial, with access limited to the selected document
+  - [ ] Rename a supported task through a narrow source edit, preserving notes, descendants, and unrelated formatting
+  - [ ] Detect external changes, refresh safely, and present a conflict before a stale write
+  - [ ] Provide undo or original-document recovery; test malformed input, concurrent edits, and failed writes
+  - [ ] Decide and test an explicit compatibility or migration path for existing JSON trees
+- [ ] Connect a task to project work
+  - [ ] Attach and open a project-relative file link using ordinary Markdown
+  - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files
+- [ ] Evaluate the complete workflow in a real repository
+  - [ ] Compare reading, focusing, renaming, and opening artifacts with editing Markdown directly
+  - [ ] Verify keyboard, pointer, IME, and recovery behavior in the chosen host
+  - [ ] Record workflow benefits and friction, then choose the next small improvement
+
+Host choice and the supported Markdown subset are the first open decisions. Broader editing operations, planning/verification metadata, and multi-project views can follow demonstrated needs from the trial.
