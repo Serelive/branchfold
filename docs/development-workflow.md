@@ -1,6 +1,6 @@
 # Development workflow
 
-The operating rules live in [AGENTS.md](archive/AGENTS_v3.md). This document preserves the
+The operating rules live in [AGENTS.md](../AGENTS.md). This document preserves the
 reasoning and review conventions agreed in [the N2 review](archive/N2_review.md).
 
 ## Planning and commits
@@ -27,17 +27,13 @@ QuickFix requests use direct implementation without a report or review gate.
 QuickFeature requests also skip reports, but retain a concise implementation
 document for future reference, updated with behavior, relevant code, and validation.
 
-Development is currently at **version 3** (the interaction revision has been reviewed). This review
-version is independent of package versions and the version 1 JSON storage format.
-A node reference belongs to a particular development version; an unqualified node
-means a node of the latest version. Version-qualified references must retain the
-reviewed task title/context because positions can still change within a living plan.
+Development is currently **branch 1, version 1** on `feat/markdown-integration`, inherited from `main`, version 3. These review versions are independent of package versions and the version 1 JSON storage format.
 
-Use `vX_nY_<type>[_keyword].md` for version X, node Y documents, for example
-`v2_n2_review.md`, `v2_n2_review-r1.md`, and `v2_n2_report_implementation.md`.
-Nested nodes may extend the positional path, e.g. `v2_n2-1_review.md`; positions are
-one-based. Earlier unversioned archives remain historical records; do not guess their
-version or rewrite their contents to make them appear current.
+Use `bB_vV_nN_<type>[_topic].md` for branch B, version V, node N documents. For example, `b1_v1_n2_review.md` reviews node 2, “Read a project task document”; `b1_v1_n2_review-r1_questions.md` answers its questions. Nested node paths may use `n2-3`. Keep the task title with positional references because a living plan can change. Existing `vX_nY_...` and unversioned documents retain their historical names.
+
+The **anchor** is `sandbox/BRANCHES.md`, the selected test Markdown document within the independent sandbox project root. The **renderer** is Branchfold's Markdown rendering interface. Keep sandbox artifacts and links within that project root.
+
+A review item marked **Next** needs an additional user request before work begins. The current N2-3 format-design step is such a gate; its eventual output is `b1_v1_n2_design_renderer.md`.
 
 **Archiving** means absorbing important information into durable documents and the
 working plan, dropping temporary information from active guidance, and preserving
