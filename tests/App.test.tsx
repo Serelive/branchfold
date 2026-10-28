@@ -438,7 +438,6 @@ it('tracks the selected ancestor path separately from passing sibling trunks', a
   const n = (id: string, children: Forest = []) => ({ id, title: id, done: false, children });
   localStorage.setItem(STORAGE_KEY, serializeForest([n('Root', [n('Earlier', [n('Other')]), n('Branch', [n('Target')]), n('Later')])]));
   const user = userEvent.setup(); render(<App />);
-  await user.click(screen.getByRole('button', { name: 'Directory guides' }));
   await user.click(screen.getByDisplayValue('Target'));
   const onPath = () => [...document.querySelectorAll('.branch.on-path > .row-shell > .node')].map(row => row.getAttribute('aria-label'));
   expect(onPath()).toEqual(['Root', 'Branch', 'Target']);

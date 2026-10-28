@@ -2,11 +2,13 @@ import { useEffect, useRef, useState, type PointerEvent, type KeyboardEvent } fr
 import { addNode, updateNode, toggleCompletion, serializeForest, parseForest, findNode, nodeLocation, nodePath, visibleNodes, deleteNode, moveNode, moveRelative, outlineMove, type OutlineMove, type Forest, type DropPosition } from './tree';
 import { loadForest, saveForest } from './storage';
 import NodeControl from './NodeControl';
+import { appendForest, decodeMarkdown, exportMarkdown, importMarkdown } from './markdown';
+import type { ReactNode } from 'react';
 
-function download(content: string) {
-  const url = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+function download(content: string, format: 'json' | 'md') {
+  const url = URL.createObjectURL(new Blob([content], { type: format === 'json' ? 'application/json' : 'text/markdown;charset=utf-8' }));
   const link = document.createElement('a');
-  link.href = url; link.download = 'branchfold-backup.json'; link.click();
+  link.href = url; link.download = `branchfold-backup.${format}`; link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 const flatten = (nodes: Forest) => visibleNodes(nodes, new Set());
@@ -14,14 +16,17 @@ const titleCharacters = new Intl.Segmenter(undefined, { granularity: 'grapheme' 
 type Snapshot = { forest: Forest; viewRootId: string | null; collapsed: Set<string>; selectedId: string | null };
 type Drop = { id: string; position: DropPosition };
 
-export default function App() {
+type AppProps = {
+  document?: { initialForest: Forest; onChange: (forest: Forest) => void; onExport: (forest: Forest, format: 'json' | 'md') => void; onSave: () => void; status: string; toolbar: ReactNode };
+};
+export default function App({ document: host }: AppProps = {}) {
   const [initial] = useState(() => {
-    try { return { nodes: loadForest(localStorage), error: false }; }
+    try { return { nodes: host?.initialForest ?? loadForest(localStorage), error: false }; }
     catch { return { nodes: [] as Forest, error: true }; }
   });
   const [forest, setForest] = useState(initial.nodes);
-  const [directoryGuides, setDirectoryGuides] = useState(false);
-  const [leafDrawings, setLeafDrawings] = useState(false);
+  const [directoryGuides, setDirectoryGuides] = useState(true);
+  const [leafDrawings, setLeafDrawings] = useState(true);
   const [ancestorTitles, setAncestorTitles] = useState(true);
   const [completionPreview, setCompletionPreview] = useState<string | null>(null);
   const [past, setPast] = useState<Snapshot[]>([]);
@@ -40,9 +45,12 @@ export default function App() {
   const [pendingDelete, setPendingDelete] = useState<string | null>(null);
   const [pendingImport, setPendingImport] = useState<Forest | null>(null);
   const [importError, setImportError] = useState('');
+  const [importMode, setImportMode] = useState<'replace' | 'append'>('replace');
+  const [importFormat, setImportFormat] = useState<'json' | 'md'>('json');
   const [notice, setNotice] = useState('');
   const editor = useRef<HTMLDivElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const markdownInput = useRef<HTMLInputElement>(null);
   const importVersion = useRef(0);
   const editGroup = useRef<string | null>(null);
   const composing = useRef(false);
@@ -84,6 +92,7 @@ export default function App() {
   function snapshot(): Snapshot { return { forest, viewRootId, collapsed, selectedId }; }
   function save(next: Forest) {
     setForest(next);
+    if (host) { host.onChange(next); return; }
     try { saveForest(localStorage, next); setSaveError(false); }
     catch { setSaveError(true); }
   }
@@ -174,17 +183,24 @@ export default function App() {
   function requestDelete(id: string) {
     if (findNode(forest, id)!.children.length) setPendingDelete(id); else remove(id);
   }
-  async function readBackup(file: File) {
-    const version = ++importVersion.current; setPendingImport(null); setImportError('');
+  function exportTree(format: 'json' | 'md') {
+    try {
+      if (host) host.onExport(forest, format);
+      else download(format === 'json' ? serializeForest(forest) : exportMarkdown(forest), format);
+    } catch (error) { setNotice(error instanceof Error ? error.message : 'Export failed.'); }
+  }
+  async function readBackup(file: File, format: 'json' | 'md') {
+    const version = ++importVersion.current; setPendingImport(null); setImportError(''); setImportFormat(format);
     try {
       if (file.size > 2 * 1024 * 1024) throw new Error('Backup exceeds the 2 MB import limit.');
-      const nodes = parseForest(await file.text());
+      const nodes = format === 'json' ? parseForest(await file.text()) : importMarkdown(decodeMarkdown(await file.arrayBuffer()));
       if (version === importVersion.current) setPendingImport(nodes);
     } catch (error) {
       if (version === importVersion.current) setImportError(error instanceof Error ? error.message : 'Could not read backup.');
     }
   }
   function keyboard(event: KeyboardEvent) {
+    if (host && (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); if (!composing.current) host.onSave(); return; }
     if (actionsId && event.key === 'Escape') { event.preventDefault(); focus(actionsId); return; }
     if (pointer.current?.active) {
       if (event.key === 'Escape') { event.preventDefault(); endDrag(); }
@@ -383,6 +399,7 @@ export default function App() {
 
   return <main onKeyDown={keyboard}>
     <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">LOCAL PROTOTYPE</span></header>
+    {host?.toolbar}
     <section className="intro"><p className="eyebrow">A LITTLE STRUCTURE. ROOM TO CHANGE.</p><h1>Make room for the next step.</h1><p>A living task tree for plans that evolve with action.</p></section>
     {initial.error ? <section role="alert" className="warning"><h2>Your saved tree could not be opened.</h2><p>Editing is paused to protect existing data. Storage may be unavailable, or the saved format may be invalid. No data has been overwritten. Restore browser storage access or recover the original data before reloading.</p></section> : <>
       <section className={`workspace ${directoryGuides ? 'directory-guides' : ''} ${leafDrawings ? 'leaf-drawings' : ''} ${ancestorTitles ? 'ancestor-titles' : ''} ${draggedId ? 'is-dragging' : ''}`} aria-label="Task tree" ref={editor}>
@@ -391,16 +408,20 @@ export default function App() {
             {directoryGuides && <button aria-pressed={ancestorTitles} onClick={() => setAncestorTitles(current => !current)}>Ancestor titles</button>}
             <button aria-pressed={leafDrawings} onClick={() => setLeafDrawings(current => !current)}>Leaf drawings</button>
           <button disabled={!past.length} onClick={() => restore('undo')}>Undo</button><button disabled={!future.length} onClick={() => restore('redo')}>Redo</button>
-          <button onClick={() => download(serializeForest(forest))}>Export JSON</button><button onClick={() => fileInput.current?.click()}>Import JSON</button>
-          <input ref={fileInput} type="file" hidden accept=".json,application/json" aria-label="JSON backup" onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file); event.target.value = ''; }} />
+          <button onClick={() => exportTree('json')}>Export JSON</button><button onClick={() => fileInput.current?.click()}>Import JSON</button>
+          <button onClick={() => exportTree('md')}>Export Markdown</button><button onClick={() => markdownInput.current?.click()}>Import Markdown</button>
+          <label>Import mode <select aria-label="Import mode" value={importMode} onChange={event => setImportMode(event.target.value as 'replace' | 'append')}><option value="replace">Replace tree</option><option value="append">Append roots</option></select></label>
+          <input ref={markdownInput} type="file" hidden accept=".md,.markdown,text/markdown,text/plain" aria-label="Markdown import" onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'md'); event.target.value = ''; }} />
+          <input ref={fileInput} type="file" hidden accept=".json,application/json" aria-label="JSON backup" onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'json'); event.target.value = ''; }} />
         </div></div>
         <p className="mode" aria-live="polite">{editingId ? 'Editing · Enter: next sibling · Tab / Shift+Tab: indent / outdent · Esc: navigate' : 'Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move'}{selected && ` · ${selected.title || 'Untitled task'}`}</p>
         {importError && <p role="alert" className="warning">Backup not imported: {importError}</p>}
         {pendingImport !== null && <section className="import-preview" aria-label="Backup preview">
-          <h3>{forest.length ? 'Replace the current tree?' : 'Import this tree?'}</h3>
-          <p>{flatten(pendingImport).length} tasks in {pendingImport.length} roots. {forest.length ? 'Current work will be replaced. Export it first if needed.' : 'The imported tasks will fill your empty outline.'} Undo is available until you close this page.</p>
+          <h3>{importMode === 'append' ? 'Append these tasks?' : forest.length ? 'Replace the current tree?' : 'Import this tree?'}</h3>
+          <p>{flatten(pendingImport).length} tasks in {pendingImport.length} roots. {importMode === 'append' ? 'The imported roots will follow the existing roots.' : forest.length ? 'Current work will be replaced. Export it first if needed.' : 'The imported tasks will fill your empty outline.'} Undo is available until you close this page.</p>
+          {importFormat === 'md' && <p>Only checklist tasks are imported. Headings, notes, and other unstructured content are omitted; the original file stays unchanged.</p>}
           <ul>{pendingImport.slice(0, 5).map(node => <li key={node.id}>{node.title || 'Untitled task'}</li>)}</ul>
-          <button onClick={() => { change(pendingImport); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(pendingImport[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{forest.length ? 'Replace tree' : 'Import tree'}</button>
+          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(next[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? 'Append tasks' : forest.length ? 'Replace tree' : 'Import tree'}</button>
           <button onClick={() => { importVersion.current++; setPendingImport(null); }}>Cancel import</button>
         </section>}
         {deletion && <section className="warning" aria-label="Delete confirmation"><p>Delete “{deletion.title || 'Untitled task'}” and its {flatten(deletion.children).length} descendants? Undo can recover them during this session.</p>
@@ -413,7 +434,7 @@ export default function App() {
         <button className="primary" onClick={() => create(scope?.id ?? null)}>{scope ? '+ Add task in this subtree' : '+ Add root task'}</button>
         {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
       </section>
-      <p role="status" className={saveError ? 'warning' : 'save-status'}>{saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
+      <p role="status" className={saveError ? 'warning' : 'save-status'}>{host ? host.status : saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
       <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace erases one character per tap or three per held repeat. A press starting with text never deletes the cell. Release and press again on an empty title to remove the task; holding then continues deleting upward. Empty parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.</p></details>
     </>}
     <footer>Plans are provisional. Keep them useful.</footer>

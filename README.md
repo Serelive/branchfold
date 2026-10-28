@@ -6,7 +6,7 @@ Branchfold is an experimental, local-first interface for progressive task decomp
 
 The project is moving toward a **Markdown-native project interface**: your repository owns the task document, and Branchfold provides a focused way to navigate it, edit tasks, and open related files. The goal is to make a project's existing Markdown plan easier to work with.
 
-**Available today:** a Markdown task reader with concise/detailed context, selection and subtree focus, plus a VS Code host for source-preserving task renaming. The legacy outline editor retains keyboard editing, subtree movement, completion, undo/redo, browser persistence, and JSON backups. See [BRANCHES.md](BRANCHES.md) for the plan and completed work.
+**Available today:** one task editor for Markdown and JSON imports, with keyboard and pointer editing, subtree movement and focus, completion, and undo/redo. The browser offers import/edit/export with local persistence; the VS Code extension edits a working tree and writes the selected Markdown file only on Save. See [BRANCHES.md](BRANCHES.md) for the plan and completed work.
 
 ## Run locally
 
@@ -21,24 +21,30 @@ npm run dev
 
 Open the local URL printed by Vite. Keep the development server running while using the app. The browser application needs no backend or account; the repository's Python scaffold is separate from it.
 
-## Open a Markdown project plan
+## Import and export task trees
 
-In the browser, choose **Open Markdown view**, then select a UTF-8 `.md` file (up to 2 MB). Headings orient the outline; **Detailed context** expands supporting source excerpts. Use the row arrows to fold branches, **↗** to focus, and **All tasks** to return. Reading and navigation leave the file unchanged. Browser preview is read-only; reopen a file to refresh it.
+Choose **Import Markdown** or **Import JSON** and select a file up to 2 MB. Markdown imports copy checklist tasks and their nesting into the editor, omitting headings, notes, and other unstructured content. The original file stays unchanged. Both formats use the same editor after import.
 
-For task renaming, build and launch the VS Code development host from the repository root:
+Choose **Replace tree** or **Append roots** in **Import mode**, then review and confirm the import. Appending adds roots after the existing tree. Undo can restore a replaced tree or remove appended tasks.
+
+**Export Markdown** writes standard nested checklist lines; **Export JSON** writes a version-1 backup. Both export the whole tree. In the browser, the imported file has no continuing connection to the edited tree: use export to obtain an updated file.
+
+## Edit a project document in VS Code
+
+Build and launch the development host from the repository root:
 
 ```sh
 npm run build:extension
 code --extensionDevelopmentPath="$PWD/extension" "$PWD"
 ```
 
-In that VS Code window, run **Branchfold: Open Markdown Task Document** from the Command Palette and choose your plan. Select **Rename** or press Enter/F2 on a task, change its inline Markdown title, and apply. Single-line titles are supported; multiline titles can be edited with **Open source / Undo**. Rename saves through VS Code and preserves the rest of the document. Existing unsaved source edits must be saved or undone first.
+Run **Branchfold: Open Markdown Task Document** in the Command Palette and choose a file. The extension uses the same task UI and editing gestures as the web app. Edits stay in its working tree until **Save document** or Ctrl/Cmd+S. Saving replaces the file with its structured checklist tree; headings, notes, and other unstructured content are omitted. **Open source** shows the attached document, where editor undo can restore the previous content after a save.
 
-Source edits refresh the view. If a rename draft becomes stale, Branchfold keeps it and asks you to review the source. Resolve save conflicts in VS Code; standard editor undo restores changes. Save-time formatting follows your editor settings, so disable formatting hooks when testing byte-minimal changes. Use the source editor’s Save As command for an additional copy. Browser preview also offers **Download source copy**. Markdown content stays in its project file and is never stored as a browser task tree.
+External changes refresh a clean view automatically. If you have unsaved tree edits, the extension keeps them and shows a conflict. Review the source, export your local tree, or choose **Reload source** and confirm discarding local edits. Resolve existing unsaved source-editor changes before saving from Branchfold. Closing a view with unsaved edits opens an untitled recovery document containing those tasks. A recovery draft is also kept in VS Code workspace state until saved or explicitly discarded.
 
-The [renderer design](docs/b1_v1_n2_design_renderer.md) describes supported syntax, source preservation, host behavior, and extension boundaries.
+The [shared editor reference](docs/b1_v3_implementation.md) describes the conversion format and save behavior.
 
-## Work with a legacy JSON task tree
+## Work with a task tree
 
 Click a row background to select a task, or click its title to edit. The mode indicator shows which keyboard commands apply. Use **+ Next** and **+ Child** to grow the tree, and **↗** to focus on a subtree. Breadcrumbs return to an ancestor or **All tasks**.
 
@@ -74,17 +80,17 @@ Title fields retain native text undo. Composition-confirming keys are guarded fo
 
 ### View options
 
-**Directory guides** switches indentation guides to directory-style connectors. Selecting a task darkens the path and handles back to the visible root; **Ancestor titles** toggles highlighting of the ancestor text. **Leaf drawings** replaces plain leaf rings with outlined leaves. Checked tasks keep the circle and check mark. View options and subtree focus last for the session.
+**Directory guides** switches indentation guides to directory-style connectors. Selecting a task darkens the path and handles back to the visible root; **Ancestor titles** toggles highlighting of the ancestor text. **Leaf drawings** replaces plain leaf rings with outlined leaves. Checked tasks keep the circle and check mark. All three options start enabled. View options and subtree focus last for the session.
 
 ## Saving and recovery
 
-The legacy JSON editor saves edits in this browser's localStorage. Use the same browser profile and local URL to return to your tree, and keep one editing tab open at a time. **Export JSON** backs up the full tree, including tasks outside the focused view. Keep exports of important work: clearing browser data removes the stored tree.
+The browser editor saves its working tree in localStorage, whether it was created directly or imported from Markdown or JSON. Use the same browser profile and local URL to return to your tree, and keep one editing tab open at a time. **Export JSON** backs up the full tree, including tasks outside the focused view. Keep exports of important work: clearing browser data removes the stored tree.
 
 **Import JSON** previews a version 1 backup up to 2 MB before replacing the tree. Undo restores a replaced or deleted tree during the session. Outline history holds up to 100 changes, groups continuous title edits, and resets on reload.
 
 If saved data cannot be read, the app preserves it and pauses editing. If saving fails, edits remain in memory and the app prompts you to export them. Task content stays local.
 
-Markdown and legacy JSON are separate views. Opening a Markdown document never replaces or migrates your stored JSON tree; **Legacy JSON editor** returns to it. Project-relative artifact navigation and broader Markdown editing are planned next.
+The VS Code extension keeps its working tree separate from browser storage and saves only on request. Project-relative artifact navigation remains planned work.
 
 ## Development
 
@@ -94,7 +100,7 @@ npm run build
 npm run preview
 ```
 
-Tests cover tree operations, editor interactions, Markdown parsing and narrow edits, conflicts, storage, and recovery. The build type-checks TypeScript and generates `dist/`; preview serves that production build locally.
+Tests cover tree operations, editor interactions, structured Markdown conversion, explicit saves, conflicts, storage, and recovery. The build type-checks TypeScript and generates `dist/`; preview serves that production build locally.
 
 For the real-browser regression suite, install Firefox and geckodriver and use Python 3. Start these in separate terminals:
 
@@ -112,7 +118,7 @@ Then run:
 python3 tests/browser_regression.py
 ```
 
-Run `python3 tests/browser_markdown.py` against the same test servers for Markdown upload, focus, context, and legacy-data preservation checks. To exercise the actual VS Code save and undo path after `npm run build:extension`:
+Run `python3 tests/browser_markdown.py` against the same test servers for Markdown import/edit/export, append/replace, focus, and original-file preservation checks. To exercise the actual VS Code save and undo path after `npm run build:extension`:
 
 ```sh
 code --extensionDevelopmentPath="$PWD/extension" \

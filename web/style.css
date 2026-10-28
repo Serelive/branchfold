@@ -130,20 +130,7 @@ button[aria-pressed=true]:not(.node-control) { background: #e0e8db; border-color
 .directory-guides .branch.on-path > .row-shell .anchor-leaf { stroke: #2c513a; }
 .directory-guides.ancestor-titles .branch.path-ancestor > .row-shell .title { background-color: #edf2e7; border-radius: 3px; }
 
-/* Markdown document view shares the outline editor's spacing and selection palette. */
-.workspace-switch { max-width: 960px; margin: 1rem auto 0; padding: 0 1rem; }
-.md-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; }
-.md-toolbar input { display: block; max-width: 18rem; }
-.markdown-view form { padding: 1rem; background: #e5eee2; border-radius: .5rem; }
-.markdown-view form input { width: 100%; margin: .5rem 0; }
-.md-heading { font-size: 1.1rem; margin: 1rem 0 .5rem; white-space: pre-wrap; }
-.md-task { display: flex; gap: .5rem; align-items: center; min-height: 2.8rem; padding: .25rem .5rem; border-left: 2px solid #c2c9bf; border-radius: .3rem; }
-.md-task.selected { background: #dce9d5; }
-.md-task:focus-visible { outline: 2px solid #496b46; }
-.md-task > span:first-of-type { flex: 1; overflow-wrap: anywhere; white-space: pre-wrap; }
-.md-task button { flex-shrink: 0; }
-.md-done { text-decoration: line-through; color: #536151; }
-.md-context { color: #505a50; margin: .6rem 0; }
-.md-context pre, pre.md-context { white-space: pre-wrap; overflow-wrap: anywhere; font-size: .9rem; line-height: 1.5; }
-.md-context summary { cursor: pointer; }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* The document host adds file controls around the shared tree editor. */
+.document-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; padding: .8rem; border: 1px solid #c2c9bf; border-radius: .5rem; }
+.document-toolbar p { flex-basis: 100%; margin: .2rem 0; }
+.toolbar-buttons label { display: flex; align-items: center; gap: .4rem; }

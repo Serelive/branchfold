@@ -60,31 +60,41 @@ def close_session():
  try: req('',method='DELETE')
  except Exception: pass
 atexit.register(close_session)
-# Upload a disposable mixed-content document; navigation must never mutate it.
+# Markdown and JSON feed one independent editor tree.
 source = "# Project\n\nIntro context\n\n- [ ] Parent\n  - [x] Child\n\n  Notes stay here.\n\n- [ ] Other\n\n```md\n- [ ] Code example\n```\n"
 fixture_path = ARTIFACTS / 'markdown-plan.md'
 fixture_path.write_text(source)
-load([{'id':'legacy','title':'Legacy task','done':False,'children':[]}])
-original = js('return localStorage.getItem("branchfold.tree.v1")')
-button('Open Markdown view')
-text('input[type=file]', str(fixture_path))
-wait('document.querySelectorAll(".md-task").length === 3')
-assert js('return document.querySelector(".md-heading").textContent') == 'Project'
-button('Collapse Parent')
-assert js('return document.querySelectorAll(".md-task").length') == 2
-button('Expand Parent')
-button('Focus Parent')
-assert js('return document.querySelectorAll(".md-task").length') == 2
+load([{'id':'existing','title':'Existing','done':False,'children':[]}])
+assert js('return document.querySelector(".workspace").classList.contains("directory-guides")')
+assert js('return document.querySelector(".workspace").classList.contains("leaf-drawings")')
+text('input[aria-label="Markdown import"]', str(fixture_path))
+wait('document.querySelector(".import-preview") !== null')
+button('Replace tree')
+assert [n['title'] for n in stored()] == ['Parent', 'Other']
+assert stored()[0]['children'][0]['title'] == 'Child'
+assert 'Intro context' not in js('return document.body.textContent')
+assert js('return [...document.querySelectorAll("button")].some(b=>b.textContent === "Open Markdown view")') is False
+click('input[data-node-id]');keys(*' edited');keys('\ue00c')
+assert stored()[0]['title'] == 'Parent edited'
+button('Node control Parent edited')
+assert js('return document.querySelectorAll("input[data-node-id]").length') == 2
+button('Node control Parent edited')
+button('Focus subtree Parent edited')
+assert js('return document.querySelectorAll("input[data-node-id]").length') == 2
 button('All tasks')
-button('Detailed context')
-assert js('return [...document.querySelectorAll("pre")].some(p=>p.textContent.includes("Code example"))')
-click('.md-task')
-keys('\ue015')
-wait('document.activeElement.textContent.includes("Child")')
+# Append roots with distinct IDs; repeated imports must not collide.
+js('const s=document.querySelector(arguments[0]);s.value="append";s.dispatchEvent(new Event("change",{bubbles:true}))', 'select[aria-label="Import mode"]')
+text('input[aria-label="Markdown import"]', str(fixture_path));wait('document.querySelector(".import-preview") !== null');button('Append tasks')
+assert len(stored()) == 4
+assert len({n['id'] for n in stored()}) == 4
+button('Undo');assert len(stored()) == 2
+# Capture export content without sending it anywhere or writing to Downloads.
+js('window.originalCreateURL=URL.createObjectURL;URL.createObjectURL=blob=>{window.exportedBlob=blob;return window.originalCreateURL(blob)};HTMLAnchorElement.prototype.click=function(){}')
+button('Export Markdown')
+exported=req('/execute/async',{'script':'const done=arguments[arguments.length-1];window.exportedBlob.text().then(done);','args':[]})
+assert exported == '- [ ] Parent edited\n  - [x] Child\n- [ ] Other\n'
 assert fixture_path.read_text() == source
-assert js('return localStorage.getItem("branchfold.tree.v1")') == original
-screenshot = req('/screenshot')
-(ARTIFACTS/'markdown-reader.png').write_bytes(base64.b64decode(screenshot))
-button('Legacy JSON editor')
-assert js('return document.querySelector("input[data-node-id]").value') == 'Legacy task'
-print('PASS: real Firefox Markdown upload, context, folding, focus, keyboard, source and JSON preservation')
+(ARTIFACTS/'markdown-editor.png').write_bytes(base64.b64decode(req('/screenshot')))
+req('/refresh',{});wait('document.querySelector("main") !== null')
+assert stored()[0]['title'] == 'Parent edited'
+print('PASS: unified Markdown import/edit/export, default visuals, append/replace, undo, focus, reload, original-file preservation')

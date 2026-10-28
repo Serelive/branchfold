@@ -1,6 +1,6 @@
 # Branch 1 · Version 2 — Nodes 2 and 3
 
-Implemented the Markdown reader and safe task-renaming slice. The accepted [review](archive/b1_v1_n2_review.md) and [response](archive/b1_v1_n2_review-r1_questions.md) are archived; their durable decisions live in the [renderer design](b1_v1_n2_design_renderer.md) and [development workflow](development-workflow.md).
+Implemented the Markdown reader and safe task-renaming slice. The accepted [review](b1_v1_n2_review.md) and [response](b1_v1_n2_review-r1_questions.md) are archived; their durable decisions live in the [renderer design](../b1_v1_n2_design_renderer.md) and [development workflow](../development-workflow.md).
 
 ## Results
 
@@ -18,7 +18,7 @@ Implemented the Markdown reader and safe task-renaming slice. The accepted [revi
 
 ## Try it and next work
 
-Run `npm run build:extension`, then `code --extensionDevelopmentPath="$PWD/extension" "$PWD"`. In the development window, run **Branchfold: Open Markdown Task Document**. Browser preview is available through **Open Markdown view** in the normal Vite app. Setup is documented in [README.md](../README.md).
+Run `npm run build:extension`, then `code --extensionDevelopmentPath="$PWD/extension" "$PWD"`. In the development window, run **Branchfold: Open Markdown Task Document**. Browser preview is available through **Open Markdown view** in the normal Vite app. Setup is documented in [README.md](../../README.md).
 
 Rename supports single-line titles; multiline titles and broader structural edits use the source editor. Context and inline formatting currently display as source text. VS Code save hooks follow user settings; disable format-on-save when evaluating minimal diffs. Native Fcitx5 input was not manually tested; automated composition guards passed.
 

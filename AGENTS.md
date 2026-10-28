@@ -8,7 +8,7 @@
 
 The tree is a revisable model of work, not a fixed contract. Users develop a rough objective into actionable parts, work on them, connect actions to results, and revise the plan as understanding changes.
 
-**Current product direction:** Branchfold is a **Markdown-native project interface**, not a replacement for Markdown or an independent task database. A project owns its task document (commonly `BRANCHES.md`); Branchfold offers a specialized view and editing experience over that document, with links to project files and other evidence of work. An IDE extension, standalone local reader, and multi-project overview are possible hosts or later products, not commitments to build them all.
+**Current product direction:** Branchfold is a **Markdown-native project interface**, not a replacement for Markdown or an independent task database. A project owns its task document (commonly `BRANCHES.md`); Branchfold offers a specialized view and editing experience over that document, with links to project files and other evidence of work. The VS Code extension is the current project-file host; the web app is an independent import/edit/export tool. A standalone reader and multi-project overview remain possible later products.
 
 The central test is whether Branchfold improves a real project workflow **relative to editing its Markdown file directly**, without introducing more maintenance than it saves.
 
@@ -35,6 +35,10 @@ The central test is whether Branchfold improves a real project workflow **relati
 Favor the smallest representation that preserves the user's meaning. Ordinary Markdown checklist items (`- [ ]` / `- [x]`) are the natural starting point for tasks; ordinary Markdown links are the starting point for artifact references. Headings, prose, non-task lists, code fences, and existing user conventions may coexist in the document. Do not silently reinterpret all Markdown as tasks or impose a proprietary schema.
 
 ## Markdown interoperability and data integrity
+
+**Approved import/edit workflow (b1_v2 review):** “Structured parts” are checklist task structures; “unstructured parts” are the other document content. The web app is an external import–edit–export tool: imports copy structured tasks into its independent working tree and establish no live link to the input file. The VS Code extension uses the same editor with import–edit–save: edits stay in its working tree until explicit Save, which replaces the selected file with standard checklist Markdown. This conversion intentionally omits unstructured content; concise/detailed context views are retired. Markdown and JSON imports share the same task model, with append and replace options. Directory guides, ancestor titles, and leaf drawings default to enabled.
+
+Keep the original file unchanged before Save, refresh clean extension views automatically, and retain unsaved work when external changes conflict. The conversion above is an explicit exception to source-preserving writes; apply the following preservation rules to any future source-preserving operation.
 
 These are core product requirements, not optional polish:
 

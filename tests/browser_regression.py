@@ -96,12 +96,12 @@ js('const e=document.activeElement;e.dispatchEvent(new CompositionEvent("composi
 assert len(stored())==2
 print('Browser composition-event guards passed (synthetic events only).')
 # Correct import empty/nonempty confirmation, cancel, undo and reload.
-load([]);text('input[type=file]',str(backup));wait('document.querySelector(".import-preview") !== null')
+load([]);text('input[aria-label="JSON backup"]',str(backup));wait('document.querySelector(".import-preview") !== null')
 assert 'replaced' not in js('return document.querySelector(".import-preview").textContent')
 button('Cancel import'); assert stored()==[]
-text('input[type=file]',str(backup));wait('document.querySelector(".import-preview") !== null');button('Import tree');assert stored()==fixture
+text('input[aria-label="JSON backup"]',str(backup));wait('document.querySelector(".import-preview") !== null');button('Import tree');assert stored()==fixture
 button('Undo');assert stored()==[];button('Redo');assert stored()==fixture
-text('input[type=file]',str(backup));wait('document.querySelector(".import-preview") !== null');assert 'Current work will be replaced' in js('return document.querySelector(".import-preview").textContent');button('Cancel import')
+text('input[aria-label="JSON backup"]',str(backup));wait('document.querySelector(".import-preview") !== null');assert 'Current work will be replaced' in js('return document.querySelector(".import-preview").textContent');button('Cancel import')
 req('/refresh',{});wait('document.querySelector("[data-row-id=a]") !== null');assert stored()==fixture
 print('Empty/nonempty import, cancellation, undo/redo and reload passed.')
 # Navigation context and deliberate parent deletion.
@@ -304,6 +304,7 @@ print('Leaf clicks, descendant previews, cancellation, commit, reopen and reload
 
 # Directory connectors replace guides without changing row geometry or task data.
 req('/window/rect',{'width':1280,'height':1100});load(hierarchy)
+button('Directory guides')
 positions=js('return [...document.querySelectorAll(".row-shell")].map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))')
 button('Directory guides')
 assert js('return document.querySelector(".directory-guides") !== null')
@@ -325,7 +326,7 @@ assert stored()==hierarchy
 print('Directory guides preserve geometry, data, folding and subtree focus; switch back passed.')
 
 # Path trunks stay dark through earlier siblings; title highlights are optional.
-load(hierarchy);button('Directory guides');click('[data-node-id=examples]')
+load(hierarchy);click('[data-node-id=examples]')
 def path_color(id,selector,pseudo=None):
  return js('return getComputedStyle(document.querySelector(arguments[0]).closest(".branch").querySelector(arguments[1]),arguments[2]).backgroundColor', '[data-row-id='+id+']',selector,pseudo)
 for id in ('plan','slides'):
