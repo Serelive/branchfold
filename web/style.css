@@ -134,3 +134,15 @@ button[aria-pressed=true]:not(.node-control) { background: #e0e8db; border-color
 .document-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: 1rem 0; padding: .8rem; border: 1px solid #c2c9bf; border-radius: .5rem; }
 .document-toolbar p { flex-basis: 100%; margin: .2rem 0; }
 .toolbar-buttons label { display: flex; align-items: center; gap: .4rem; }
+
+/* Website refinements: the document-host editor retains its existing controls. */
+.website-editor .row-shell { --reveal-width: min(240px, calc(100% - 36px)); }
+.website-editor .action-panel { justify-content: flex-end; }
+.website-editor .task-anchor.parent { --marker-color: #b8c9b3; }
+.website-editor .task-anchor.parent.folded { --marker-color: #577450; }
+.website-editor .task-anchor.parent.checked { --marker-color: #42673e; }
+.website-editor .directory-guides .branch.on-path > .row-shell .task-anchor,
+.website-editor .drag-handle:hover .task-anchor { --marker-color: #2c513a; }
+.website-editor .expansion-marker { position: absolute; left: calc(50% - 9px); top: calc(50% - 1px); width: 18px; height: 2px; border-radius: 1px; background: var(--marker-color); transform: translate(12px, 0) rotate(90deg); transition: transform 140ms ease, background-color 140ms ease; }
+.website-editor .folded .expansion-marker { transform: translate(0, 12px) rotate(0deg); }
+@media (prefers-reduced-motion: reduce) { .website-editor .expansion-marker { transition: none; } }

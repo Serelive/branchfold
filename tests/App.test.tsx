@@ -86,8 +86,8 @@ it('moves by keyboard, preserves focus, and restores edits with undo and redo', 
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.map((n: { id: string }) => n.id)).toEqual(['b', 'a']);
 });
 
-it('collapses, focuses, reparents and recovers deleted subtrees through pointer controls', async () => {
-  seed(); const user = userEvent.setup(); render(<App />);
+it('keeps extension pointer controls for collapse, focus, reparent and subtree recovery', async () => {
+  seed(); const user = userEvent.setup(); render(<App document={{ initialForest: fixture, onChange: nodes => localStorage.setItem(STORAGE_KEY, serializeForest(nodes)), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
   await fold(user, 'Alpha', false);
   expect(screen.queryByDisplayValue('Child')).toBeNull();
   await fold(user, 'Alpha', true);
@@ -189,7 +189,7 @@ it('ignores composition keys and normal text shortcuts, with explicit escape to 
 });
 
 it('preserves subtree context and collapsed branches across outdent and undo', async () => {
-  seed(); const user = userEvent.setup(); render(<App />);
+  seed(); const user = userEvent.setup(); render(<App document={{ initialForest: fixture, onChange: nodes => localStorage.setItem(STORAGE_KEY, serializeForest(nodes)), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
   await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
   await actions(user, 'Child');
   await user.click(within(screen.getByRole('group', { name: 'Actions for Child' })).getByRole('button', { name: 'Outdent' }));
@@ -448,4 +448,47 @@ it('tracks the selected ancestor path separately from passing sibling trunks', a
   expect(onPath()).toEqual(['Branch', 'Target']);
   await user.click(screen.getByRole('button', { name: 'Directory guides' }));
   expect(document.querySelector('.directory-guides')).toBeNull();
+});
+
+
+it('deletes only a website cell in place, restores it with undo, and keeps the tray minimal', async () => {
+  seed(); const user = userEvent.setup(); render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
+  await actions(user, 'Alpha');
+  const tray = screen.getByRole('group', { name: 'Actions for Alpha' });
+  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Delete cell', 'Delete subtree']);
+  await user.click(within(tray).getByRole('button', { name: 'Delete cell' }));
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.map((n: {id: string}) => n.id)).toEqual(['c', 'b']);
+  expect(screen.getByRole('treeitem', { name: 'Child' }).getAttribute('aria-level')).toBe('1');
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.getByDisplayValue('Alpha')).toBeTruthy();
+  expect(screen.queryByDisplayValue('Beta')).toBeNull();
+});
+
+it('keeps extension expansion and handles unchanged', async () => {
+  const user = userEvent.setup();
+  const nodes = [{ id: 'p', title: 'Parent', done: true, children: fixture }];
+  render(<App document={{ initialForest: nodes, onChange: vi.fn(), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
+  await fold(user, 'Parent', false); await fold(user, 'Parent', true);
+  expect(screen.getByDisplayValue('Child')).toBeTruthy();
+  expect(document.querySelector('.expansion-marker')).toBeNull();
+});
+
+it('website expansion reveals unfinished work and marks only expandable handles', async () => {
+  const user = userEvent.setup();
+  const leaf = (id: string, done: boolean) => ({ id, title: id, done, children: [] });
+  const nodes = [{ id: 'root', title: 'Root', done: true, children: [
+    { ...leaf('Earlier', true), children: [leaf('Finished', true)] },
+    { ...leaf('Path', false), children: [leaf('First', false)] },
+    { ...leaf('Later', true), children: [leaf('Last', true)] },
+  ] }];
+  localStorage.setItem(STORAGE_KEY, serializeForest(nodes)); render(<App />);
+  await fold(user, 'Later', false);
+  await fold(user, 'Root', false); await fold(user, 'Root', true);
+  expect(screen.queryByDisplayValue('Finished')).toBeNull();
+  expect(screen.getByDisplayValue('First')).toBeTruthy();
+  expect(screen.getByDisplayValue('Last')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Node control Root' }).querySelector('.expansion-marker')).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Node control First' }).querySelector('.expansion-marker')).toBeNull();
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
 });

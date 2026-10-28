@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent, type KeyboardEvent } fr
 import { addNode, updateNode, toggleCompletion, serializeForest, parseForest, findNode, nodeLocation, nodePath, visibleNodes, deleteNode, moveNode, moveRelative, outlineMove, type OutlineMove, type Forest, type DropPosition } from './tree';
 import { loadForest, saveForest } from './storage';
 import NodeControl from './NodeControl';
+import { deleteCell, expandToFirstUnchecked } from './websiteTree';
 import { appendForest, decodeMarkdown, exportMarkdown, importMarkdown } from './markdown';
 import type { ReactNode } from 'react';
 
@@ -165,20 +166,24 @@ export default function App({ document: host }: AppProps = {}) {
   }
   function toggleFold(id: string, close: boolean) {
     const next = new Set(collapsed); if (close) next.add(id); else next.delete(id);
+    if (!host && !close) {
+      const node = findNode(forest, id);
+      if (node) expandToFirstUnchecked(node, next);
+    }
     setCollapsed(next);
     if (close && selectedId && findNode(findNode(forest, id)?.children ?? [], selectedId)) focus(id);
   }
-  function remove(id: string, preferPrevious = false) {
+  function remove(id: string, preferPrevious = false, keepChildren = false) {
     const path = nodePath(forest, id);
     const location = nodeLocation(forest, id)!;
-    const next = deleteNode(forest, id);
+    const next = keepChildren ? deleteCell(forest, id) : deleteNode(forest, id);
     const previous = location.siblings[location.index - 1]?.id;
-    const following = location.siblings[location.index + 1]?.id;
+    const following = (keepChildren ? location.siblings[location.index].children[0]?.id : undefined) ?? location.siblings[location.index + 1]?.id;
     const target = preferPrevious ? previous ?? location.parentId ?? following : following ?? previous ?? location.parentId;
     change(next); setPendingDelete(null); setEditingId(null);
     if (viewRootId && !findNode(next, viewRootId)) setViewRootId(path.at(-2)?.id ?? null);
     if (target) focus(target); else setSelectedId(null);
-    setNotice('Subtree deleted. Undo restores it, including descendants.');
+    setNotice(keepChildren ? 'Cell deleted; children promoted in place. Undo restores it.' : 'Subtree deleted. Undo restores it, including descendants.');
   }
   function requestDelete(id: string) {
     if (findNode(forest, id)!.children.length) setPendingDelete(id); else remove(id);
@@ -354,7 +359,7 @@ export default function App({ document: host }: AppProps = {}) {
           onFocus={event => { if (event.target === event.currentTarget) { setSelectedId(node.id); setEditingId(null); } }}
           onClick={event => { if (event.target === event.currentTarget) focus(node.id); }}
           >
-          <NodeControl title={label} displayDone={node.done}
+          <NodeControl expansionMarker={!host} title={label} displayDone={node.done}
             onPreview={active => setCompletionPreview(current => active ? node.id : current === node.id ? null : current)}
             expanded={!closed} hasChildren={!!node.children.length}
             setExpanded={expanded => toggleFold(node.id, !expanded)}
@@ -377,6 +382,7 @@ export default function App({ document: host }: AppProps = {}) {
         </div>
         <div className="action-panel" role="group" aria-label={`Actions for ${label}`} aria-hidden={!actionsOpen} inert={!actionsOpen}
           onFocusCapture={() => setSelectedId(node.id)}>
+          {host && <>
           <button aria-label="Move up" title="Move up" disabled={location.index === 0} onClick={() => act(() => move(node.id, 'up'))}>↑</button>
           <button aria-label="Move down" title="Move down" disabled={location.index === location.siblings.length - 1} onClick={() => act(() => move(node.id, 'down'))}>↓</button>
           <button aria-label="Indent" title="Indent" disabled={location.index === 0} onClick={() => act(() => move(node.id, 'indent'))}>→</button>
@@ -388,7 +394,9 @@ export default function App({ document: host }: AppProps = {}) {
           }}><option value="" disabled>Move into…</option><option value="root">Root level</option>
             {flatten(forest).filter(item => item.id !== node.id && !findNode(node.children, item.id)).map(item => <option key={item.id} value={`node:${item.id}`}>{nodePath(forest, item.id).map(n => n.title || 'Untitled').join(' / ')}</option>)}
           </select>
-          <button className="danger" aria-label="Delete subtree" title="Delete subtree" onClick={() => act(() => requestDelete(node.id))}>Delete</button>
+          </>}
+          {!host && <button className="danger" aria-label="Delete cell" title="Delete only this cell; promote its children in place" onClick={() => act(() => remove(node.id, false, true))}>Delete cell</button>}
+          <button className="danger" aria-label="Delete subtree" title="Delete subtree" onClick={() => act(() => requestDelete(node.id))}>{host ? 'Delete' : 'Delete subtree'}</button>
         </div>
         </div>
         {node.children.length > 0 && !closed && renderNodes(node.children, level + 1)}
@@ -397,7 +405,7 @@ export default function App({ document: host }: AppProps = {}) {
     })}</ul>;
   }
 
-  return <main onKeyDown={keyboard}>
+  return <main className={host ? undefined : 'website-editor'} onKeyDown={keyboard}>
     <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">LOCAL PROTOTYPE</span></header>
     {host?.toolbar}
     <section className="intro"><p className="eyebrow">A LITTLE STRUCTURE. ROOM TO CHANGE.</p><h1>Make room for the next step.</h1><p>A living task tree for plans that evolve with action.</p></section>

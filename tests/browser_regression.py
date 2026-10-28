@@ -106,7 +106,7 @@ req('/refresh',{});wait('document.querySelector("[data-row-id=a]") !== null');as
 print('Empty/nonempty import, cancellation, undo/redo and reload passed.')
 # Navigation context and deliberate parent deletion.
 click('button[aria-label="Focus subtree Alpha"]')
-click('button[aria-label="Actions for Child"]');button('Outdent')
+click('input[data-node-id="c"]');keys(('\ue008','\ue004'))
 assert js('return document.querySelector("[data-node-id=b]")') is None
 assert js('return document.querySelector("[data-node-id=c]")') is None
 button('Undo');wait('document.querySelector("[data-node-id=c]") !== null')
@@ -255,7 +255,7 @@ req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause',
 assert positions==js('return [...document.querySelectorAll(".row-shell")].map(e=>({top:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}))')
 assert js('return document.querySelector("[data-row-id=a]").getBoundingClientRect().left < document.querySelector(".row-shell").getBoundingClientRect().left')
 (ARTIFACTS/'revealed-actions.png').write_bytes(base64.b64decode(req('/screenshot')))
-button('Move down');assert stored()[1]['id']=='a';assert not stored()[0]['done']
+button('Delete cell');assert [n['id'] for n in stored()]==['c','b'];button('Undo');assert stored()==fixture
 assert js('return document.querySelector(".row-shell.revealed")') is None
 click('button[aria-label="Actions for Beta"]');keys('\ue00c');assert js('return document.querySelector(".row-shell.revealed")') is None
 print('Unified control long-press/click and fixed-layout slide actions passed.')
@@ -266,7 +266,7 @@ req('/window/rect',{'width':500,'height':844});load(fixture)
 click('button[aria-label="Actions for Alpha"]')
 req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause','duration':250}]}]})
 (ARTIFACTS/'revealed-actions-narrow.png').write_bytes(base64.b64decode(req('/screenshot')))
-button('Move down');assert stored()[1]['id']=='a'
+button('Delete cell');assert [n['id'] for n in stored()]==['c','b']
 print('Narrow action tray remains usable.')
 
 # Leaf clicks toggle; held subtree completion previews and commits atomically.

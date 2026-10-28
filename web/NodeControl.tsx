@@ -4,6 +4,7 @@ const leafOutline = 'M4 9 C5 3 10 5 15 2 C16 9 13 15 8 13 C6 12 5 10 4 9 Z';
 const leafStalk = 'M1 9 H4';
 
 type Props = {
+  expansionMarker?: boolean;
   title: string;
   displayDone: boolean;
   onPreview: (active: boolean) => void;
@@ -19,7 +20,7 @@ type Props = {
   onLostPointerCapture: PointerEventHandler<HTMLButtonElement>;
 };
 
-export default function NodeControl({ title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
+export default function NodeControl({ expansionMarker = false, title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const held = useRef(false);
   const pending = useRef(false);
@@ -75,6 +76,7 @@ export default function NodeControl({ title, displayDone, onPreview, expanded, h
       else toggleDone();
     }}>
     <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${(displayDone) ? 'checked' : ''}`} aria-hidden="true">
+      {expansionMarker && hasChildren && <span className="expansion-marker" />}
       <span className="anchor-inner" />
       {!hasChildren && <svg className="anchor-leaf" viewBox="0 0 18 18" focusable="false">
         <circle className="leaf-ring" cx="9" cy="9" r="8.25" />

@@ -54,6 +54,8 @@ When the implementation can access local files, obtain access through an appropr
 
 ## Interaction design
 
+Until the user explicitly revokes this rule, UI QuickFixes and QuickFeatures target the website only. Gate shared-editor changes by host so the VS Code extension retains its existing UI and behavior.
+
 Preserve the strengths of the current hierarchical editor while adapting it to Markdown:
 
 - Distinguish **selected node**, **text editing**, **focused subtree/view root**, and **dragging**. These are separate UI concepts.
