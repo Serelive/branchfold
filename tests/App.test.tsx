@@ -86,7 +86,7 @@ it('moves by keyboard, preserves focus, and restores edits with undo and redo', 
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.map((n: { id: string }) => n.id)).toEqual(['b', 'a']);
 });
 
-it('keeps extension pointer controls for collapse, focus, reparent and subtree recovery', async () => {
+it('supports extension collapse, focus, keyboard reparent and subtree recovery', async () => {
   seed(); const user = userEvent.setup(); render(<App document={{ initialForest: fixture, onChange: nodes => localStorage.setItem(STORAGE_KEY, serializeForest(nodes)), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
   await fold(user, 'Alpha', false);
   expect(screen.queryByDisplayValue('Child')).toBeNull();
@@ -96,11 +96,8 @@ it('keeps extension pointer controls for collapse, focus, reparent and subtree r
   expect(screen.queryByDisplayValue('Beta')).toBeNull();
   expect(screen.getByRole('navigation', { name: 'Subtree navigation' }).textContent).toContain('Alpha');
   await user.click(screen.getByRole('button', { name: 'All tasks' }));
-  await actions(user, 'Alpha');
-  // The parent chooser must exclude the node and all descendants.
-  const chooser = screen.getByRole('combobox', { name: 'Move Alpha into' });
-  expect(Array.from((chooser as HTMLSelectElement).options).map(o => o.value)).not.toContain('node:c');
-  await user.selectOptions(chooser, 'node:b');
+  await user.click(screen.getByDisplayValue('Alpha'));
+  await user.keyboard('{Escape}{Control>}{ArrowDown}{/Control}{Enter}{Tab}{Escape}');
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].children[0].id).toBe('a');
   // Moving remounts this row under its new parent, closing its details menu.
   await actions(user, 'Alpha');
@@ -191,8 +188,8 @@ it('ignores composition keys and normal text shortcuts, with explicit escape to 
 it('preserves subtree context and collapsed branches across outdent and undo', async () => {
   seed(); const user = userEvent.setup(); render(<App document={{ initialForest: fixture, onChange: nodes => localStorage.setItem(STORAGE_KEY, serializeForest(nodes)), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
   await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
-  await actions(user, 'Child');
-  await user.click(within(screen.getByRole('group', { name: 'Actions for Child' })).getByRole('button', { name: 'Outdent' }));
+  await user.click(screen.getByDisplayValue('Child'));
+  await user.keyboard('{Shift>}{Tab}{/Shift}');
   expect(screen.queryByDisplayValue('Beta')).toBeNull();
   expect(screen.queryByDisplayValue('Child')).toBeNull();
   expect(screen.getByRole('button', { name: 'Go to moved node' })).toBeTruthy();
@@ -465,13 +462,13 @@ it('deletes only a website cell in place, restores it with undo, and keeps the t
   expect(screen.queryByDisplayValue('Beta')).toBeNull();
 });
 
-it('keeps extension expansion and handles unchanged', async () => {
+it('shares website expansion and handle markers with the extension', async () => {
   const user = userEvent.setup();
   const nodes = [{ id: 'p', title: 'Parent', done: true, children: fixture }];
   render(<App document={{ initialForest: nodes, onChange: vi.fn(), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
   await fold(user, 'Parent', false); await fold(user, 'Parent', true);
-  expect(screen.getByDisplayValue('Child')).toBeTruthy();
-  expect(document.querySelector('.expansion-marker')).toBeNull();
+  expect(screen.queryByDisplayValue('Child')).toBeNull();
+  expect(document.querySelector('.expansion-marker')).toBeTruthy();
 });
 
 it('website expansion reveals unfinished work and marks only expandable handles', async () => {
@@ -491,4 +488,32 @@ it('website expansion reveals unfinished work and marks only expandable handles'
   expect(screen.getByRole('button', { name: 'Node control Root' }).querySelector('.expansion-marker')).toBeTruthy();
   expect(screen.getByRole('button', { name: 'Node control First' }).querySelector('.expansion-marker')).toBeNull();
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
+});
+
+it.each(['website', 'extension'])('toggles unchecked bars independently and promotes deleted cells in the %s', async mode => {
+  const user = userEvent.setup();
+  const nodes = [
+    { id: 'unchecked', title: 'Unchecked', done: false, children: [{ id: 'leaf', title: 'Leaf', done: false, children: [] }] },
+    { id: 'checked', title: 'Checked', done: true, children: [{ id: 'done', title: 'Done', done: true, children: [] }] },
+  ];
+  const onChange = vi.fn(), onSave = vi.fn();
+  localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
+  render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
+  const marker = (title: string) => screen.getByRole('button', { name: `Node control ${title}` }).querySelector('.expansion-marker');
+  expect(marker('Unchecked')).toBeTruthy(); expect(marker('Checked')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
+  expect(marker('Unchecked')).toBeNull(); expect(marker('Checked')).toBeTruthy();
+  await fold(user, 'Checked', false); expect(marker('Checked')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
+  expect(marker('Unchecked')).toBeTruthy();
+  await actions(user, 'Unchecked');
+  const tray = screen.getByRole('group', { name: 'Actions for Unchecked' });
+  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Delete cell', 'Delete subtree']);
+  await user.click(within(tray).getByRole('button', { name: 'Delete cell' }));
+  expect(screen.getByRole('treeitem', { name: 'Leaf' }).getAttribute('aria-level')).toBe('1');
+  expect(onSave).not.toHaveBeenCalled();
+  if (mode === 'extension') {
+    expect(onChange.mock.calls.at(-1)![0].map((n: {id: string}) => n.id)).toEqual(['leaf', 'checked']);
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
+  }
 });

@@ -68,14 +68,19 @@ load(tree)
 click('button[aria-label="Node control root"]');time.sleep(.2)
 assert js('return document.querySelectorAll(".expansion-marker").length')==1
 folded=js('const e=document.querySelector(".expansion-marker"),r=e.getBoundingClientRect();return {w:r.width,h:r.height,color:getComputedStyle(e).backgroundColor}')
-assert abs(folded['w']-18)<.1 and abs(folded['h']-2)<.1
+assert abs(folded['w']-18)<.1 and abs(folded['h']-3)<.1
 click('button[aria-label="Node control root"]');time.sleep(.2)
 assert js('return document.querySelector("[data-row-id=done]")') is None
 assert js('return document.querySelector("[data-row-id=first]")') is not None
 assert js('return document.querySelector("[data-row-id=last]")') is not None
 expanded=js('const e=document.querySelector(".expansion-marker"),r=e.getBoundingClientRect();return {w:r.width,h:r.height}')
-assert abs(expanded['w']-2)<.1 and abs(expanded['h']-18)<.1
+assert abs(expanded['w']-3)<.1 and abs(expanded['h']-18)<.1
 assert stored()==tree
+button('Unchecked branch bars')
+assert js('return document.querySelector("[data-row-id=path] .expansion-marker")') is None
+assert js('return document.querySelector("[data-row-id=root] .expansion-marker")') is not None
+assert js('return getComputedStyle(document.querySelector(".expansion-marker")).borderRadius')=='0px'
+button('Unchecked branch bars')
 positions=js('return [...document.querySelectorAll(".row-shell")].map(e=>e.getBoundingClientRect().top)')
 click('button[aria-label="Actions for root"]');time.sleep(.25)
 assert positions==js('return [...document.querySelectorAll(".row-shell")].map(e=>e.getBoundingClientRect().top)')

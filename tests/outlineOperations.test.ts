@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { deleteCell, expandToFirstUnchecked } from '../web/websiteTree';
+import { deleteCell, expandToFirstUnchecked } from '../web/outlineOperations';
 import type { TaskNode } from '../web/tree';
 const n = (id: string, done = false, children: TaskNode[] = []): TaskNode => ({ id, title: id, done, children });
 it('promotes children at the same position and preserves their subtrees and state', () => {

@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Website-only UI refinements: minimal deletion tray, animated expandable-handle indicators, and expansion toward unfinished work. Keep the extension UI unchanged until the user revokes this scope. Node 4 artifact links remain future work.
+Current focus: Shared website and extension outline controls, with optional unchecked branch bars and centered bar rotation. Node 4 artifact links remain future work.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -33,6 +33,11 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] On opening, fold preceding branches, reveal the first unchecked leaf's ancestor path, and expand later branches within that subtree; show immediate children when all leaves are checked
   - [x] Validate domain/UI behavior and extension isolation with automated tests and a production build
   - [ ] Run the added real-browser regression: local Firefox cannot launch because snap-confine lacks required permissions; no connected browser is available
+- [x] Unify website and extension refinements after lifting the website-only restriction
+  - [x] Share the deletion tray, child promotion, expansion rule, and handle indicators across both hosts
+  - [x] Add an enabled-by-default unchecked branch bar toggle; checked parent bars remain visible
+  - [x] Rotate sharp 18 × 3 px bars around the handle center, matching the unchecked parent ring thickness
+  - [x] Validate shared behavior and explicit-save isolation with automated tests; build website and extension
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files

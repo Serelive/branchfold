@@ -10,6 +10,8 @@ Markdown and version-1 JSON imports become the same tree. **Replace tree** repla
 
 The shared UI supports inline titles, sibling/child creation, indentation/outdentation, completion, deletion, drag and keyboard moves, focus, folding, and undo/redo. Directory guides, ancestor titles, and leaf drawings start enabled. The existing composition and long-press rules apply to both formats and both hosts.
 
+Both hosts share the compact sliding deletion tray: **Delete cell** promotes its children in place, while **Delete subtree** removes descendants too. Opening a folded branch collapses branches before its first unchecked leaf, reveals that leaf’s ancestor path, and expands subsequent branches within the subtree. If every leaf is checked, it shows immediate children. Expandable handles use a sharp 18 × 3 px bar that rotates around the handle center from horizontal below to vertical at right. **Unchecked branch bars** starts enabled; switching it off leaves checked parent bars visible.
+
 Exports write two-space-indented `- [ ]` / `- [x]` lines. Task labels are escaped as literal Markdown text, preserving punctuation, link text, whitespace, and Unicode through reimport; blank tasks remain blank checklist lines. Only the checklist tree is exported. JSON export remains available.
 
 ## Web: import, edit, export
