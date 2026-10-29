@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Investigate the reported VS Code loading stall. Isolated extension startup renders the tree and completes page loading; the affected-window state is still needed to reproduce the report.
+Current focus: Completed the VS Code light-mode color fix. Real-webview checks confirm correct light/dark/light colors and successful startup; await the next requested refinement.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -44,10 +44,12 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Add light/dark palettes and English/Chinese UI; persist appearance separately from task data
   - [x] Verify drawer focus/closure, language switching, storage fallback, task preservation, and extension save isolation; build both hosts
   - [ ] Run the real-browser appearance and narrow-layout checks when a usable browser is available
-- [ ] Reproduce the reported VS Code loading-progress stall
+- [x] Investigate the reported VS Code loading indicator and fix light-mode colors
   - [x] Run the real VS Code integration suite against the current build
   - [x] Probe startup in an isolated window: scripts/styles load, tasks render, page reaches complete, and no JavaScript error is reported
-  - [ ] Identify the affected window's visible state and reproduce its stall; no speculative application fix applied
+  - [x] Reproduce host foreground inheritance and explicitly apply the shared palette to the page body
+  - [x] Verify task rendering and light/dark/light colors in the real VS Code webview, alongside save, undo, recovery, and conflict checks
+  - [x] Inspect the supplied screenshot: the stationary tab-width line appears to be the active-tab underline; no loading stall reproduced
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files

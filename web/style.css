@@ -90,7 +90,8 @@
 }
 :root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: var(--text); background: var(--page); font-synthesis: none; }
 * { box-sizing: border-box; }
-body { margin: 0; }
+/* VS Code sets body foreground/background explicitly; root inheritance cannot override it. */
+body { margin: 0; color: var(--text); background: var(--page); font-family: inherit; }
 main { max-width: 960px; margin: auto; padding: 32px 28px; }
 header, .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
 .brand { font-size: 21px; font-weight: 750; letter-spacing: -.6px; }
