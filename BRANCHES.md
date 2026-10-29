@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Shared dark mode, Chinese UI, and a closed-by-default Settings drawer. Existing visualization defaults are retained. Node 4 artifact links remain future work.
+Current focus: Investigate the reported VS Code loading stall. Isolated extension startup renders the tree and completes page loading; the affected-window state is still needed to reproduce the report.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -44,6 +44,10 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Add light/dark palettes and English/Chinese UI; persist appearance separately from task data
   - [x] Verify drawer focus/closure, language switching, storage fallback, task preservation, and extension save isolation; build both hosts
   - [ ] Run the real-browser appearance and narrow-layout checks when a usable browser is available
+- [ ] Reproduce the reported VS Code loading-progress stall
+  - [x] Run the real VS Code integration suite against the current build
+  - [x] Probe startup in an isolated window: scripts/styles load, tasks render, page reaches complete, and no JavaScript error is reported
+  - [ ] Identify the affected window's visible state and reproduce its stall; no speculative application fix applied
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files
