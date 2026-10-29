@@ -1,3 +1,4 @@
+import { useUI } from './preferences';
 import { useEffect, useRef, type PointerEvent, type PointerEventHandler } from 'react';
 
 const leafOutline = 'M4 9 C5 3 10 5 15 2 C16 9 13 15 8 13 C6 12 5 10 4 9 Z';
@@ -22,6 +23,7 @@ type Props = {
 };
 
 export default function NodeControl({ expansionMarker = false, instantMarker = false, title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
+  const { t } = useUI();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const held = useRef(false);
   const pending = useRef(false);
@@ -37,9 +39,9 @@ export default function NodeControl({ expansionMarker = false, instantMarker = f
     window.addEventListener('keydown', keyDown);
     return () => { clearPress(); previewCallback.current(false); window.removeEventListener('blur', cancel); window.removeEventListener('keydown', keyDown); };
   }, []);
-  return <button className="drag-handle node-control" aria-label={`Node control ${title}`}
+  return <button className="drag-handle node-control" aria-label={t('Node control {title}', { title })}
     aria-pressed={displayDone} aria-expanded={hasChildren ? expanded : undefined}
-    title={`${hasChildren ? 'Click: expand/collapse' : 'Click: complete/reopen'} · Long-press: preview completion · Release: confirm · Drag: move`}
+    title={t('{click} · Long-press: preview completion · Release: confirm · Drag: move', { click: t(hasChildren ? 'Click: expand/collapse' : 'Click: complete/reopen') })}
     onPointerDown={event => {
       if (event.button !== 0 || event.isPrimary === false) return;
       clearPress(); cancelPreview(); held.current = false;

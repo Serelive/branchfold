@@ -40,6 +40,10 @@ def keys(*values):
   else:a += [{'type':'keyDown','value':value},{'type':'keyUp','value':value}]
  req('/actions',{'actions':[{'type':'key','id':'keys','actions':a}]})
 def button(label):
+ settings_labels={'Directory guides','Ancestor titles','Unchecked branch bars','Expanded branch bars','Leaf drawings','Export JSON','Import JSON','Export Markdown','Import Markdown'}
+ in_settings=label in settings_labels
+ if in_settings and js('return document.querySelector(".settings-trigger")?.getAttribute("aria-expanded")==="false"'):
+  click('.settings-trigger')
  ident=js('return [...document.querySelectorAll("button")].find(b=>(b.textContent===arguments[0] || b.getAttribute("aria-label")===arguments[0]) && !b.closest("[inert]") && b.getClientRects().length && (!b.closest("details") || b.closest("details").open))',label)
  assert ident,label
  js('arguments[0].scrollIntoView({block:"nearest",inline:"nearest"})',ident)
@@ -48,6 +52,7 @@ def button(label):
   time.sleep(.05)
  else:raise AssertionError('Button remained covered: '+label)
  req('/element/'+ident['element-6066-11e4-a52e-4f735466cecf']+'/click',{})
+ if in_settings: click('.settings-heading button')
 def load(nodes,url=None):
  if url is None: url=APP_URL
  req('/url',{'url':url}); wait('document.querySelector("main") !== null')

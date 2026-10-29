@@ -23,7 +23,7 @@ Open the local URL printed by Vite. Keep the development server running while us
 
 ## Import and export task trees
 
-Choose **Import Markdown** or **Import JSON** and select a file up to 2 MB. Markdown imports copy checklist tasks and their nesting into the editor, omitting headings, notes, and other unstructured content. The original file stays unchanged. Both formats use the same editor after import.
+Open **Settings**, then choose **Import Markdown** or **Import JSON** and select a file up to 2 MB. Markdown imports copy checklist tasks and their nesting into the editor, omitting headings, notes, and other unstructured content. The original file stays unchanged. Both formats use the same editor after import.
 
 Choose **Replace tree** or **Append roots** in **Import mode**, then review and confirm the import. Appending adds roots after the existing tree. Undo can restore a replaced tree or remove appended tasks.
 
@@ -54,7 +54,11 @@ The left handle combines three actions:
 - **Hold:** preview completion after half a second, then release to apply it. Checking a task checks its descendants; unchecking changes only that task.
 - **Drag:** move the subtree. Moving after a hold cancels the completion preview and starts dragging. An insertion line shows placement before or after a subtree; a highlighted row shows placement inside it. Escape cancels the drag.
 
-The right-edge arrow slides the row aside to reveal movement and deletion actions without shifting other rows. If a move takes a task outside the current view, **Go to moved node** reveals it.
+The right-edge arrow slides the row aside to reveal **Delete cell** (promote its children in place) and **Delete subtree**, without shifting other rows. If a move takes a task outside the current view, **Go to moved node** reveals it.
+
+### Appearance and language
+
+Open **Settings** for **Dark mode**, **Chinese mode / 中文**, visualization options, and import/export. The drawer starts closed; Escape or a click outside closes it. Dark mode and Chinese mode start off and remember your choices in local storage. Task titles remain unchanged when switching languages. The existing visualization options remain enabled by default.
 
 ### Keyboard shortcuts
 

@@ -5,6 +5,8 @@ import NodeControl from './NodeControl';
 import { deleteCell, expandToFirstUnchecked } from './outlineOperations';
 import { appendForest, decodeMarkdown, exportMarkdown, importMarkdown } from './markdown';
 import type { ReactNode } from 'react';
+import { PreferencesProvider, useUI } from './preferences';
+import SettingsPanel from './SettingsPanel';
 
 function download(content: string, format: 'json' | 'md') {
   const url = URL.createObjectURL(new Blob([content], { type: format === 'json' ? 'application/json' : 'text/markdown;charset=utf-8' }));
@@ -20,7 +22,11 @@ type Drop = { id: string; position: DropPosition };
 type AppProps = {
   document?: { initialForest: Forest; onChange: (forest: Forest) => void; onExport: (forest: Forest, format: 'json' | 'md') => void; onSave: () => void; status: string; toolbar: ReactNode };
 };
-export default function App({ document: host }: AppProps = {}) {
+export default function App(props: AppProps = {}) {
+  return <PreferencesProvider><Editor {...props} /></PreferencesProvider>;
+}
+function Editor({ document: host }: AppProps) {
+  const { t } = useUI();
   const [initial] = useState(() => {
     try { return { nodes: host?.initialForest ?? loadForest(localStorage), error: false }; }
     catch { return { nodes: [] as Forest, error: true }; }
@@ -341,8 +347,8 @@ export default function App({ document: host }: AppProps = {}) {
   }
   function renderNodes(nodes: Forest, level = 1) {
     const pathIndex = nodes.findIndex(node => selectedPath.has(node.id));
-    return <ul className="nodes" role={level === 1 ? 'tree' : 'group'} aria-label={level === 1 ? 'Outline' : undefined}>{nodes.map((node, index) => {
-      const label = node.title || 'untitled task';
+    return <ul className="nodes" role={level === 1 ? 'tree' : 'group'} aria-label={level === 1 ? t("Outline") : undefined}>{nodes.map((node, index) => {
+      const label = node.title || t("untitled task");
       const closed = collapsed.has(node.id);
       const preview = drop?.id === node.id ? `drop-${drop.position}` : '';
       const actionsOpen = actionsId === node.id;
@@ -368,23 +374,23 @@ export default function App({ document: host }: AppProps = {}) {
             ignoreClick={() => suppressControlClick.current === node.id}
             onPointerDown={event => pointerDown(event, node.id)} onPointerMove={pointerMove} onPointerUp={pointerUp}
             onPointerCancel={endDrag} onLostPointerCapture={endDrag} />
-          <input className="title" data-node-id={node.id} aria-label="Task title" placeholder="An unfinished thought…"
+          <input className="title" data-node-id={node.id} aria-label={t("Task title")} placeholder={t("An unfinished thought…")}
             readOnly={editingId !== node.id} tabIndex={editingId === node.id ? 0 : -1}
             value={node.title} onClick={() => focus(node.id, true)}
             onBlur={() => { editGroup.current = null; setEditingId(current => current === node.id ? null : current); }}
             onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
             onChange={event => change(updateNode(forest, node.id, n => ({ ...n, title: event.target.value })), node.id)} />
-          <button className="row-action" aria-label={`Add sibling after ${label}`} title="Add sibling (B in navigation)" onClick={() => sibling(node.id)}>+ Next</button>
-          <button className="row-action" aria-label={`Add child to ${label}`} title="Add child (C in navigation)" onClick={() => create(node.id)}>+ Child</button>
-          <button className="row-action" aria-label={`Focus subtree ${label}`} title="Focus subtree" onClick={() => zoom(node.id)}>↗</button>
-          <button className="actions-trigger" aria-label={`${actionsOpen ? 'Close' : 'Actions for'} ${label}`}
-            aria-expanded={actionsOpen} title={actionsOpen ? 'Close actions' : 'Reveal actions'}
+          <button className="row-action" aria-label={t('Add sibling after {title}', { title: label })} title={t("Add sibling (B in navigation)")} onClick={() => sibling(node.id)}>{t("+ Next")}</button>
+          <button className="row-action" aria-label={t('Add child to {title}', { title: label })} title={t("Add child (C in navigation)")} onClick={() => create(node.id)}>{t("+ Child")}</button>
+          <button className="row-action" aria-label={t('Focus subtree {title}', { title: label })} title={t("Focus subtree")} onClick={() => zoom(node.id)}>↗</button>
+          <button className="actions-trigger" aria-label={`${actionsOpen ? t("Close") : t("Actions for")} ${label}`}
+            aria-expanded={actionsOpen} title={actionsOpen ? t("Close actions") : t("Reveal actions")}
             onClick={() => setActionsId(actionsOpen ? null : node.id)}>{actionsOpen ? '›' : '‹'}</button>
         </div>
-        <div className="action-panel" role="group" aria-label={`Actions for ${label}`} aria-hidden={!actionsOpen} inert={!actionsOpen}
+        <div className="action-panel" role="group" aria-label={t('Actions for {title}', { title: label })} aria-hidden={!actionsOpen} inert={!actionsOpen}
           onFocusCapture={() => setSelectedId(node.id)}>
-          <button className="danger" aria-label="Delete cell" title="Delete only this cell; promote its children in place" onClick={() => act(() => remove(node.id, false, true))}>Delete cell</button>
-          <button className="danger" aria-label="Delete subtree" title="Delete subtree" onClick={() => act(() => requestDelete(node.id))}>Delete subtree</button>
+          <button className="danger" aria-label={t("Delete cell")} title={t("Delete only this cell; promote its children in place")} onClick={() => act(() => remove(node.id, false, true))}>{t("Delete cell")}</button>
+          <button className="danger" aria-label={t("Delete subtree")} title={t("Delete subtree")} onClick={() => act(() => requestDelete(node.id))}>{t("Delete subtree")}</button>
         </div>
         </div>
         {node.children.length > 0 && !closed && renderNodes(node.children, level + 1)}
@@ -394,47 +400,53 @@ export default function App({ document: host }: AppProps = {}) {
   }
 
   return <main className="outline-editor" onKeyDown={keyboard}>
-    <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">LOCAL PROTOTYPE</span></header>
+    <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">{t("LOCAL PROTOTYPE")}</span></header>
     {host?.toolbar}
-    <section className="intro"><p className="eyebrow">A LITTLE STRUCTURE. ROOM TO CHANGE.</p><h1>Make room for the next step.</h1><p>A living task tree for plans that evolve with action.</p></section>
-    {initial.error ? <section role="alert" className="warning"><h2>Your saved tree could not be opened.</h2><p>Editing is paused to protect existing data. Storage may be unavailable, or the saved format may be invalid. No data has been overwritten. Restore browser storage access or recover the original data before reloading.</p></section> : <>
-      <section className={`workspace ${directoryGuides ? 'directory-guides' : ''} ${leafDrawings ? 'leaf-drawings' : ''} ${ancestorTitles ? 'ancestor-titles' : ''} ${draggedId ? 'is-dragging' : ''}`} aria-label="Task tree" ref={editor}>
-        <div className="toolbar"><h2>Your task tree</h2><div className="toolbar-buttons">
-            <button aria-pressed={directoryGuides} onClick={() => setDirectoryGuides(current => !current)}>Directory guides</button>
-            {directoryGuides && <button aria-pressed={ancestorTitles} onClick={() => setAncestorTitles(current => !current)}>Ancestor titles</button>}
-            <button aria-pressed={uncheckedBars} onClick={() => setUncheckedBars(current => !current)}>Unchecked branch bars</button>
-            <button aria-pressed={expandedBars} onClick={() => setExpandedBars(current => !current)}>Expanded branch bars</button>
-            <button aria-pressed={leafDrawings} onClick={() => setLeafDrawings(current => !current)}>Leaf drawings</button>
-          <button disabled={!past.length} onClick={() => restore('undo')}>Undo</button><button disabled={!future.length} onClick={() => restore('redo')}>Redo</button>
-          <button onClick={() => exportTree('json')}>Export JSON</button><button onClick={() => fileInput.current?.click()}>Import JSON</button>
-          <button onClick={() => exportTree('md')}>Export Markdown</button><button onClick={() => markdownInput.current?.click()}>Import Markdown</button>
-          <label>Import mode <select aria-label="Import mode" value={importMode} onChange={event => setImportMode(event.target.value as 'replace' | 'append')}><option value="replace">Replace tree</option><option value="append">Append roots</option></select></label>
-          <input ref={markdownInput} type="file" hidden accept=".md,.markdown,text/markdown,text/plain" aria-label="Markdown import" onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'md'); event.target.value = ''; }} />
-          <input ref={fileInput} type="file" hidden accept=".json,application/json" aria-label="JSON backup" onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'json'); event.target.value = ''; }} />
+    <section className="intro"><p className="eyebrow">{t("A LITTLE STRUCTURE. ROOM TO CHANGE.")}</p><h1>{t("Make room for the next step.")}</h1><p>{t("A living task tree for plans that evolve with action.")}</p></section>
+    {initial.error ? <section role="alert" className="warning"><h2>{t("Your saved tree could not be opened.")}</h2><p>{t("Editing is paused to protect existing data. Storage may be unavailable, or the saved format may be invalid. No data has been overwritten. Restore browser storage access or recover the original data before reloading.")}</p></section> : <>
+      <section className={`workspace ${directoryGuides ? 'directory-guides' : ''} ${leafDrawings ? 'leaf-drawings' : ''} ${ancestorTitles ? 'ancestor-titles' : ''} ${draggedId ? 'is-dragging' : ''}`} aria-label={t("Task tree")} ref={editor}>
+        <div className="toolbar"><h2>{t("Your task tree")}</h2><div className="toolbar-buttons">
+          <button disabled={!past.length} onClick={() => restore('undo')}>{t("Undo")}</button><button disabled={!future.length} onClick={() => restore('redo')}>{t("Redo")}</button>
+          <input ref={markdownInput} type="file" hidden accept=".md,.markdown,text/markdown,text/plain" aria-label={t("Markdown import")} onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'md'); event.target.value = ''; }} />
+          <input ref={fileInput} type="file" hidden accept=".json,application/json" aria-label={t("JSON backup")} onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'json'); event.target.value = ''; }} />
+          <SettingsPanel>
+            <fieldset><legend>{t("Tree display")}</legend>
+            <button aria-pressed={directoryGuides} onClick={() => setDirectoryGuides(current => !current)}>{t("Directory guides")}</button>
+            {directoryGuides && <button aria-pressed={ancestorTitles} onClick={() => setAncestorTitles(current => !current)}>{t("Ancestor titles")}</button>}
+            <button aria-pressed={uncheckedBars} onClick={() => setUncheckedBars(current => !current)}>{t("Unchecked branch bars")}</button>
+            <button aria-pressed={expandedBars} onClick={() => setExpandedBars(current => !current)}>{t("Expanded branch bars")}</button>
+            <button aria-pressed={leafDrawings} onClick={() => setLeafDrawings(current => !current)}>{t("Leaf drawings")}</button>
+            </fieldset>
+            <fieldset><legend>{t("Import and export")}</legend>
+          <button onClick={() => exportTree('json')}>{t("Export JSON")}</button><button onClick={() => fileInput.current?.click()}>{t("Import JSON")}</button>
+          <button onClick={() => exportTree('md')}>{t("Export Markdown")}</button><button onClick={() => markdownInput.current?.click()}>{t("Import Markdown")}</button>
+          <label>{t("Import mode")}<select aria-label={t("Import mode")} value={importMode} onChange={event => setImportMode(event.target.value as 'replace' | 'append')}><option value="replace">{t("Replace tree")}</option><option value="append">{t("Append roots")}</option></select></label>
+            </fieldset>
+          </SettingsPanel>
         </div></div>
-        <p className="mode" aria-live="polite">{editingId ? 'Editing · Enter: next sibling · Tab / Shift+Tab: indent / outdent · Esc: navigate' : 'Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move'}{selected && ` · ${selected.title || 'Untitled task'}`}</p>
-        {importError && <p role="alert" className="warning">Backup not imported: {importError}</p>}
-        {pendingImport !== null && <section className="import-preview" aria-label="Backup preview">
-          <h3>{importMode === 'append' ? 'Append these tasks?' : forest.length ? 'Replace the current tree?' : 'Import this tree?'}</h3>
-          <p>{flatten(pendingImport).length} tasks in {pendingImport.length} roots. {importMode === 'append' ? 'The imported roots will follow the existing roots.' : forest.length ? 'Current work will be replaced. Export it first if needed.' : 'The imported tasks will fill your empty outline.'} Undo is available until you close this page.</p>
-          {importFormat === 'md' && <p>Only checklist tasks are imported. Headings, notes, and other unstructured content are omitted; the original file stays unchanged.</p>}
-          <ul>{pendingImport.slice(0, 5).map(node => <li key={node.id}>{node.title || 'Untitled task'}</li>)}</ul>
-          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(next[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? 'Append tasks' : forest.length ? 'Replace tree' : 'Import tree'}</button>
-          <button onClick={() => { importVersion.current++; setPendingImport(null); }}>Cancel import</button>
+        <p className="mode" aria-live="polite">{editingId ? t("Editing · Enter: next sibling · Tab / Shift+Tab: indent / outdent · Esc: navigate") : t("Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move")}{selected && ` · ${selected.title || t("Untitled task")}`}</p>
+        {importError && <p role="alert" className="warning">{t("Backup not imported:")} {t(importError)}</p>}
+        {pendingImport !== null && <section className="import-preview" aria-label={t("Backup preview")}>
+          <h3>{importMode === 'append' ? t("Append these tasks?") : forest.length ? t("Replace the current tree?") : t("Import this tree?")}</h3>
+          <p>{t('{tasks} tasks in {roots} roots.', { tasks: flatten(pendingImport).length, roots: pendingImport.length })} {importMode === 'append' ? t("The imported roots will follow the existing roots.") : forest.length ? t("Current work will be replaced. Export it first if needed.") : t("The imported tasks will fill your empty outline.")}{' '}{t("Undo is available until you close this page.")}</p>
+          {importFormat === 'md' && <p>{t("Only checklist tasks are imported. Headings, notes, and other unstructured content are omitted; the original file stays unchanged.")}</p>}
+          <ul>{pendingImport.slice(0, 5).map(node => <li key={node.id}>{node.title || t("Untitled task")}</li>)}</ul>
+          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(next[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? t("Append tasks") : forest.length ? t("Replace tree") : t("Import tree")}</button>
+          <button onClick={() => { importVersion.current++; setPendingImport(null); }}>{t("Cancel import")}</button>
         </section>}
-        {deletion && <section className="warning" aria-label="Delete confirmation"><p>Delete “{deletion.title || 'Untitled task'}” and its {flatten(deletion.children).length} descendants? Undo can recover them during this session.</p>
-          <button onClick={() => remove(deletion.id)}>Delete with descendants</button><button onClick={() => { setPendingDelete(null); focus(deletion.id); }}>Cancel deletion</button></section>}
-        <nav aria-label="Subtree navigation"><button onClick={() => zoom(null)}>All tasks</button>
-          {scope && nodePath(forest, scope.id).map(node => <span key={node.id}> / <button aria-current={node.id === viewRootId ? 'page' : undefined} onClick={() => zoom(node.id)}>{node.title || 'Untitled task'}</button></span>)}
+        {deletion && <section className="warning" aria-label={t("Delete confirmation")}><p>{t('Delete “{title}” and its {count} descendants? Undo can recover them during this session.', { title: deletion.title || t('Untitled task'), count: flatten(deletion.children).length })}</p>
+          <button onClick={() => remove(deletion.id)}>{t("Delete with descendants")}</button><button onClick={() => { setPendingDelete(null); focus(deletion.id); }}>{t("Cancel deletion")}</button></section>}
+        <nav aria-label={t("Subtree navigation")}><button onClick={() => zoom(null)}>{t("All tasks")}</button>
+          {scope && nodePath(forest, scope.id).map(node => <span key={node.id}> / <button aria-current={node.id === viewRootId ? 'page' : undefined} onClick={() => zoom(node.id)}>{node.title || t("Untitled task")}</button></span>)}
         </nav>
-        {movedId && findNode(forest, movedId) && <button className="goto" onClick={() => { setViewRootId(null); expandPath(forest, movedId); focus(movedId); setMovedId(null); }}>Go to moved node</button>}
-        {forest.length ? renderNodes(shown) : <div className="empty"><h3>Start with a rough objective.</h3><p>Capture a thought, then break it into smaller steps as you go.</p></div>}
-        <button className="primary" onClick={() => create(scope?.id ?? null)}>{scope ? '+ Add task in this subtree' : '+ Add root task'}</button>
-        {draggedId && <p className="drag-status" role="status">{drop ? `Drop ${drop.position} ${findNode(forest, drop.id)?.title || 'untitled task'}` : 'Choose a target outside the dragged subtree. Esc cancels.'}</p>}
+        {movedId && findNode(forest, movedId) && <button className="goto" onClick={() => { setViewRootId(null); expandPath(forest, movedId); focus(movedId); setMovedId(null); }}>{t("Go to moved node")}</button>}
+        {forest.length ? renderNodes(shown) : <div className="empty"><h3>{t("Start with a rough objective.")}</h3><p>{t("Capture a thought, then break it into smaller steps as you go.")}</p></div>}
+        <button className="primary" onClick={() => create(scope?.id ?? null)}>{scope ? t("+ Add task in this subtree") : t("+ Add root task")}</button>
+        {draggedId && <p className="drag-status" role="status">{drop ? t('Drop {position} {title}', { position: t(drop.position), title: findNode(forest, drop.id)?.title || t('untitled task') }) : t("Choose a target outside the dragged subtree. Esc cancels.")}</p>}
       </section>
-      <p role="status" className={saveError ? 'warning' : 'save-status'}>{host ? host.status : saveError ? 'Changes are only in memory: browser storage could not save them. Export JSON before leaving.' : 'Saved in this browser · No account or connection needed'}{notice && ` · ${notice}`}</p>
-      <details className="help"><summary>Keyboard and recovery</summary><p>Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace erases one character per tap or three per held repeat. A press starting with text never deletes the cell. Release and press again on an empty title to remove the task; holding then continues deleting upward. Empty parents require confirmation.</p><p>Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.</p><p>Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.</p></details>
+      <p role="status" className={saveError ? 'warning' : 'save-status'}>{host ? host.status : saveError ? t("Changes are only in memory: browser storage could not save them. Export JSON before leaving.") : t("Saved in this browser · No account or connection needed")}{notice && ` · ${t(notice)}`}</p>
+      <details className="help"><summary>{t("Keyboard and recovery")}</summary><p>{t("Click a title to edit, or a row background to select. The left control expands branches or checks/unchecks leaves on click. Long-press previews completion and commits on release. Moving while held cancels the preview and starts dragging. The right-edge arrow slides the row aside to reveal actions; Escape closes them. Arrows navigate visible tasks. Left collapses or selects a parent; Right expands or selects a child. Escape leaves editing, then steps to the parent view. F2 also edits. In navigation, Backspace directly removes the selected subtree; Undo restores it. Delete requests deletion with confirmation for parents. While editing, Backspace erases one character per tap or three per held repeat. A press starting with text never deletes the cell. Release and press again on an empty title to remove the task; holding then continues deleting upward. Empty parents require confirmation.")}</p><p>{t("Ctrl/Cmd+Z (Shift to redo) applies to outline history in navigation mode. Text fields retain native text undo. Use Tab to navigate controls outside editing; Escape leaves title editing before tabbing away. Buttons and the sliding action tray remain available when shortcuts conflict with your system.")}</p><p>{t("Undo retains 100 changes in this session. Export important work before closing. Checking a task checks all its descendants. Unchecking affects only that task; descendants keep their state.")}</p></details>
     </>}
-    <footer>Plans are provisional. Keep them useful.</footer>
+    <footer>{t("Plans are provisional. Keep them useful.")}</footer>
   </main>;
 }

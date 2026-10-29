@@ -21,6 +21,14 @@ Both hosts share the compact sliding deletion tray: **Delete cell** promotes its
 
 Exports write two-space-indented `- [ ]` / `- [x]` lines. Task labels are escaped as literal Markdown text, preserving punctuation, link text, whitespace, and Unicode through reimport; blank tasks remain blank checklist lines. Only the checklist tree is exported. JSON export remains available.
 
+## Appearance, language, and controls
+
+The shared **Settings** drawer groups appearance, tree display, and import/export controls. It starts closed on every editor mount. The trigger uses `aria-expanded` for its open state; visualization buttons retain their existing enabled defaults. Opening focuses the close button. Escape closes the drawer and returns focus to its trigger; clicking outside also closes it. It is non-modal, so tasks remain accessible. Undo/Redo and the extension's file controls stay in the main view.
+
+**Dark mode** and **Chinese mode / 中文** start off. The shared preferences provider stores these two choices separately from tasks under `branchfold.appearance.v1` in the host's local storage. Invalid or unavailable preference storage falls back to light English UI; settings still work in memory if writes fail. The drawer's open state is never persisted. Theme changes use semantic CSS colors for the page, controls, selection, guides, handles, warnings, and editing states. Chinese mode translates UI labels, tooltips, help, confirmations, and document-session messages without changing task titles or exported data. Unknown host/system error messages remain in their original wording.
+
+Implementation: [preferences provider](../web/preferences.tsx), [Chinese strings](../web/translations.ts), [settings drawer](../web/SettingsPanel.tsx), and [theme styles](../web/style.css). Component tests cover both hosts, saved preferences, malformed storage, drawer closure/focus, translation, and data isolation. The [appearance browser check](../tests/browser_appearance.py) covers narrow layouts and theme screenshots; it has not run in this environment because no usable browser is connected.
+
 ## Web: import, edit, export
 
 The web app is an external tool. Import reads a file once; the original file has no live connection to the resulting tree. Subsequent changes persist in the existing browser storage. **Export Markdown** and **Export JSON** download the whole tree, including tasks outside the focused subtree. Existing browser trees use the same storage key and remain available until a confirmed replacement.
@@ -41,4 +49,4 @@ The host retains unsaved drafts in VS Code workspace state, keyed by the selecte
 - `python3 tests/browser_markdown.py` exercises the import/edit/export workflow; `tests/browser_regression.py` covers established keyboard, pointer, layout, and recovery behavior.
 - `tests/vscode.integration.cjs` exercises the real webview, explicit save, source undo, stale snapshots, and external refresh. See [README.md](../README.md) for the launch command.
 
-Validated in this round: 51 automated tests, type checking, both builds, the Markdown Firefox workflow, and the full existing Firefox regression suite passed. Real VS Code checks passed for webview startup, deferred writes, explicit structured saves, original-document undo, external changes, and recovery on view closure. The current 52-task anchor round-tripped with its hierarchy, labels, and completion intact; its user-edited source was unchanged. Native Fcitx5 input was not manually exercised; automated composition checks passed.
+Initial shared-editor validation: 51 automated tests, type checking, both builds, the Markdown Firefox workflow, and the full existing Firefox regression suite passed. Real VS Code checks passed for webview startup, deferred writes, explicit structured saves, original-document undo, external changes, and recovery on view closure. The current 52-task anchor round-tripped with its hierarchy, labels, and completion intact; its user-edited source was unchanged. Native Fcitx5 input was not manually exercised; automated composition checks passed.

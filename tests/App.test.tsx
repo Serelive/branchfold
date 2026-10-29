@@ -13,6 +13,11 @@ beforeEach(() => {
   HTMLElement.prototype.releasePointerCapture ??= () => {};
 });
 afterEach(() => { cleanup(); vi.restoreAllMocks(); });
+async function openSettings(user: ReturnType<typeof userEvent.setup>) {
+  const button = screen.getByRole('button', { name: 'Settings' });
+  if (button.getAttribute('aria-expanded') === 'false') await user.click(button);
+}
+
 
 it('creates, renames, completes, restores and reopens a nested tree', async () => {
   const user = userEvent.setup();
@@ -55,6 +60,7 @@ it('retains editing and offers export when saving fails', async () => {
   await user.type(screen.getByRole('textbox'), 'Keep this');
   expect(screen.getByRole('status').textContent).toContain('only in memory');
   expect((screen.getByRole('textbox') as HTMLInputElement).value).toBe('Keep this');
+  await openSettings(user);
   expect(screen.getByRole('button', { name: 'Export JSON' })).toBeTruthy();
 });
 
@@ -443,6 +449,7 @@ it('tracks the selected ancestor path separately from passing sibling trunks', a
   await user.click(screen.getByRole('button', { name: 'Focus subtree Branch' }));
   await user.click(screen.getByDisplayValue('Target'));
   expect(onPath()).toEqual(['Branch', 'Target']);
+  await openSettings(user);
   await user.click(screen.getByRole('button', { name: 'Directory guides' }));
   expect(document.querySelector('.directory-guides')).toBeNull();
 });
@@ -501,9 +508,11 @@ it.each(['website', 'extension'])('toggles unchecked bars independently and prom
   render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
   const marker = (title: string) => screen.getByRole('button', { name: `Node control ${title}` }).querySelector('.expansion-marker');
   expect(marker('Unchecked')).toBeTruthy(); expect(marker('Checked')).toBeTruthy();
+  await openSettings(user);
   await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
   expect(marker('Unchecked')).toBeNull(); expect(marker('Checked')).toBeTruthy();
   await fold(user, 'Checked', false); expect(marker('Checked')).toBeTruthy();
+  await openSettings(user);
   await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
   expect(marker('Unchecked')).toBeTruthy();
   await actions(user, 'Unchecked');
@@ -525,8 +534,8 @@ it.each(['website', 'extension'])('applies all four bar modes in the %s', async 
   localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
   render(<App document={mode === 'extension' ? { initialForest: nodes, onChange: vi.fn(), onSave: vi.fn(), onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
   const marker = (i: number) => screen.getByRole('button', { name: `Node control Parent${i}` }).querySelector('.expansion-marker');
-  const toggleA = () => user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
-  const toggleB = () => user.click(screen.getByRole('button', { name: 'Expanded branch bars' }));
+  const toggleA = async () => { await openSettings(user); await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' })); };
+  const toggleB = async () => { await openSettings(user); await user.click(screen.getByRole('button', { name: 'Expanded branch bars' })); };
   for (const [a, b] of [[true, true], [true, false], [false, false], [false, true]]) {
     for (const expanded of [false, true]) {
       for (const i of [0, 1]) {

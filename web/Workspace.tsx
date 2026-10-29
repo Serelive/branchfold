@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import App from './App';
+import { PreferencesProvider, useUI } from './preferences';
 import { documentHost, type DocumentSnapshot, type HostMessage } from './documentHost';
 import { treeSignature, importMarkdown } from './markdown';
 import { parseForest, serializeForest, type Forest } from './tree';
 
 export default function Workspace() {
-  return documentHost ? <DocumentEditor /> : <App />;
+  return <PreferencesProvider>{documentHost ? <DocumentEditor /> : <App />}</PreferencesProvider>;
 }
 
 function DocumentEditor() {
+  const { t } = useUI();
   const session = useRef<{ base: DocumentSnapshot | null; forest: Forest; baseline: string; dirty: boolean; pending: string | null; latest: DocumentSnapshot | null }>({ base: null, forest: [], baseline: '', dirty: false, pending: null, latest: null });
   const restoring = useRef(false);
   const [generation, setGeneration] = useState(0);
@@ -82,20 +84,20 @@ function DocumentEditor() {
     documentHost!.postMessage({ type: 'save', requestId: s.pending, source: s.base.source, version: s.base.version, tree: serializeForest(s.forest) });
   }
   const s = session.current;
-  if (!s.base) return <main><p role="status">Opening task document…</p></main>;
+  if (!s.base) return <main><p role="status">{t("Opening task document…")}</p></main>;
   const conflict = s.latest && (s.latest.source !== s.base.source || s.latest.version !== s.base.version);
-  const toolbar = <section className="document-toolbar" aria-label="Document controls">
-    <strong>{s.base.name}</strong><span>{s.dirty ? 'Unsaved tree changes' : 'Tree loaded'}{s.base.dirty ? ' · source editor has unsaved changes' : ''}</span>
-    <button disabled={!!s.pending || !!conflict} onClick={save}>Save document</button>
-    <button onClick={() => documentHost!.postMessage({ type: 'source' })}>Open source</button>
-    <p>Save writes the checklist tree only. Headings, notes, and other unstructured text are omitted.</p>
-    {notice && <p role={conflict ? 'alert' : 'status'}>{notice}</p>}
-    {conflict && <button onClick={() => setConfirmReload(true)}>Reload source</button>}
-    {confirmReload && <div role="alert"><p>Discard your unsaved tree and load the latest source? Export it first if needed.</p><button onClick={() => { if (s.latest) adopt(s.latest); remember(); setNotice('Latest source loaded.'); }}>Discard edits and reload</button><button onClick={() => setConfirmReload(false)}>Keep editing</button></div>}
+  const toolbar = <section className="document-toolbar" aria-label={t("Document controls")}>
+    <strong>{s.base.name}</strong><span>{s.dirty ? t("Unsaved tree changes") : t("Tree loaded")}{s.base.dirty ? t(" · source editor has unsaved changes") : ''}</span>
+    <button disabled={!!s.pending || !!conflict} onClick={save}>{t("Save document")}</button>
+    <button onClick={() => documentHost!.postMessage({ type: 'source' })}>{t("Open source")}</button>
+    <p>{t("Save writes the checklist tree only. Headings, notes, and other unstructured text are omitted.")}</p>
+    {notice && <p role={conflict ? 'alert' : 'status'}>{t(notice)}</p>}
+    {conflict && <button onClick={() => setConfirmReload(true)}>{t("Reload source")}</button>}
+    {confirmReload && <div role="alert"><p>{t("Discard your unsaved tree and load the latest source? Export it first if needed.")}</p><button onClick={() => { if (s.latest) adopt(s.latest); remember(); setNotice('Latest source loaded.'); }}>{t("Discard edits and reload")}</button><button onClick={() => setConfirmReload(false)}>{t("Keep editing")}</button></div>}
   </section>;
   return <div inert={!!s.pending} aria-busy={!!s.pending}>
     <App key={generation} document={{ initialForest: s.forest, onChange: change, onSave: save,
       onExport: (forest, format) => documentHost!.postMessage({ type: 'export', tree: serializeForest(forest), format }),
-      status: s.pending ? 'Saving…' : s.dirty ? 'Unsaved changes · Ctrl/Cmd+S to save' : 'Changes stay in this editor until Save', toolbar }} />
+      status: s.pending ? t("Saving…") : s.dirty ? t("Unsaved changes · Ctrl/Cmd+S to save") : t("Changes stay in this editor until Save"), toolbar }} />
   </div>;
 }

@@ -44,6 +44,7 @@ it('keeps edits after save failure and exports the working tree through the host
   await user.keyboard('{Control>}s{/Control}'); const request = saves()[0];
   act(() => { window.dispatchEvent(new MessageEvent('message', { data: { type: 'saveResult', requestId: request.requestId, ok: false, message: 'Permission denied', document: { source: '- [ ] A\n', version: 1, dirty: false, name: 'plan.md' } } })); });
   expect(screen.getByDisplayValue('AB')).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Settings' }));
   await user.click(screen.getByText('Export Markdown'));
   expect(postMessage.mock.calls.at(-1)?.[0]).toMatchObject({ type: 'export', format: 'md' });
 });
@@ -57,4 +58,17 @@ it('restores recovery drafts and rebases restarted editor versions only for iden
   await user.click(screen.getByText('Save document'));
   expect(saves()[0].version).toBe(1);
   expect(parseForest(saves()[0].tree)[0].title).toBe('Recovered');
+});
+
+it('translates document controls with the shared Chinese mode without saving the source', async () => {
+  const user = userEvent.setup(); render(<Workspace />); snapshot('- [ ] Original\n', 1);
+  await user.click(screen.getByRole('button', { name: 'Settings' }));
+  await user.click(screen.getByRole('checkbox', { name: 'Chinese mode' }));
+  expect(screen.getByRole('button', { name: '保存文档' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: '打开源文件' })).toBeTruthy();
+  expect(screen.getByDisplayValue('Original')).toBeTruthy();
+  expect(saves()).toHaveLength(0);
+  await user.keyboard('{Escape}');
+  await user.click(screen.getByRole('button', { name: '保存文档' }));
+  expect(saves()).toHaveLength(1);
 });
