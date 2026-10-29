@@ -517,3 +517,28 @@ it.each(['website', 'extension'])('toggles unchecked bars independently and prom
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
   }
 });
+
+it.each(['website', 'extension'])('applies all four bar modes in the %s', async mode => {
+  const user = userEvent.setup();
+  const nodes = [false, true].map((done, i) => ({ id: `p${i}`, title: `Parent${i}`, done,
+    children: [{ id: `l${i}`, title: `Leaf${i}`, done, children: [] }] }));
+  localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
+  render(<App document={mode === 'extension' ? { initialForest: nodes, onChange: vi.fn(), onSave: vi.fn(), onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
+  const marker = (i: number) => screen.getByRole('button', { name: `Node control Parent${i}` }).querySelector('.expansion-marker');
+  const toggleA = () => user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
+  const toggleB = () => user.click(screen.getByRole('button', { name: 'Expanded branch bars' }));
+  for (const [a, b] of [[true, true], [true, false], [false, false], [false, true]]) {
+    for (const expanded of [false, true]) {
+      for (const i of [0, 1]) {
+        await fold(user, `Parent${i}`, expanded);
+        const expected = b ? a || i === 1 : a && !expanded;
+        expect(!!marker(i)).toBe(expected);
+        if (expected) expect(marker(i)!.classList.contains('instant-marker')).toBe(!b);
+      }
+    }
+    if (a && b) await toggleB();
+    else if (a) await toggleA();
+    else if (!b) await toggleB();
+  }
+  expect(document.querySelector('[aria-label="Node control Leaf0"] .expansion-marker')).toBeNull();
+});

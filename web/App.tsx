@@ -29,6 +29,7 @@ export default function App({ document: host }: AppProps = {}) {
   const [directoryGuides, setDirectoryGuides] = useState(true);
   const [leafDrawings, setLeafDrawings] = useState(true);
   const [uncheckedBars, setUncheckedBars] = useState(true);
+  const [expandedBars, setExpandedBars] = useState(true);
   const [ancestorTitles, setAncestorTitles] = useState(true);
   const [completionPreview, setCompletionPreview] = useState<string | null>(null);
   const [past, setPast] = useState<Snapshot[]>([]);
@@ -359,7 +360,7 @@ export default function App({ document: host }: AppProps = {}) {
           onFocus={event => { if (event.target === event.currentTarget) { setSelectedId(node.id); setEditingId(null); } }}
           onClick={event => { if (event.target === event.currentTarget) focus(node.id); }}
           >
-          <NodeControl expansionMarker={node.done || uncheckedBars} title={label} displayDone={node.done}
+          <NodeControl expansionMarker={expandedBars ? node.done || uncheckedBars : uncheckedBars && closed} instantMarker={!expandedBars} title={label} displayDone={node.done}
             onPreview={active => setCompletionPreview(current => active ? node.id : current === node.id ? null : current)}
             expanded={!closed} hasChildren={!!node.children.length}
             setExpanded={expanded => toggleFold(node.id, !expanded)}
@@ -402,6 +403,7 @@ export default function App({ document: host }: AppProps = {}) {
             <button aria-pressed={directoryGuides} onClick={() => setDirectoryGuides(current => !current)}>Directory guides</button>
             {directoryGuides && <button aria-pressed={ancestorTitles} onClick={() => setAncestorTitles(current => !current)}>Ancestor titles</button>}
             <button aria-pressed={uncheckedBars} onClick={() => setUncheckedBars(current => !current)}>Unchecked branch bars</button>
+            <button aria-pressed={expandedBars} onClick={() => setExpandedBars(current => !current)}>Expanded branch bars</button>
             <button aria-pressed={leafDrawings} onClick={() => setLeafDrawings(current => !current)}>Leaf drawings</button>
           <button disabled={!past.length} onClick={() => restore('undo')}>Undo</button><button disabled={!future.length} onClick={() => restore('redo')}>Redo</button>
           <button onClick={() => exportTree('json')}>Export JSON</button><button onClick={() => fileInput.current?.click()}>Import JSON</button>

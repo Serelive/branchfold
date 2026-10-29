@@ -5,6 +5,7 @@ const leafStalk = 'M1 9 H4';
 
 type Props = {
   expansionMarker?: boolean;
+  instantMarker?: boolean;
   title: string;
   displayDone: boolean;
   onPreview: (active: boolean) => void;
@@ -20,7 +21,7 @@ type Props = {
   onLostPointerCapture: PointerEventHandler<HTMLButtonElement>;
 };
 
-export default function NodeControl({ expansionMarker = false, title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
+export default function NodeControl({ expansionMarker = false, instantMarker = false, title, displayDone, onPreview, expanded, hasChildren, setExpanded, toggleDone, ignoreClick, ...pointerHandlers }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const held = useRef(false);
   const pending = useRef(false);
@@ -76,7 +77,7 @@ export default function NodeControl({ expansionMarker = false, title, displayDon
       else toggleDone();
     }}>
     <span className={`task-anchor ${hasChildren ? 'parent' : ''} ${!expanded ? 'folded' : ''} ${(displayDone) ? 'checked' : ''}`} aria-hidden="true">
-      {expansionMarker && hasChildren && <span className="expansion-marker" />}
+      {expansionMarker && hasChildren && <span className={`expansion-marker${instantMarker ? ' instant-marker' : ''}`} />}
       <span className="anchor-inner" />
       {!hasChildren && <svg className="anchor-leaf" viewBox="0 0 18 18" focusable="false">
         <circle className="leaf-ring" cx="9" cy="9" r="8.25" />

@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Shared website and extension outline controls, with optional unchecked branch bars and centered bar rotation. Node 4 artifact links remain future work.
+Current focus: Shared website and extension outline controls, with the four combinations of unchecked and expanded branch bar options. Node 4 artifact links remain future work.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -38,6 +38,7 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Add an enabled-by-default unchecked branch bar toggle; checked parent bars remain visible
   - [x] Rotate sharp 18 × 3 px bars around the handle center, matching the unchecked parent ring thickness
   - [x] Validate shared behavior and explicit-save isolation with automated tests; build website and extension
+- [x] Add Expanded branch bars and verify all four A/B combinations in both hosts; folded-only bars are vertical and switch instantly
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files

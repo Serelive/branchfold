@@ -146,3 +146,5 @@ button[aria-pressed=true]:not(.node-control) { background: #e0e8db; border-color
 .outline-editor .expansion-marker { position: absolute; left: calc(50% - 9px); top: calc(50% - 1.5px); width: 18px; height: 3px; border-radius: 0; background: var(--marker-color); transform-origin: center; transform: rotate(-90deg) translateY(12px); transition: transform 140ms ease, background-color 140ms ease; }
 .outline-editor .folded .expansion-marker { transform: rotate(0deg) translateY(12px); }
 @media (prefers-reduced-motion: reduce) { .outline-editor .expansion-marker { transition: none; } }
+
+.outline-editor .task-anchor .expansion-marker.instant-marker { transform: rotate(-90deg) translateY(12px); transition: none; }
