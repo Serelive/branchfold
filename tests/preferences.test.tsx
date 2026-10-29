@@ -23,7 +23,8 @@ it.each(['website', 'extension'])('keeps the panel closed, localizes UI and reme
   await user.click(screen.getByRole('button', { name: 'Settings' }));
   const panel = screen.getByRole('complementary', { name: 'Settings' });
   expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Close settings' }));
-  for (const name of ['Directory guides', 'Ancestor titles', 'Unchecked branch bars', 'Expanded branch bars', 'Leaf drawings']) expect(within(panel).getByRole('button', { name }).getAttribute('aria-pressed')).toBe('true');
+  expect(within(panel).getByRole('button', { name: 'Unchecked branch bars' }).getAttribute('aria-pressed')).toBe('false');
+  for (const name of ['Directory guides', 'Ancestor titles', 'Expanded branch bars', 'Leaf drawings']) expect(within(panel).getByRole('button', { name }).getAttribute('aria-pressed')).toBe('true');
   expect((screen.getByRole('checkbox', { name: 'Dark mode' }) as HTMLInputElement).checked).toBe(false);
   await user.click(screen.getByRole('checkbox', { name: 'Dark mode' }));
   await user.click(screen.getByRole('checkbox', { name: 'Chinese mode' }));

@@ -1,6 +1,6 @@
 # Branch 1 — Markdown renderer and editing design
 
-Historical version-1 design, implemented in version 2. The accepted version-2 review supersedes its context views and narrow-write workflow; see [the current editor contract](b1_v3_implementation.md).
+Historical version-1 design, implemented in version 2. The accepted version-2 review supersedes its context views and narrow-write workflow; see [the current editor contract](shared-editor.md).
 
 Approved direction from the [N2 questions](archive/b1_v1_n2_review-r1_questions.md), implemented in branch 1 version 2. This reference absorbs the durable decisions from that review. The original version-1 filename identifies the design request.
 

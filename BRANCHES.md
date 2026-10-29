@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Await acceptance of the [b1_v3 re-review](docs/b1_v3_review-r1.md) for tool annotations and pointer visualization (requirements 2 and 3). Implementation is paused pending acceptance.
+Current focus: Completed the accepted b1_v3 requirements: tool annotations and badges in both hosts, unchecked-bar default off, and version-3 document archival. Await the next review or requested refinement.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -50,9 +50,12 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Reproduce host foreground inheritance and explicitly apply the shared palette to the page body
   - [x] Verify task rendering and light/dark/light colors in the real VS Code webview, alongside save, undo, recovery, and conflict checks
   - [x] Inspect the supplied screenshot: the stationary tab-width line appears to be the active-tab underline; no loading stall reproduced
-- [ ] Review tool annotations and pointer visualization (b1_v3 requirements 2 and 3)
+- [x] Complete the accepted b1_v3 review
   - [x] Examine intent, current data flow, and alternatives; compose the re-review
-  - [ ] Obtain acceptance before implementing the revised requirements
+  - [x] Obtain acceptance of the declarative annotation and labeled-badge design
+  - [x] Implement annotations across Markdown/JSON, shared UI, persistence, and undo; default unchecked bars off
+  - [x] Validate 70 automated tests, type checking, both builds, and real VS Code badge themes/narrow layout, editor focus, annotated saves, recovery, undo, and conflicts
+  - [x] Absorb lasting decisions into the shared editor reference and archive the version-3 implementation, review, and re-review
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files
@@ -61,4 +64,4 @@ The working outline editor provides the interaction foundation. Its development 
   - [ ] Verify keyboard, pointer, IME, and recovery behavior in the chosen host
   - [ ] Record workflow benefits and friction, then choose the next small improvement
 
-The accepted [version-2 review](docs/archive/b1_v2_review.md) and [previous report](docs/archive/b1_v2_report.md) are archived. Their current decisions live in [the shared editor reference](docs/b1_v3_implementation.md). Completed version-2 milestones above record history; explicit-save structured conversion supersedes the earlier context renderer and narrow rename workflow. Broader artifact navigation and workflow evaluation remain future work.
+The accepted [version-2 review](docs/archive/b1_v2_review.md) and [previous report](docs/archive/b1_v2_report.md) are archived. Their current decisions live in [the shared editor reference](docs/shared-editor.md). Completed version-2 milestones above record history; explicit-save structured conversion supersedes the earlier context renderer and narrow rename workflow. Broader artifact navigation and workflow evaluation remain future work.

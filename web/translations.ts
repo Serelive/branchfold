@@ -1,5 +1,9 @@
 // UI strings only: task titles and imported document contents are never translated.
 export const chinese: Record<string, string> = {
+  'Tool': '工具', 'Suggested tool': '建议使用的工具', 'Apply': '应用', 'Cancel': '取消', 'Invalid tool name.': '工具名称无效。',
+  'Leave blank to remove the tool label.': '留空以移除工具标签。',
+  'Use a tool name without comment delimiters or control characters.': '工具名称不能包含注释分隔符或控制字符。',
+
   'Settings': '设置', 'Close settings': '关闭设置', 'Appearance': '外观', 'Dark mode': '深色模式', 'Chinese mode': '中文模式',
   'Tree display': '树形显示', 'Import and export': '导入与导出',
   'Change undone.': '已撤销更改。', 'Change redone.': '已重做更改。',

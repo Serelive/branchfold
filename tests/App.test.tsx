@@ -460,7 +460,7 @@ it('deletes only a website cell in place, restores it with undo, and keeps the t
   await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
   await actions(user, 'Alpha');
   const tray = screen.getByRole('group', { name: 'Actions for Alpha' });
-  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Delete cell', 'Delete subtree']);
+  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Tool', 'Delete cell', 'Delete subtree']);
   await user.click(within(tray).getByRole('button', { name: 'Delete cell' }));
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.map((n: {id: string}) => n.id)).toEqual(['c', 'b']);
   expect(screen.getByRole('treeitem', { name: 'Child' }).getAttribute('aria-level')).toBe('1');
@@ -507,17 +507,17 @@ it.each(['website', 'extension'])('toggles unchecked bars independently and prom
   localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
   render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
   const marker = (title: string) => screen.getByRole('button', { name: `Node control ${title}` }).querySelector('.expansion-marker');
-  expect(marker('Unchecked')).toBeTruthy(); expect(marker('Checked')).toBeTruthy();
+  expect(marker('Unchecked')).toBeNull(); expect(marker('Checked')).toBeTruthy();
   await openSettings(user);
   await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
-  expect(marker('Unchecked')).toBeNull(); expect(marker('Checked')).toBeTruthy();
+  expect(marker('Unchecked')).toBeTruthy(); expect(marker('Checked')).toBeTruthy();
   await fold(user, 'Checked', false); expect(marker('Checked')).toBeTruthy();
   await openSettings(user);
   await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' }));
-  expect(marker('Unchecked')).toBeTruthy();
+  expect(marker('Unchecked')).toBeNull();
   await actions(user, 'Unchecked');
   const tray = screen.getByRole('group', { name: 'Actions for Unchecked' });
-  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Delete cell', 'Delete subtree']);
+  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Tool', 'Delete cell', 'Delete subtree']);
   await user.click(within(tray).getByRole('button', { name: 'Delete cell' }));
   expect(screen.getByRole('treeitem', { name: 'Leaf' }).getAttribute('aria-level')).toBe('1');
   expect(onSave).not.toHaveBeenCalled();
@@ -536,6 +536,7 @@ it.each(['website', 'extension'])('applies all four bar modes in the %s', async 
   const marker = (i: number) => screen.getByRole('button', { name: `Node control Parent${i}` }).querySelector('.expansion-marker');
   const toggleA = async () => { await openSettings(user); await user.click(screen.getByRole('button', { name: 'Unchecked branch bars' })); };
   const toggleB = async () => { await openSettings(user); await user.click(screen.getByRole('button', { name: 'Expanded branch bars' })); };
+  await toggleA();
   for (const [a, b] of [[true, true], [true, false], [false, false], [false, true]]) {
     for (const expanded of [false, true]) {
       for (const i of [0, 1]) {
@@ -550,4 +551,29 @@ it.each(['website', 'extension'])('applies all four bar modes in the %s', async 
     else if (!b) await toggleB();
   }
   expect(document.querySelector('[aria-label="Node control Leaf0"] .expansion-marker')).toBeNull();
+});
+
+it.each(['website', 'extension'])('edits, clears and undoes tool labels in the %s', async mode => {
+  const user = userEvent.setup();
+  const nodes = [{ id: 'task', title: 'Task', done: true, tool: 'ChatGPT', children: [] }];
+  const onChange = vi.fn(), onSave = vi.fn();
+  localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
+  render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
+  expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
+  await actions(user, 'Task');
+  await user.click(screen.getByRole('button', { name: 'Tool' }));
+  const input = screen.getByRole('textbox', { name: 'Suggested tool' });
+  await user.clear(input); await user.type(input, '工具');
+  await user.click(screen.getByRole('button', { name: 'Apply' }));
+  expect(document.querySelector('.tool-badge')?.textContent).toBe('工具');
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
+  await actions(user, 'Task'); await user.click(screen.getByRole('button', { name: 'Tool' }));
+  await user.clear(screen.getByRole('textbox', { name: 'Suggested tool' }));
+  await user.click(screen.getByRole('button', { name: 'Apply' }));
+  expect(document.querySelector('.tool-badge')).toBeNull();
+  expect(screen.getByDisplayValue('Task')).toBeTruthy();
+  expect(onSave).not.toHaveBeenCalled();
+  if (mode === 'extension') expect(onChange.mock.calls.at(-1)![0][0].tool).toBeUndefined();
+  else expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tool).toBeUndefined();
 });

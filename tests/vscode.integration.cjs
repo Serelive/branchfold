@@ -7,14 +7,14 @@ const { saveTree, createEditorPort, openDocument } = require('../extension/dist/
 exports.run = async function () {
   const folder = await fs.mkdtemp(path.join(os.tmpdir(), 'branchfold-host-'));
   const file = path.join(folder, 'BRANCHES.md');
-  const original = '\uFEFF# Trial\r\n\r\n- [ ] Original  \r\n\r\n  Notes [link](a%20b.md)\r\n  - [x] Child\r\n';
+  const original = '\uFEFF# Trial\r\n\r\n- [ ] Original <!--branchfold:{"tool":"ChatGPT"}-->  \r\n\r\n  Notes [link](a%20b.md)\r\n  - [x] Child\r\n';
   const passed = [];
   try {
     await fs.writeFile(file, original);
     const document = await vscode.workspace.openTextDocument(vscode.Uri.file(file));
     await vscode.window.showTextDocument(document);
     const port = createEditorPort(document);
-    const request = () => ({ ...port.current(), tree: JSON.stringify({ version: 1, nodes: [{ id: 'root', title: 'Renamed', done: true, children: [{ id: 'new', title: 'New child', done: false, children: [] }] }] }) });
+    const request = () => ({ ...port.current(), tree: JSON.stringify({ version: 1, nodes: [{ id: 'root', title: 'Renamed', tool: 'ChatGPT', done: true, children: [{ id: 'new', title: 'New child', done: false, children: [] }] }] }) });
     const recoveryStore = new Map();
     const context = { extensionUri: vscode.Uri.file(path.resolve(__dirname, '../extension')), workspaceState: { get: key => recoveryStore.get(key), update: async (key, value) => { if (value === undefined) recoveryStore.delete(key); else recoveryStore.set(key, value); } } };
     const panel = await openDocument(context, document.uri);
@@ -34,13 +34,32 @@ exports.run = async function () {
           body: getComputedStyle(document.body).backgroundColor });
         (async () => {
           await waitFor(() => document.querySelector('input.title'));
+          const badge = document.querySelector('.tool-badge');
+          if (badge?.textContent !== 'ChatGPT') throw new Error('Tool badge missing');
+          const badgeColors = [];
+          const checkBadge = () => { const style = getComputedStyle(badge); badgeColors.push([style.color, style.backgroundColor]); };
+          checkBadge();
           const samples = [sample()];
           document.querySelector('.settings-trigger').click();
           await waitFor(() => !document.querySelector('.settings-panel').hidden);
           const dark = document.querySelector('.setting-toggle input');
-          dark.click(); await waitFor(() => document.documentElement.dataset.theme === 'dark'); samples.push(sample());
-          dark.click(); await waitFor(() => document.documentElement.dataset.theme === 'light'); samples.push(sample());
-          api.postMessage({ type: 'appearanceProbe', samples, loaded: document.readyState });
+          dark.click(); await waitFor(() => document.documentElement.dataset.theme === 'dark'); samples.push(sample()); checkBadge();
+          dark.click(); await waitFor(() => document.documentElement.dataset.theme === 'light'); samples.push(sample()); checkBadge();
+          document.querySelector('.settings-trigger').click();
+          const main = document.querySelector('main.outline-editor'); main.style.width = '360px';
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const badgeBox = badge.getBoundingClientRect(), titleBox = document.querySelector('input.title').getBoundingClientRect();
+          if (badgeBox.width < 10 || badgeBox.left < titleBox.right) throw new Error('Badge overlaps title in narrow layout');
+          document.querySelector('.actions-trigger').click();
+          await waitFor(() => document.querySelector('.row-shell.revealed'));
+          const toolButton = Array.from(document.querySelectorAll('.row-shell.revealed .action-panel button')).find(button => button.textContent === 'Tool');
+          toolButton.click();
+          await waitFor(() => document.querySelector('[role="dialog"] input'));
+          const toolInput = document.querySelector('[role="dialog"] input');
+          if (toolInput.value !== 'ChatGPT' || document.activeElement !== toolInput) throw new Error('Tool editor did not load or focus');
+          toolInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+          await waitFor(() => !document.querySelector('[role="dialog"]'));
+          api.postMessage({ type: 'appearanceProbe', samples, badgeColors, loaded: document.readyState });
         })().catch(error => api.postMessage({ type: 'appearanceProbe', error: String(error) }));
       })();
     </script>`;
@@ -52,6 +71,8 @@ exports.run = async function () {
       panel.webview.html = panel.webview.html.replace('</head>', appearanceProbe + '</head>');
     });
     assert.equal(appearance.error, undefined);
+    assert.deepEqual(appearance.badgeColors[0], appearance.badgeColors[2]);
+    assert.notDeepEqual(appearance.badgeColors[0], appearance.badgeColors[1]);
     assert.equal(appearance.loaded, 'complete');
     assert.deepEqual(appearance.samples, [
       { theme: 'light', heading: 'rgb(37, 59, 50)', title: 'rgb(37, 59, 50)', body: 'rgb(244, 243, 237)' },
@@ -59,8 +80,9 @@ exports.run = async function () {
       { theme: 'light', heading: 'rgb(37, 59, 50)', title: 'rgb(37, 59, 50)', body: 'rgb(244, 243, 237)' },
     ]);
     passed.push('real webview renders tasks and preserves Branchfold colors through light/dark/light switching');
+    passed.push('tool badges survive theme switches and narrow layout; tool editor focuses and cancels');
     passed.push('real VS Code webview loads built assets and completes host handshake');
-    const recoveryTree = JSON.stringify({ version: 1, nodes: [{ id: 'recovery', title: 'Unsaved recovery', done: false, children: [] }] });
+    const recoveryTree = JSON.stringify({ version: 1, nodes: [{ id: 'recovery', title: 'Unsaved recovery', tool: '工具', done: false, children: [] }] });
     const draftMessage = { type: 'draft', dirty: true, document: { ...port.current(), name: 'BRANCHES.md' }, tree: recoveryTree };
     await new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('Draft was not received')), 10000);
@@ -74,7 +96,7 @@ exports.run = async function () {
     });
     panel.dispose();
     const recovery = await recovered;
-    assert.equal(recovery.getText(), '- [ ] Unsaved recovery\n');
+    assert.equal(recovery.getText(), '- [ ] Unsaved recovery <!--branchfold:{"tool":"工具"}-->\n');
     assert.equal(recoveryStore.get('branchfold.draft:' + document.uri.toString()).tree, recoveryTree);
     await vscode.window.showTextDocument(recovery);
     await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
@@ -84,7 +106,7 @@ exports.run = async function () {
     assert.equal(await fs.readFile(file, 'utf8'), original);
     passed.push('loading and preparing edits leaves the original document unchanged');
     await saveTree(port, initial);
-    assert.equal(await fs.readFile(file, 'utf8'), '\uFEFF- [x] Renamed\r\n  - [ ] New child\r\n');
+    assert.equal(await fs.readFile(file, 'utf8'), '\uFEFF- [x] Renamed <!--branchfold:{"tool":"ChatGPT"}-->\r\n  - [ ] New child\r\n');
     assert.equal(document.isDirty, false);
     passed.push('explicit Save writes the structured tree, omits notes and headings, and uses the document encoding/EOL');
     await vscode.commands.executeCommand('undo');

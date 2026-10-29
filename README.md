@@ -42,7 +42,7 @@ Run **Branchfold: Open Markdown Task Document** in the Command Palette and choos
 
 External changes refresh a clean view automatically. If you have unsaved tree edits, the extension keeps them and shows a conflict. Review the source, export your local tree, or choose **Reload source** and confirm discarding local edits. Resolve existing unsaved source-editor changes before saving from Branchfold. Closing a view with unsaved edits opens an untitled recovery document containing those tasks. A recovery draft is also kept in VS Code workspace state until saved or explicitly discarded.
 
-The [shared editor reference](docs/b1_v3_implementation.md) describes the conversion format and save behavior.
+The [shared editor reference](docs/shared-editor.md) describes the conversion format and save behavior.
 
 ## Work with a task tree
 

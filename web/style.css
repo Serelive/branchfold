@@ -227,7 +227,7 @@ button[aria-pressed=true]:not(.node-control) { background: var(--control-active)
 .toolbar-buttons label { display: flex; align-items: center; gap: .4rem; }
 
 /* Shared website and document-host outline controls. */
-.outline-editor .row-shell { --reveal-width: min(240px, calc(100% - 36px)); }
+.outline-editor .row-shell { --reveal-width: min(300px, calc(100% - 36px)); }
 .outline-editor .action-panel { justify-content: flex-end; }
 .outline-editor .task-anchor.parent { --marker-color: var(--expanded-ring); }
 .outline-editor .task-anchor.parent.folded { --marker-color: var(--folded-ring); }
@@ -257,3 +257,24 @@ select { color: var(--text); background: var(--input); border: 1px solid var(--b
 .settings-trigger[aria-expanded=true] { border-color: var(--selected-edge); }
 button:focus:not(:focus-visible) { outline: none; }
 @media (max-width: 540px) { .settings-panel { inset: 8px 8px 8px auto; width: min(340px, calc(100vw - 16px)); } }
+
+/* Tool identity stays separate from selection, completion, and handle state. */
+.tool-badge { flex: 0 1 auto; min-width: 0; max-width: 22%; padding: 2px 7px; border-radius: 8px; font-size: 11px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: var(--tool-bg); color: var(--tool-fg); }
+.tool-color-0 { --tool-bg: #f7dce3; --tool-fg: #653545; }
+.tool-color-1 { --tool-bg: #f8e1cc; --tool-fg: #654526; }
+.tool-color-2 { --tool-bg: #eee8bf; --tool-fg: #57502b; }
+.tool-color-3 { --tool-bg: #d6eddf; --tool-fg: #30563e; }
+.tool-color-4 { --tool-bg: #d8e8f6; --tool-fg: #34536e; }
+.tool-color-5 { --tool-bg: #e8dff4; --tool-fg: #59426f; }
+:root[data-theme="dark"] .tool-color-0 { --tool-bg: #563541; --tool-fg: #f7dce3; }
+:root[data-theme="dark"] .tool-color-1 { --tool-bg: #574332; --tool-fg: #f8e1cc; }
+:root[data-theme="dark"] .tool-color-2 { --tool-bg: #4d4930; --tool-fg: #eee8bf; }
+:root[data-theme="dark"] .tool-color-3 { --tool-bg: #304b3d; --tool-fg: #d6eddf; }
+:root[data-theme="dark"] .tool-color-4 { --tool-bg: #304659; --tool-fg: #d8e8f6; }
+:root[data-theme="dark"] .tool-color-5 { --tool-bg: #493b58; --tool-fg: #e8dff4; }
+.tool-editor-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: #0006; padding: 16px; }
+.tool-editor { width: min(400px, 100%); padding: 20px; border-radius: 12px; background: var(--surface); color: var(--text); box-shadow: 0 8px 30px #0003; }
+.tool-editor label { display: grid; gap: 8px; }
+.tool-editor input { width: 100%; font: inherit; color: var(--text); background: var(--page); border: 1px solid var(--muted); padding: 8px; }
+.tool-editor p { font-size: 13px; }
+.tool-editor > div { display: flex; justify-content: flex-end; gap: 8px; }

@@ -1,3 +1,5 @@
+import { toolColor } from './toolAnnotation';
+import ToolEditor from './ToolEditor';
 import { useEffect, useRef, useState, type PointerEvent, type KeyboardEvent } from 'react';
 import { addNode, updateNode, toggleCompletion, serializeForest, parseForest, findNode, nodeLocation, nodePath, visibleNodes, deleteNode, moveNode, moveRelative, outlineMove, type OutlineMove, type Forest, type DropPosition } from './tree';
 import { loadForest, saveForest } from './storage';
@@ -34,7 +36,7 @@ function Editor({ document: host }: AppProps) {
   const [forest, setForest] = useState(initial.nodes);
   const [directoryGuides, setDirectoryGuides] = useState(true);
   const [leafDrawings, setLeafDrawings] = useState(true);
-  const [uncheckedBars, setUncheckedBars] = useState(true);
+  const [uncheckedBars, setUncheckedBars] = useState(false);
   const [expandedBars, setExpandedBars] = useState(true);
   const [ancestorTitles, setAncestorTitles] = useState(true);
   const [completionPreview, setCompletionPreview] = useState<string | null>(null);
@@ -44,6 +46,7 @@ function Editor({ document: host }: AppProps) {
   const [selectedId, setSelectedId] = useState<string | null>(initial.nodes[0]?.id ?? null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewRootId, setViewRootId] = useState<string | null>(null);
+  const [toolId, setToolId] = useState<string | null>(null);
   const [actionsId, setActionsId] = useState<string | null>(null);
   const suppressControlClick = useRef<string | null>(null);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -380,6 +383,7 @@ function Editor({ document: host }: AppProps) {
             onBlur={() => { editGroup.current = null; setEditingId(current => current === node.id ? null : current); }}
             onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
             onChange={event => change(updateNode(forest, node.id, n => ({ ...n, title: event.target.value })), node.id)} />
+          {node.tool && <span className={`tool-badge tool-color-${toolColor(node.tool)}`} title={node.tool}>{node.tool}</span>}
           <button className="row-action" aria-label={t('Add sibling after {title}', { title: label })} title={t("Add sibling (B in navigation)")} onClick={() => sibling(node.id)}>{t("+ Next")}</button>
           <button className="row-action" aria-label={t('Add child to {title}', { title: label })} title={t("Add child (C in navigation)")} onClick={() => create(node.id)}>{t("+ Child")}</button>
           <button className="row-action" aria-label={t('Focus subtree {title}', { title: label })} title={t("Focus subtree")} onClick={() => zoom(node.id)}>↗</button>
@@ -389,6 +393,7 @@ function Editor({ document: host }: AppProps) {
         </div>
         <div className="action-panel" role="group" aria-label={t('Actions for {title}', { title: label })} aria-hidden={!actionsOpen} inert={!actionsOpen}
           onFocusCapture={() => setSelectedId(node.id)}>
+          <button onClick={() => act(() => { setEditingId(null); setToolId(node.id); })}>{t("Tool")}</button>
           <button className="danger" aria-label={t("Delete cell")} title={t("Delete only this cell; promote its children in place")} onClick={() => act(() => remove(node.id, false, true))}>{t("Delete cell")}</button>
           <button className="danger" aria-label={t("Delete subtree")} title={t("Delete subtree")} onClick={() => act(() => requestDelete(node.id))}>{t("Delete subtree")}</button>
         </div>
@@ -401,6 +406,9 @@ function Editor({ document: host }: AppProps) {
 
   return <main className="outline-editor" onKeyDown={keyboard}>
     <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">{t("LOCAL PROTOTYPE")}</span></header>
+    {toolId && <ToolEditor initial={findNode(forest, toolId)?.tool ?? ''}
+      onClose={() => { setToolId(null); focus(toolId); }}
+      onSave={tool => { change(updateNode(forest, toolId, node => { const { tool: previous, ...rest } = node; return tool ? { ...rest, tool } : rest; })); setToolId(null); focus(toolId); }} />}
     {host?.toolbar}
     <section className="intro"><p className="eyebrow">{t("A LITTLE STRUCTURE. ROOM TO CHANGE.")}</p><h1>{t("Make room for the next step.")}</h1><p>{t("A living task tree for plans that evolve with action.")}</p></section>
     {initial.error ? <section role="alert" className="warning"><h2>{t("Your saved tree could not be opened.")}</h2><p>{t("Editing is paused to protect existing data. Storage may be unavailable, or the saved format may be invalid. No data has been overwritten. Restore browser storage access or recover the original data before reloading.")}</p></section> : <>

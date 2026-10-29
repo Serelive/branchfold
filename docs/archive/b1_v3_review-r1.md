@@ -36,7 +36,7 @@ Display the badge in both hosts, including on completed tasks. Keep normal title
 
 ## Implementation implications and acceptance checks
 
-The current [Markdown adapter](../web/markdown.ts) imports inline comments as literal title content and escapes them during export. The [task model](../web/tree.ts) has no tool field. Hiding comment text with a rendering-only change would therefore be insufficient: recognized metadata must be stored separately and emitted as a real trailing comment on Markdown export or explicit extension Save.
+The current [Markdown adapter](../../web/markdown.ts) imports inline comments as literal title content and escapes them during export. The [task model](../../web/tree.ts) has no tool field. Hiding comment text with a rendering-only change would therefore be insufficient: recognized metadata must be stored separately and emitted as a real trailing comment on Markdown export or explicit extension Save.
 
 After acceptance, validate that:
 

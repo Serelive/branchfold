@@ -33,7 +33,7 @@ Use `bB_vV_nN_<type>[_topic].md` for branch B, version V, node N documents. For 
 
 The **anchor** is `sandbox/BRANCHES.md`, the selected test Markdown document within the independent sandbox project root. The **renderer** refers to the VS Code task view. The web app is an external import/edit/export tool; its imported tree is independent of the source file. **Structured parts** are checklist task structures, and **unstructured parts** are other text. Keep sandbox artifacts and links within that project root.
 
-A review item marked **Next** needs an additional user request before work begins. The N2-3 gate was approved with Nodes 2 and 3. The version-1 design is retained in [the renderer reference](b1_v1_n2_design_renderer.md). The accepted [version-2 review](archive/b1_v2_review.md) establishes the current [shared editor and explicit-save workflow](b1_v3_implementation.md).
+A review item marked **Next** needs an additional user request before work begins. The N2-3 gate was approved with Nodes 2 and 3. The version-1 design is retained in [the renderer reference](b1_v1_n2_design_renderer.md). The accepted [version-2 review](archive/b1_v2_review.md) establishes the current [shared editor and explicit-save workflow](shared-editor.md).
 
 **Archiving** means absorbing important information into durable documents and the
 working plan, dropping temporary information from active guidance, and preserving

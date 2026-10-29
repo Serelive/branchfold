@@ -1,6 +1,6 @@
 # Shared task editor — branch 1, version 3
 
-The accepted [version-2 review](archive/b1_v2_review.md) replaces the separate Markdown reader with the existing task editor in both web and VS Code. The [version-2 report](archive/b1_v2_report.md) preserves the earlier implementation history.
+The accepted [version-2 review](b1_v2_review.md) replaces the separate Markdown reader with the existing task editor in both web and VS Code. The [version-2 report](b1_v2_report.md) preserves the earlier implementation history.
 
 ## Data and interaction contract
 
@@ -27,7 +27,7 @@ The shared **Settings** drawer groups appearance, tree display, and import/expor
 
 **Dark mode** and **Chinese mode / 中文** start off. The shared preferences provider stores these two choices separately from tasks under `branchfold.appearance.v1` in the host's local storage. Invalid or unavailable preference storage falls back to light English UI; settings still work in memory if writes fail. The drawer's open state is never persisted. Theme changes use semantic CSS colors for the page, controls, selection, guides, handles, warnings, and editing states. Chinese mode translates UI labels, tooltips, help, confirmations, and document-session messages without changing task titles or exported data. Unknown host/system error messages remain in their original wording.
 
-Implementation: [preferences provider](../web/preferences.tsx), [Chinese strings](../web/translations.ts), [settings drawer](../web/SettingsPanel.tsx), and [theme styles](../web/style.css). Component tests cover both hosts, saved preferences, malformed storage, drawer closure/focus, translation, and data isolation. The [appearance browser check](../tests/browser_appearance.py) covers narrow layouts and theme screenshots; it has not run in this environment because no usable browser is connected.
+Implementation: [preferences provider](../../web/preferences.tsx), [Chinese strings](../../web/translations.ts), [settings drawer](../../web/SettingsPanel.tsx), and [theme styles](../../web/style.css). Component tests cover both hosts, saved preferences, malformed storage, drawer closure/focus, translation, and data isolation. The [appearance browser check](../../tests/browser_appearance.py) covers narrow layouts and theme screenshots; it has not run in this environment because no usable browser is connected.
 
 ## Web: import, edit, export
 
@@ -43,10 +43,10 @@ The host retains unsaved drafts in VS Code workspace state, keyed by the selecte
 
 ## Code and checks
 
-- [Shared editor](../web/App.tsx), [document session](../web/Workspace.tsx), and [Markdown conversion](../web/markdown.ts).
-- [Host save boundary](../extension/controller.ts) and [VS Code integration](../extension/extension.mjs).
+- [Shared editor](../../web/App.tsx), [document session](../../web/Workspace.tsx), and [Markdown conversion](../../web/markdown.ts).
+- [Host save boundary](../../extension/controller.ts) and [VS Code integration](../../extension/extension.mjs).
 - `npm test` covers conversion, append identity, shared UI, explicit saving, conflicts, and failures. `npm run build:extension` checks types and builds both hosts.
 - `python3 tests/browser_markdown.py` exercises the import/edit/export workflow; `tests/browser_regression.py` covers established keyboard, pointer, layout, and recovery behavior.
-- `tests/vscode.integration.cjs` exercises the real webview, explicit save, source undo, stale snapshots, and external refresh. See [README.md](../README.md) for the launch command.
+- `tests/vscode.integration.cjs` exercises the real webview, explicit save, source undo, stale snapshots, and external refresh. See [README.md](../../README.md) for the launch command.
 
 Initial shared-editor validation: 51 automated tests, type checking, both builds, the Markdown Firefox workflow, and the full existing Firefox regression suite passed. Real VS Code checks passed for webview startup, deferred writes, explicit structured saves, original-document undo, external changes, and recovery on view closure. The current 52-task anchor round-tripped with its hierarchy, labels, and completion intact; its user-edited source was unchanged. Native Fcitx5 input was not manually exercised; automated composition checks passed.

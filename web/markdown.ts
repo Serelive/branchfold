@@ -1,3 +1,4 @@
+import { readToolComment, validToolName } from './toolAnnotation';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -19,13 +20,18 @@ export function importMarkdown(source: string): Forest {
       const empty = /^(?:[-+*]|\d+[.)])[ \t]+\[([ xX])\][ \t]*$/.exec(line);
       if (typeof node.checked === 'boolean' || empty) {
         const paragraph = node.children[0];
-        const title = empty ? '' : paragraph?.type === 'paragraph' ? paragraph.children.map(inline => {
+        const inlines = paragraph?.type === 'paragraph' ? paragraph.children : [];
+        const comments = inlines.filter(inline => inline.type === 'html' && inline.value.startsWith('<!--branchfold:'));
+        const last = inlines.at(-1);
+        const tool = comments.length === 1 && last === comments[0] && last?.type === 'html' ? readToolComment(last.value) : undefined;
+        let title = empty ? '' : paragraph?.type === 'paragraph' ? inlines.filter(inline => !tool || inline !== last).map(inline => {
           if (inline.type === 'text') return inline.value;
           if (inline.type === 'break') return '\n';
           // Keep link destinations and inline syntax as literal task-label content.
           return text.slice(inline.position?.start.offset, inline.position?.end.offset);
         }).join('') : '';
-        const task: TaskNode = { id: crypto.randomUUID(), title, done: typeof node.checked === 'boolean' ? node.checked : empty![1].toLowerCase() === 'x', children: [] };
+        if (tool) title = title.replace(/ $/, '');
+        const task: TaskNode = { id: crypto.randomUUID(), title, ...(tool ? { tool } : {}), done: typeof node.checked === 'boolean' ? node.checked : empty![1].toLowerCase() === 'x', children: [] };
         destination.push(task);
         destination = task.children;
       }
@@ -51,7 +57,9 @@ export function exportMarkdown(forest: Forest): string {
         .replace(/[\\`*{}\[\]()#+\-.!_|~]/g, '\\$&')
         .replace(/[\r\n\t]/g, char => `&#${char.charCodeAt(0)};`)
         .replace(/^ +| +$/g, spaces => '&#32;'.repeat(spaces.length));
-      lines.push(`${'  '.repeat(depth)}- [${node.done ? 'x' : ' '}] ${title}`);
+      if (node.tool !== undefined && !validToolName(node.tool)) throw new Error('Invalid tool name.');
+      const annotation = node.tool === undefined ? '' : ` <!--branchfold:${JSON.stringify({ tool: node.tool.trim() })}-->`;
+      lines.push(`${'  '.repeat(depth)}- [${node.done ? 'x' : ' '}] ${title}${annotation}`);
       write(node.children, depth + 1);
     }
   }
