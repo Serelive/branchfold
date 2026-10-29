@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Completed the VS Code light-mode color fix. Real-webview checks confirm correct light/dark/light colors and successful startup; await the next requested refinement.
+Current focus: Await acceptance of the [b1_v3 re-review](docs/b1_v3_review-r1.md) for tool annotations and pointer visualization (requirements 2 and 3). Implementation is paused pending acceptance.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -50,6 +50,9 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Reproduce host foreground inheritance and explicitly apply the shared palette to the page body
   - [x] Verify task rendering and light/dark/light colors in the real VS Code webview, alongside save, undo, recovery, and conflict checks
   - [x] Inspect the supplied screenshot: the stationary tab-width line appears to be the active-tab underline; no loading stall reproduced
+- [ ] Review tool annotations and pointer visualization (b1_v3 requirements 2 and 3)
+  - [x] Examine intent, current data flow, and alternatives; compose the re-review
+  - [ ] Obtain acceptance before implementing the revised requirements
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files
