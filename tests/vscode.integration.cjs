@@ -7,7 +7,7 @@ const { saveTree, createEditorPort, openDocument } = require('../extension/dist/
 exports.run = async function () {
   const folder = await fs.mkdtemp(path.join(os.tmpdir(), 'branchfold-host-'));
   const file = path.join(folder, 'BRANCHES.md');
-  const original = '\uFEFF# Trial\r\n\r\n- [ ] Original <!--branchfold:{"tool":"ChatGPT"}-->  \r\n\r\n  Notes [link](a%20b.md)\r\n  - [x] Child\r\n';
+  const original = '\uFEFF# Trial\r\n\r\n- [ ] Original <!--branchfold:{"tool":"ChatGPT"}-->  \r\n\r\n  Notes [link](a%20b.md)\r\n  - [ ] Child\r\n';
   const passed = [];
   try {
     await fs.writeFile(file, original);
@@ -34,6 +34,7 @@ exports.run = async function () {
           body: getComputedStyle(document.body).backgroundColor });
         (async () => {
           await waitFor(() => document.querySelector('input.title'));
+          if (document.querySelector('[role="treeitem"][aria-selected="true"]')?.getAttribute('aria-label') !== 'Child') throw new Error('Initial selection must be the unfinished leaf');
           const badge = document.querySelector('.node .tool-badge');
           if (badge?.textContent !== 'ChatGPT') throw new Error('Tool badge missing');
           const badgeColors = [];

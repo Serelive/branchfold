@@ -19,6 +19,7 @@ function download(content: string, format: 'json' | 'md') {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 const flatten = (nodes: Forest) => visibleNodes(nodes, new Set());
+const defaultSelection = (nodes: Forest) => flatten(nodes).find(node => !node.done && !node.children.length)?.id ?? nodes[0]?.id ?? null;
 const arrowMoves: Record<string, OutlineMove> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'outdent', ArrowRight: 'indent' };
 const titleCharacters = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 type Snapshot = { forest: Forest; viewRootId: string | null; collapsed: Set<string>; selectedId: string | null };
@@ -49,7 +50,7 @@ function Editor({ document: host }: AppProps) {
   const [past, setPast] = useState<Snapshot[]>([]);
   const [future, setFuture] = useState<Snapshot[]>([]);
   const [saveError, setSaveError] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(initial.nodes[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(() => defaultSelection(initial.nodes));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewRootId, setViewRootId] = useState<string | null>(null);
   const toolAnchor = useRef<HTMLButtonElement | null>(null);
@@ -447,7 +448,7 @@ function Editor({ document: host }: AppProps) {
           <p>{t('{tasks} tasks in {roots} roots.', { tasks: flatten(pendingImport).length, roots: pendingImport.length })} {importMode === 'append' ? t("The imported roots will follow the existing roots.") : forest.length ? t("Current work will be replaced. Export it first if needed.") : t("The imported tasks will fill your empty outline.")}{' '}{t("Undo is available until you close this page.")}</p>
           {importFormat === 'md' && <p>{t("Only checklist tasks are imported. Headings, notes, and other unstructured content are omitted; the original file stays unchanged.")}</p>}
           <ul>{pendingImport.slice(0, 5).map(node => <li key={node.id}>{node.title || t("Untitled task")}</li>)}</ul>
-          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setCatalog(current => mergeCatalog(current, discoverTools(pendingImport))); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(next[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? t("Append tasks") : forest.length ? t("Replace tree") : t("Import tree")}</button>
+          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setCatalog(current => mergeCatalog(current, discoverTools(pendingImport))); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(defaultSelection(next)); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? t("Append tasks") : forest.length ? t("Replace tree") : t("Import tree")}</button>
           <button onClick={() => { importVersion.current++; setPendingImport(null); }}>{t("Cancel import")}</button>
         </section>}
         {deletion && <section className="warning" aria-label={t("Delete confirmation")}><p>{t('Delete “{title}” and its {count} descendants? Undo can recover them during this session.', { title: deletion.title || t('Untitled task'), count: flatten(deletion.children).length })}</p>

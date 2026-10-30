@@ -31,7 +31,7 @@ A deterministic mapping of the trimmed, Unicode-normalized, case-insensitive nam
 
 ## Editing and display
 
-Selection, title editing, subtree focus, and dragging remain distinct. Editing Enter creates a sibling; Tab/Shift+Tab indent/outdent. Navigation Enter edits; B/C create a sibling/child. Ctrl+Left outdents and Ctrl+Right indents the selected task, including when a row control has focus. Title editing retains native Ctrl+Left/Right text navigation. Existing IME composition guards remain active. Moves work by keyboard and drag, with cycle rejection and session undo/redo.
+Selection, title editing, subtree focus, and dragging remain distinct. Opening or importing a tree selects its first unfinished leaf in depth-first document order, even under a completed ancestor. If none exists, selection falls back to the first root; an empty tree has no selection. Editing Enter creates a sibling; Tab/Shift+Tab indent/outdent. Navigation Enter edits; B/C create a sibling/child. Ctrl+Left outdents and Ctrl+Right indents the selected task, including when a row control has focus. Title editing retains native Ctrl+Left/Right text navigation. Existing IME composition guards remain active. Moves work by keyboard and drag, with cycle rejection and session undo/redo.
 
 Leaf handle clicks toggle completion; branch clicks fold/unfold. Long-press previews subtree completion; release confirms, while movement cancels the preview and starts dragging. Checking cascades to descendants; unchecking changes only the selected task. Opening a folded branch reveals the first unchecked leaf's ancestor path, collapses preceding branches, and expands later branches in that subtree. If all leaves are checked, it shows immediate children.
 

@@ -667,3 +667,40 @@ it('edits the settings tool list through tag controls without changing task assi
   expect(screen.getByRole('button', { name: 'Rank by frequency' }).getAttribute('aria-pressed')).toBe('true');
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(fixture);
 });
+
+it.each(['website', 'extension'])('defaults to the first unfinished leaf without changing completion or editing in the %s', async mode => {
+  const nodes: Forest = [{ id: 'root', title: 'Root', done: true, children: [
+    { id: 'done', title: 'Finished', done: true, children: [] },
+    { id: 'branch', title: 'Branch', done: false, children: [{ id: 'first', title: 'First unfinished', done: false, children: [] }] },
+    { id: 'later', title: 'Later', done: false, children: [] },
+  ] }];
+  localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
+  const onChange = vi.fn();
+  render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave: vi.fn(), onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
+  expect(screen.getByRole('treeitem', { name: 'First unfinished' }).getAttribute('aria-selected')).toBe('true');
+  expect(screen.getByRole('treeitem', { name: 'Root' }).getAttribute('aria-selected')).toBe('false');
+  expect((screen.getByDisplayValue('First unfinished') as HTMLInputElement).readOnly).toBe(true);
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(nodes);
+  expect(onChange).not.toHaveBeenCalled();
+});
+
+it('falls back to the first root when every leaf is complete and handles an empty tree', () => {
+  localStorage.setItem(STORAGE_KEY, serializeForest([{ id: 'r', title: 'Root', done: false, children: [{ id: 'c', title: 'Done', done: true, children: [] }] }]));
+  const view = render(<App />);
+  expect(screen.getByRole('treeitem', { name: 'Root' }).getAttribute('aria-selected')).toBe('true');
+  view.unmount(); localStorage.clear(); render(<App />);
+  expect(screen.queryByRole('treeitem')).toBeNull();
+});
+
+it('selects the first unfinished leaf after import and restores the previous selection with undo', async () => {
+  const user = userEvent.setup(); seed(); render(<App />);
+  await openSettings(user);
+  const incoming: Forest = [{ id: 'r', title: 'Imported root', done: false, children: [{ id: 'l', title: 'Imported leaf', done: false, children: [] }] }];
+  const file = new File([serializeForest(incoming)], 'tasks.json', { type: 'application/json' });
+  Object.defineProperty(file, 'text', { value: async () => serializeForest(incoming) });
+  await user.upload(screen.getByLabelText('JSON backup'), file);
+  await user.click(await screen.findByRole('button', { name: 'Replace tree' }));
+  expect(screen.getByRole('treeitem', { name: 'Imported leaf' }).getAttribute('aria-selected')).toBe('true');
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.getByRole('treeitem', { name: 'Beta' }).getAttribute('aria-selected')).toBe('true');
+});
