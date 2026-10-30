@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Completed default selection of the first unfinished leaf in both hosts; await the next requested refinement.
+Current focus: Prepare the first PR from feat/markdown-integration into main; follow the [PR guide](docs/b1_guide_PR.md).
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -63,6 +63,7 @@ The working outline editor provides the interaction foundation. Its development 
 - [x] Refine +Tool into an anchored rounded panel with tag-style choices and a Create field revealed on demand; validate 74 tests, both builds, and real VS Code placement/focus checks
 - [x] Add navigation Ctrl+Left/Right outdent/indent and match Settings tool lists to +Tool tags, with rename/reorder/remove/Create; verify shared behavior and real VS Code interaction/style checks
 - [x] Default to the first unfinished leaf on opening/import, with root/empty fallbacks; verify 81 tests, both builds, and real VS Code initial selection
+- [x] Compose a repository-specific first-PR guide with suggested title/description and merge steps
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files
