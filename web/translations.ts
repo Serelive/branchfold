@@ -1,5 +1,8 @@
 // UI strings only: task titles and imported document contents are never translated.
 export const chinese: Record<string, string> = {
+  'Edit tool {name}': '编辑工具“{name}”', 'Move tool {name} up': '上移工具“{name}”', 'Move tool {name} down': '下移工具“{name}”',
+  'Remove tool {name}': '移除工具“{name}”', 'Tool name': '工具名称', 'This tool already exists.': '此工具已存在。',
+
   'Add': '添加', '+Tool': '+工具', 'Assign tools': '分配工具', 'Assign tools to {title}': '为“{title}”分配工具',
   'New tool': '新工具', 'Create': '创建', 'Tool list': '工具列表', 'Save tool list': '保存工具列表',
   'Rank by frequency': '按使用频率排序', 'One tool per line; edit the order here.': '每行一个工具；可在此调整顺序。',
@@ -31,7 +34,7 @@ export const chinese: Record<string, string> = {
   'Task tree': '任务树', 'Your task tree': '你的任务树', 'Directory guides': '目录引导线', 'Ancestor titles': '祖先标题高亮', 'Unchecked branch bars': '未完成分支标记', 'Expanded branch bars': '展开分支标记', 'Leaf drawings': '叶形图标',
   'Undo': '撤销', 'Redo': '重做', 'Export JSON': '导出 JSON', 'Import JSON': '导入 JSON', 'Export Markdown': '导出 Markdown', 'Import Markdown': '导入 Markdown', 'Import mode': '导入方式', 'Replace tree': '替换任务树', 'Append roots': '追加根节点', 'Markdown import': 'Markdown 导入', 'JSON backup': 'JSON 备份',
   'Editing · Enter: next sibling · Tab / Shift+Tab: indent / outdent · Esc: navigate': '编辑 · Enter：下一同级任务 · Tab / Shift+Tab：缩进 / 减少缩进 · Esc：导航',
-  'Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move': '导航 · Enter：编辑 · B：同级任务 · C：子任务 · 空格：完成 · Ctrl+↑/↓：移动',
+  'Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move · Ctrl+←/→: outdent/indent': '导航 · Enter：编辑 · B：同级任务 · C：子任务 · 空格：完成 · Ctrl+↑/↓：移动 · Ctrl+←/→：减少缩进/缩进',
   'Backup not imported:': '未导入备份：', 'Backup preview': '备份预览', 'Append these tasks?': '追加这些任务？', 'Replace the current tree?': '替换当前任务树？', 'Import this tree?': '导入此任务树？',
   '{tasks} tasks in {roots} roots.': '共 {tasks} 个任务，{roots} 个根节点。',
   'The imported roots will follow the existing roots.': '导入的根节点将追加在现有根节点之后。', 'Current work will be replaced. Export it first if needed.': '当前内容将被替换。如需保留，请先导出。', 'The imported tasks will fill your empty outline.': '导入的任务将填入空白大纲。', 'Undo is available until you close this page.': '关闭页面前可以撤销。',

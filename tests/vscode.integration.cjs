@@ -34,7 +34,7 @@ exports.run = async function () {
           body: getComputedStyle(document.body).backgroundColor });
         (async () => {
           await waitFor(() => document.querySelector('input.title'));
-          const badge = document.querySelector('.tool-badge');
+          const badge = document.querySelector('.node .tool-badge');
           if (badge?.textContent !== 'ChatGPT') throw new Error('Tool badge missing');
           const badgeColors = [];
           const checkBadge = () => { const style = getComputedStyle(badge); badgeColors.push([style.color, style.backgroundColor]); };
@@ -42,6 +42,9 @@ exports.run = async function () {
           const samples = [sample()];
           document.querySelector('.settings-trigger').click();
           await waitFor(() => !document.querySelector('.settings-panel').hidden);
+          const catalogTag = document.querySelector('[aria-label="Edit tool ChatGPT"]');
+          if (!catalogTag || getComputedStyle(catalogTag).backgroundColor !== getComputedStyle(badge).backgroundColor) throw new Error('Settings tags must match cell tags');
+          if (document.querySelector('.tool-catalog textarea, .tool-catalog input')) throw new Error('Tool catalog starts as tags');
           const dark = document.querySelector('.setting-toggle input');
           dark.click(); await waitFor(() => document.documentElement.dataset.theme === 'dark'); samples.push(sample()); checkBadge();
           dark.click(); await waitFor(() => document.documentElement.dataset.theme === 'light'); samples.push(sample()); checkBadge();
@@ -66,6 +69,13 @@ exports.run = async function () {
           if (popBox.width > 250 || popBox.top >= anchorBox.top || popBox.bottom <= anchorBox.bottom) throw new Error('Popover geometry: ' + JSON.stringify({ pop: popBox.toJSON(), anchor: anchorBox.toJSON() }));
           toolInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
           await waitFor(() => !document.querySelector('[role="dialog"]'));
+          const child = document.querySelector('[role="treeitem"][aria-label="Child"]');
+          child.focus();
+          child.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', ctrlKey: true, bubbles: true }));
+          await waitFor(() => document.querySelector('[role="treeitem"][aria-label="Child"]').getAttribute('aria-level') === '1');
+          const moved = document.querySelector('[role="treeitem"][aria-label="Child"]');
+          moved.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', ctrlKey: true, bubbles: true }));
+          await waitFor(() => document.querySelector('[role="treeitem"][aria-label="Child"]').getAttribute('aria-level') === '2');
           api.postMessage({ type: 'appearanceProbe', samples, badgeColors, loaded: document.readyState });
         })().catch(error => api.postMessage({ type: 'appearanceProbe', error: String(error) }));
       })();

@@ -564,7 +564,7 @@ it.each(['website', 'extension'])('edits, clears and undoes tool labels in the %
   const onChange = vi.fn(), onSave = vi.fn();
   localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
   render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
-  expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
+  expect(document.querySelector('.node .tool-badge')?.textContent).toBe('ChatGPT');
   await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
   expect(screen.queryByRole('textbox', { name: 'New tool' })).toBeNull();
   await user.click(screen.getByRole('button', { name: 'Create' }));
@@ -573,13 +573,13 @@ it.each(['website', 'extension'])('edits, clears and undoes tool labels in the %
   await user.type(input, '工具');
   await user.click(screen.getByRole('button', { name: 'Add' }));
   await user.click(screen.getByRole('button', { name: 'Apply' }));
-  expect(document.querySelector('.tool-badge')?.textContent).toBe('工具');
+  expect(document.querySelector('.node .tool-badge')?.textContent).toBe('工具');
   await user.click(screen.getByRole('button', { name: 'Undo' }));
-  expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
+  expect(document.querySelector('.node .tool-badge')?.textContent).toBe('ChatGPT');
   await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
   await user.click(screen.getByRole('checkbox', { name: 'ChatGPT' }));
   await user.click(screen.getByRole('button', { name: 'Apply' }));
-  expect(document.querySelector('.tool-badge')).toBeNull();
+  expect(document.querySelector('.node .tool-badge')).toBeNull();
   expect(screen.getByDisplayValue('Task')).toBeTruthy();
   expect(onSave).not.toHaveBeenCalled();
   if (mode === 'extension') expect(onChange.mock.calls.at(-1)![0][0].tool).toBeUndefined();
@@ -599,12 +599,11 @@ it('assigns several tools and persists a manually ordered catalog separately fro
   await user.click(screen.getByRole('button', { name: 'Apply' }));
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tools).toEqual(['Imported', 'Notion', 'VSCode', 'Custom']);
   await openSettings(user);
-  const list = screen.getByRole('textbox', { name: 'Tool list' });
-  await user.clear(list); await user.type(list, 'Custom\nNotion\nImported\nVSCode\nObsidian\nChatGPT');
-  await user.click(screen.getByRole('button', { name: 'Save tool list' }));
+  await user.click(screen.getByRole('button', { name: 'Move tool Custom up' }));
+  const order = screen.getAllByRole('button', { name: /^Edit tool / }).map(el => el.textContent);
   view.unmount(); render(<App />);
   await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
-  expect(screen.getAllByRole('checkbox').map(el => el.textContent!.slice(1))).toEqual(['Custom', 'Notion', 'Imported', 'VSCode', 'Obsidian', 'ChatGPT']);
+  expect(screen.getAllByRole('checkbox').map(el => el.textContent!.slice(1))).toEqual(order);
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
   await actions(user, 'Task');
   expect(screen.getByRole('button', { name: 'Focus subtree Task' })).toBeTruthy();
@@ -630,4 +629,41 @@ it('opens a local tag chooser, reveals Create input on demand, and dismisses out
   await user.click(screen.getByRole('button', { name: /Add root task/ }));
   expect(screen.queryByRole('dialog', { name: 'Assign tools' })).toBeNull();
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tool).toBeUndefined();
+});
+
+it.each(['website', 'extension'])('indents with Ctrl+Right and outdents with Ctrl+Left only in navigation in the %s', async mode => {
+  const user = userEvent.setup(); seed(); const onChange = vi.fn();
+  render(<App document={mode === 'extension' ? { initialForest: fixture, onChange, onSave: vi.fn(), onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
+  const input = screen.getByDisplayValue('Beta');
+  await user.click(input);
+  await user.keyboard('{Control>}{ArrowRight}{/Control}');
+  expect(screen.getByRole('treeitem', { name: 'Beta' }).getAttribute('aria-level')).toBe('1');
+  await user.keyboard('{Escape}{Control>}{ArrowRight}{/Control}');
+  expect(screen.getByRole('treeitem', { name: 'Beta' }).getAttribute('aria-level')).toBe('2');
+  screen.getByRole('button', { name: 'Node control Beta' }).focus();
+  await user.keyboard('{Control>}{ArrowLeft}{/Control}');
+  expect(screen.getByRole('treeitem', { name: 'Beta' }).getAttribute('aria-level')).toBe('1');
+  await user.click(screen.getByRole('button', { name: 'Undo' }));
+  expect(screen.getByRole('treeitem', { name: 'Beta' }).getAttribute('aria-level')).toBe('2');
+  const row = screen.getByRole('treeitem', { name: 'Beta' }); row.focus();
+  fireEvent.keyDown(row, { key: 'ArrowLeft', ctrlKey: true, isComposing: true });
+  expect(row.getAttribute('aria-level')).toBe('2');
+});
+
+it('edits the settings tool list through tag controls without changing task assignments', async () => {
+  const user = userEvent.setup(); seed(); render(<App />); await openSettings(user);
+  expect(screen.queryByRole('textbox', { name: 'Tool name' })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Edit tool Notion' }).classList.contains('tool-badge')).toBe(true);
+  await user.click(screen.getByRole('button', { name: 'Create' }));
+  await user.type(screen.getByRole('textbox', { name: 'Tool name' }), 'Custom');
+  await user.click(screen.getByRole('button', { name: 'Add' }));
+  await user.click(screen.getByRole('button', { name: 'Edit tool Custom' }));
+  const input = screen.getByRole('textbox', { name: 'Tool name' });
+  await user.clear(input); await user.type(input, 'Renamed{Enter}');
+  expect(screen.getByRole('button', { name: 'Edit tool Renamed' })).toBeTruthy();
+  await user.click(screen.getByRole('button', { name: 'Remove tool Renamed' }));
+  expect(screen.queryByRole('button', { name: 'Edit tool Renamed' })).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Rank by frequency' }));
+  expect(screen.getByRole('button', { name: 'Rank by frequency' }).getAttribute('aria-pressed')).toBe('true');
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes).toEqual(fixture);
 });

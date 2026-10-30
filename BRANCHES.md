@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Completed the local +Tool panel refinement in both hosts; await the next requested refinement.
+Current focus: Completed navigation Ctrl+Left/Right indentation and tag-style Settings tool lists in both hosts; await the next requested refinement.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -61,6 +61,7 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Discover imported names, seed defaults, persist editable lists, and support frequency/manual order
   - [x] Validate 73 tests, both builds, legacy/multi-tool round trips, shared interactions, and real VS Code save/recovery, theme, and layout checks
 - [x] Refine +Tool into an anchored rounded panel with tag-style choices and a Create field revealed on demand; validate 74 tests, both builds, and real VS Code placement/focus checks
+- [x] Add navigation Ctrl+Left/Right outdent/indent and match Settings tool lists to +Tool tags, with rename/reorder/remove/Create; verify shared behavior and real VS Code interaction/style checks
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files

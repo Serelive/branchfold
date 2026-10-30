@@ -19,6 +19,7 @@ function download(content: string, format: 'json' | 'md') {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 const flatten = (nodes: Forest) => visibleNodes(nodes, new Set());
+const arrowMoves: Record<string, OutlineMove> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'outdent', ArrowRight: 'indent' };
 const titleCharacters = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
 type Snapshot = { forest: Forest; viewRootId: string | null; collapsed: Set<string>; selectedId: string | null };
 type Drop = { id: string; position: DropPosition };
@@ -249,8 +250,8 @@ function Editor({ document: host }: AppProps) {
       // A node control/button can select a node without putting a caret in its title.
       // Ctrl+arrows work here too; other keys retain the control's native behavior.
       if (id && !target.matches('select') && !event.altKey && !event.metaKey) {
-        if (event.ctrlKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
-          event.preventDefault(); move(id, event.key === 'ArrowUp' ? 'up' : 'down');
+        if (event.ctrlKey && arrowMoves[event.key]) {
+          event.preventDefault(); move(id, arrowMoves[event.key]);
         } else if (event.key === 'Escape') { event.preventDefault(); focus(id); }
       }
       return;
@@ -283,7 +284,7 @@ function Editor({ document: host }: AppProps) {
       return;
     }
     if (event.ctrlKey) {
-      if (event.key === 'ArrowUp' || event.key === 'ArrowDown') { event.preventDefault(); move(id, event.key === 'ArrowUp' ? 'up' : 'down'); }
+      if (arrowMoves[event.key]) { event.preventDefault(); move(id, arrowMoves[event.key]); }
       return;
     }
     const node = findNode(forest, id)!;
@@ -439,7 +440,7 @@ function Editor({ document: host }: AppProps) {
             </fieldset>
           </SettingsPanel>
         </div></div>
-        <p className="mode" aria-live="polite">{editingId ? t("Editing · Enter: next sibling · Tab / Shift+Tab: indent / outdent · Esc: navigate") : t("Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move")}{selected && ` · ${selected.title || t("Untitled task")}`}</p>
+        <p className="mode" aria-live="polite">{editingId ? t("Editing · Enter: next sibling · Tab / Shift+Tab: indent / outdent · Esc: navigate") : t("Navigation · Enter: edit · B: sibling · C: child · Space: complete · Ctrl+↑/↓: move · Ctrl+←/→: outdent/indent")}{selected && ` · ${selected.title || t("Untitled task")}`}</p>
         {importError && <p role="alert" className="warning">{t("Backup not imported:")} {t(importError)}</p>}
         {pendingImport !== null && <section className="import-preview" aria-label={t("Backup preview")}>
           <h3>{importMode === 'append' ? t("Append these tasks?") : forest.length ? t("Replace the current tree?") : t("Import this tree?")}</h3>
