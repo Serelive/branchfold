@@ -1,0 +1,15 @@
+# Review for branch 1, version 3
+- **[Requirement]** Make the option "unchecked branch bars" unselected in default. 
+- **[Requriement]** Add a format specified with commands.
+  - Their MD format are "- [ ] LiteralText <!--commands-->" 
+    - Now maintain one command. 
+      - `specify pointer --toolname ...`
+        - This command indicates that this cell is "pointer".
+        - The string after the toolname is passed to the toolname.  
+        - In pricinple, the pointer is indicating that the user should go to the tool specified by the "Toolname" to continue the task. But this is not madantory. 
+        - For example, a newline "- [ ] Project: Routines <!--specify pointer --toolname ChatGPT-->" means that this cell should be specified as a "pointer", whose tool name is "ChatGPT". 
+- **[Requirement]**
+    - Render the pointers with the same tool name by the same color. Choose these colors from a preset Macaron color card.
+    - Do not render the "<!--commands-->" as literal text in the cell. They are used to specify the attributes or use the methods of this cell. 
+- **[Requirement]** 
+  - Archive the `b1_v3_implementation.md` 

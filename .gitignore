@@ -116,3 +116,13 @@ playwright-report/
 
 # Local cloud credentials / environment-owned credential mount
 .aws
+
+# Codex
+
+.codex
+
+# Local sandbox project and source backup
+/sandbox/
+/materials/branchfold-backup.json
+/material/branchfold-backup.json
+materials/b1_v3_extension.png

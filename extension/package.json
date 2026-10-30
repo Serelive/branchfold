@@ -1,0 +1,9 @@
+{
+  "name": "branchfold-local", "displayName": "Branchfold Local", "version": "0.1.0",
+  "publisher": "branchfold", "private": true,
+  "description": "Read Markdown task trees and rename tasks in project-owned documents.",
+  "engines": { "vscode": "^1.90.0" },
+  "main": "./dist/extension.cjs",
+  "contributes": { "commands": [{ "command": "branchfold.open", "title": "Branchfold: Open Markdown Task Document" }] },
+  "activationEvents": ["onCommand:branchfold.open"]
+}

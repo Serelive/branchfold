@@ -1,94 +1,102 @@
 # Branchfold / 丛序
 
-A living task tree for plans that evolve with action.
+*A living task tree for plans that evolve with action.*
 
-This prototype is a local React + TypeScript + Vite application. Create, edit, reorganize, focus, and recover task trees. Completing children never completes their parent automatically.
+Branchfold is an experimental, local-first interface for progressive task decomposition. Start with a rough objective, break it into useful steps, and revise the tree as the work develops.
 
-## Run
+The project is moving toward a **Markdown-native project interface**: your repository owns the task document, and Branchfold provides a focused way to navigate it, edit tasks, and open related files. The goal is to make a project's existing Markdown plan easier to work with.
 
-Requires Node.js 22.12+ and npm. No global packages or backend are needed.
+**Available today:** one task editor for Markdown and JSON imports, with keyboard and pointer editing, subtree movement and focus, completion, and undo/redo. The browser offers import/edit/export with local persistence; the VS Code extension edits a working tree and writes the selected Markdown file only on Save. See [BRANCHES.md](BRANCHES.md) for the plan and completed work.
+
+## Run locally
+
+Install Node.js 22.12 or newer with npm, then run:
 
 ```sh
+git clone https://github.com/Serelive/branchfold.git
+cd branchfold
 npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. For the workspace-local Node runtime installed during initial development, first run:
+Open the local URL printed by Vite. Keep the development server running while using the app. The browser application needs no backend or account; the repository's Python scaffold is separate from it.
+
+## Import and export task trees
+
+Open **Settings**, then choose **Import Markdown** or **Import JSON** and select a file up to 2 MB. Markdown imports copy checklist tasks and their nesting into the editor, omitting headings, notes, and other unstructured content. The original file stays unchanged. Both formats use the same editor after import.
+
+Choose **Replace tree** or **Append roots** in **Import mode**, then review and confirm the import. Appending adds roots after the existing tree. Undo can restore a replaced tree or remove appended tasks.
+
+**Export Markdown** writes standard nested checklist lines; **Export JSON** writes a version-1 backup. Both export the whole tree. In the browser, the imported file has no continuing connection to the edited tree: use export to obtain an updated file.
+
+## Edit a project document in VS Code
+
+Build and launch the development host from the repository root:
 
 ```sh
-export PATH="$PWD/.tools/node-v22.23.4-linux-x64/bin:$PATH"
+npm run build:extension
+code --extensionDevelopmentPath="$PWD/extension" "$PWD"
 ```
 
-`.tools/` is ignored and is not included in a checkout. Install a compatible Node runtime separately on another machine. The existing uv/Python scaffold is preserved; it is not used by the browser application.
+Run **Branchfold: Open Markdown Task Document** in the Command Palette and choose a file. The extension uses the same task UI and editing gestures as the web app. Edits stay in its working tree until **Save document** or Ctrl/Cmd+S. Saving replaces the file with its structured checklist tree; headings, notes, and other unstructured content are omitted. **Open source** shows the attached document, where editor undo can restore the previous content after a save.
 
-## Outline interaction
+External changes refresh a clean view automatically. If you have unsaved tree edits, the extension keeps them and shows a conflict. Review the source, export your local tree, or choose **Reload source** and confirm discarding local edits. Resolve existing unsaved source-editor changes before saving from Branchfold. Closing a view with unsaved edits opens an untitled recovery document containing those tasks. A recovery draft is also kept in VS Code workspace state until saved or explicitly discarded.
 
-Click a row background to **select** a node, or its title to **edit**. The mode line
-shows which behavior is active. Selection, title editing, subtree view, and dragging
-are independent. New tasks always start with the caret in their title.
+The [shared editor reference](docs/shared-editor.md) describes the conversion format and save behavior.
+
+## Work with a task tree
+
+Click a row background to select a task, or click its title to edit. The mode indicator shows which keyboard commands apply. Use **+ Next** and **+ Child** to grow the tree, and **↗** to focus on a subtree. Breadcrumbs return to an ancestor or **All tasks**.
+
+The left handle combines three actions:
+
+- **Click:** expand or collapse a branch; check or uncheck a leaf.
+- **Hold:** preview completion after half a second, then release to apply it. Checking a task checks its descendants; unchecking changes only that task.
+- **Drag:** move the subtree. Moving after a hold cancels the completion preview and starts dragging. An insertion line shows placement before or after a subtree; a highlighted row shows placement inside it. Escape cancels the drag.
+
+The right-edge arrow slides the row aside to reveal **Delete cell** (promote its children in place) and **Delete subtree**, without shifting other rows. If a move takes a task outside the current view, **Go to moved node** reveals it.
+
+### Appearance and language
+
+Open **Settings** for **Dark mode**, **Chinese mode / 中文**, visualization options, and import/export. The drawer starts closed; Escape or a click outside closes it. Dark mode and Chinese mode start off and remember your choices in local storage. Task titles remain unchanged when switching languages. The existing visualization options remain enabled by default.
+
+### Keyboard shortcuts
 
 | Context | Keys | Action |
 | --- | --- | --- |
 | Navigation | Enter or F2 | Edit selected title |
-| Navigation | B / C | Create sibling / child and edit it |
-| Navigation | ↑ / ↓ | Select previous / next visible node |
+| Navigation | B / C | Create sibling / child |
+| Navigation | ↑ / ↓ | Select previous / next visible task |
 | Navigation | ← / → | Collapse or select parent / expand or select first child |
-| Navigation | Backspace | Directly delete the selected node and subtree; Undo restores it |
-| Navigation | Space / Delete | Toggle completion / delete (confirm when there are descendants) |
-| Navigation, including node-control/button focus | Ctrl + ↑ / ↓ | Move the entire subtree among siblings |
-| Editing | Enter | Commit title and create a sibling after the current subtree |
-| Editing | Tab / Shift+Tab | Indent under previous sibling / outdent after parent |
-| Editing | Backspace | A tap erases one character; held repeats erase three characters at a time. A press starting with text never deletes the cell. A fresh press on an empty title deletes the node (confirm if it has descendants); holding continues deleting upward. |
-| Editing | Escape | Leave the caret and select the node |
-| Navigation in a subtree view | Escape | Return to the parent view |
-| Navigation | Ctrl/Cmd + Z, with Shift to redo | Undo / redo outline changes |
+| Navigation | Ctrl + ↑ / ↓ | Move subtree among siblings |
+| Navigation | Space | Toggle completion |
+| Navigation | Backspace | Delete selected task and subtree immediately; Undo restores them |
+| Navigation | Delete | Delete, with confirmation for descendants |
+| Navigation | Ctrl/Cmd + Z / Shift + Ctrl/Cmd + Z | Undo / redo |
+| Editing | Enter | Create the next sibling |
+| Editing | Tab / Shift+Tab | Indent / outdent |
+| Editing | Escape | Finish editing and select the task |
+| Subtree navigation | Escape | Return to the parent view |
 
-Ordinary text editing and native text undo remain available inside title fields.
-Whole-node shortcuts are suppressed during composition. Escape exits editing before
-Tab is used to reach other controls. Visible actions and the sliding tray provide
-fallbacks when desktop shortcuts conflict.
+While editing, Backspace erases one character per tap or three per held repeat. A press starting with text protects the cell from deletion. Release and press again on an empty title to delete it; holding then deletes upward. Empty parents require confirmation.
 
-Use **Directory guides** in the toolbar to switch between indentation guides and directory-style branch connectors. This changes only the view for the current session.
+Title fields retain native text undo. Composition-confirming keys are guarded for IME input. Press Escape to leave title editing before using Tab to reach other controls.
 
-In Directory guides mode, selecting a task darkens its handles and connecting route back to the visible root. **Ancestor titles** toggles ancestor title highlighting in the selection color; the selected task keeps its existing cell highlight.
+### View options
 
-Use **Leaf drawings** to switch leaf handles from plain rings to standalone leaf outlines. Checked handles keep the filled circle and check mark in both modes. This preference also lasts for the current session.
+**Directory guides** switches indentation guides to directory-style connectors. Selecting a task darkens the path and handles back to the visible root; **Ancestor titles** toggles highlighting of the ancestor text. **Leaf drawings** replaces plain leaf rings with outlined leaves. Checked tasks keep the circle and check mark. All three options start enabled. View options and subtree focus last for the session.
 
-The **single left control** expands/collapses branches or checks/unchecks leaves on click, previews a completion toggle after a 500 ms hold and commits it on release, and moves the whole subtree on drag. Moving after the hold cancels the completion preview and starts dragging, without changing saved completion or adding an undo step. Single clicks act immediately; long-press and drag do not change expansion. An insertion line marks **before** or
-**after the target's entire subtree**; a highlighted row marks **inside**. Holding
-near a window edge scrolls; Escape cancels. Invalid self/descendant targets cannot
-be dropped on. **+ Next**, **+ Child**, and **↗** subtree focus are direct
-row controls. Tap the **right-edge arrow** to slide a row left and reveal reorder,
-indent/outdent, parent selection, and deletion actions behind it. This does not move
-other rows. Tap the edge again or press Escape to close; opening another row closes
-the previous tray.
+## Saving and recovery
 
-Ancestor breadcrumbs return to any ancestor or **All tasks**. Moves preserve the
-current view and collapsed branches; **Go to moved node** reveals a moved task that
-is no longer visible. Undo/redo restores the saved view context with the tree.
-Creating a sibling of the current view root steps to its parent view to edit the new
-sibling. View state itself is temporary and resets on reload.
+The browser editor saves its working tree in localStorage, whether it was created directly or imported from Markdown or JSON. Use the same browser profile and local URL to return to your tree, and keep one editing tab open at a time. **Export JSON** backs up the full tree, including tasks outside the focused view. Keep exports of important work: clearing browser data removes the stored tree.
 
-## Storage and recovery
+**Import JSON** previews a version 1 backup up to 2 MB before replacing the tree. Undo restores a replaced or deleted tree during the session. Outline history holds up to 100 changes, groups continuous title edits, and resets on reload.
 
-- Titles save on every edit. Empty titles are allowed. Checking a task checks its entire subtree; unchecking affects only that task.
-  Children never automatically complete their parent; moving a node preserves its entire subtree and stable IDs.
-- Undo keeps up to 100 changes in memory. Continuous title editing is grouped until
-  focus leaves it; a new edit discards redo. Reloading clears history. Parent deletion
-  names the number of descendants before confirmation; Undo recovers the subtree.
-- The version 1 tree is saved in localStorage under `branchfold.tree.v1`. Reloading
-  the same origin restores it. Use one tab: simultaneous editors are not coordinated.
-- **Export JSON** includes the full forest even in a subtree view. Browser storage
-  can be cleared or differ across origins/profiles; keep exports for important work.
-- **Import JSON** validates version 1 backups up to 2 MB and previews their contents.
-  An empty outline offers **Import tree**; a nonempty one requires **Replace tree**
-  and warns about replacing current work. Cancel changes nothing. Confirmed imports
-  can be undone during the session. Export important work before replacing it.
-- Invalid startup data pauses editing without overwriting the original. Write errors
-  retain edits in memory and show a warning to export before leaving.
-- No task content is transmitted to a service.
+If saved data cannot be read, the app preserves it and pauses editing. If saving fails, edits remain in memory and the app prompts you to export them. Task content stays local.
 
-## Validate
+The VS Code extension keeps its working tree separate from browser storage and saves only on request. Project-relative artifact navigation remains planned work.
+
+## Development
 
 ```sh
 npm test
@@ -96,15 +104,15 @@ npm run build
 npm run preview
 ```
 
-Unit and rendered UI tests cover tree invariants, navigation/editing modes,
-composition guards, context preservation, storage failures, deletion recovery, and
-empty/nonempty imports. The production build checks TypeScript and emits `dist/`.
+Tests cover tree operations, editor interactions, structured Markdown conversion, explicit saves, conflicts, storage, and recovery. The build type-checks TypeScript and generates `dist/`; preview serves that production build locally.
 
-For real Firefox regressions, use the installed Firefox and geckodriver plus Python
-3's standard library (no Python packages or backend). In separate terminals:
+For the real-browser regression suite, install Firefox and geckodriver and use Python 3. Start these in separate terminals:
 
 ```sh
 npm run dev -- --port 5174 --strictPort
+```
+
+```sh
 geckodriver --host 127.0.0.1 --port 4444
 ```
 
@@ -114,15 +122,22 @@ Then run:
 python3 tests/browser_regression.py
 ```
 
-The suite creates a separate headless profile, uses disposable data on the test
-origin, closes its browser session, and writes screenshots/profile files under ignored
-`.tools/browser-regression/`. It covers 32-node keyboard entry, real pointer gestures,
-edge scrolling, cancellation, imports, history, and reload. Use an idle geckodriver
-server; it accepts one session at a time. Stop both test servers when finished.
+Run `python3 tests/browser_markdown.py` against the same test servers for Markdown import/edit/export, append/replace, focus, and original-file preservation checks. To exercise the actual VS Code save and undo path after `npm run build:extension`:
 
-The v3 user review reports successful Fcitx5 input and satisfactory key mappings.
-Synthetic composition tests supplement that feedback; they do not emulate the OS input method.
-See [the interaction report](docs/archive/v2_n2_report_interaction.md) for evidence and limits.
-Planning states, outcome verification, Markdown portability, cross-tab coordination,
-and durable undo remain outside this iteration. [BRANCHES.md](BRANCHES.md) tracks
-remaining acceptance work and the real-task-tree trial.
+```sh
+code --extensionDevelopmentPath="$PWD/extension" \
+  --extensionTestsPath="$PWD/tests/vscode.integration.cjs" \
+  --user-data-dir="$PWD/.tools/vscode-test-profile" \
+  --extensions-dir="$PWD/.tools/vscode-test-extensions" \
+  --disable-extensions --skip-welcome --skip-release-notes --wait
+```
+
+The VS Code test uses a temporary document and writes its results to `.tools/vscode-integration.json`.
+
+The suite uses disposable task data and a separate headless Firefox profile. It covers keyboard entry, pointer gestures, scrolling, imports, history, and reload, and saves artifacts under ignored `.tools/browser-regression/`. Stop the test servers when finished. Desktop shortcuts and IME behavior also benefit from hands-on testing on your system.
+
+## Contributing and project direction
+
+Bug reports are most useful with reproduction steps, expected behavior, and browser/OS details. For feature ideas, describe the project workflow and how the change would improve on editing its Markdown directly. Use a small sample document when reporting document-handling issues.
+
+Start with [BRANCHES.md](BRANCHES.md) for current work and [AGENTS.md](AGENTS.md) for product principles, data-integrity requirements, and contributor guidance. The next milestone is linking tasks to project files, followed by a real-project comparison with direct Markdown editing.

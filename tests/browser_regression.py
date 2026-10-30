@@ -40,6 +40,10 @@ def keys(*values):
   else:a += [{'type':'keyDown','value':value},{'type':'keyUp','value':value}]
  req('/actions',{'actions':[{'type':'key','id':'keys','actions':a}]})
 def button(label):
+ settings_labels={'Directory guides','Ancestor titles','Unchecked branch bars','Expanded branch bars','Leaf drawings','Export JSON','Import JSON','Export Markdown','Import Markdown'}
+ in_settings=label in settings_labels
+ if in_settings and js('return document.querySelector(".settings-trigger")?.getAttribute("aria-expanded")==="false"'):
+  click('.settings-trigger')
  ident=js('return [...document.querySelectorAll("button")].find(b=>(b.textContent===arguments[0] || b.getAttribute("aria-label")===arguments[0]) && !b.closest("[inert]") && b.getClientRects().length && (!b.closest("details") || b.closest("details").open))',label)
  assert ident,label
  js('arguments[0].scrollIntoView({block:"nearest",inline:"nearest"})',ident)
@@ -48,6 +52,7 @@ def button(label):
   time.sleep(.05)
  else:raise AssertionError('Button remained covered: '+label)
  req('/element/'+ident['element-6066-11e4-a52e-4f735466cecf']+'/click',{})
+ if in_settings: click('.settings-heading button')
 def load(nodes,url=None):
  if url is None: url=APP_URL
  req('/url',{'url':url}); wait('document.querySelector("main") !== null')
@@ -96,17 +101,17 @@ js('const e=document.activeElement;e.dispatchEvent(new CompositionEvent("composi
 assert len(stored())==2
 print('Browser composition-event guards passed (synthetic events only).')
 # Correct import empty/nonempty confirmation, cancel, undo and reload.
-load([]);text('input[type=file]',str(backup));wait('document.querySelector(".import-preview") !== null')
+load([]);text('input[aria-label="JSON backup"]',str(backup));wait('document.querySelector(".import-preview") !== null')
 assert 'replaced' not in js('return document.querySelector(".import-preview").textContent')
 button('Cancel import'); assert stored()==[]
-text('input[type=file]',str(backup));wait('document.querySelector(".import-preview") !== null');button('Import tree');assert stored()==fixture
+text('input[aria-label="JSON backup"]',str(backup));wait('document.querySelector(".import-preview") !== null');button('Import tree');assert stored()==fixture
 button('Undo');assert stored()==[];button('Redo');assert stored()==fixture
-text('input[type=file]',str(backup));wait('document.querySelector(".import-preview") !== null');assert 'Current work will be replaced' in js('return document.querySelector(".import-preview").textContent');button('Cancel import')
+text('input[aria-label="JSON backup"]',str(backup));wait('document.querySelector(".import-preview") !== null');assert 'Current work will be replaced' in js('return document.querySelector(".import-preview").textContent');button('Cancel import')
 req('/refresh',{});wait('document.querySelector("[data-row-id=a]") !== null');assert stored()==fixture
 print('Empty/nonempty import, cancellation, undo/redo and reload passed.')
 # Navigation context and deliberate parent deletion.
 click('button[aria-label="Focus subtree Alpha"]')
-click('button[aria-label="Actions for Child"]');button('Outdent')
+click('input[data-node-id="c"]');keys(('\ue008','\ue004'))
 assert js('return document.querySelector("[data-node-id=b]")') is None
 assert js('return document.querySelector("[data-node-id=c]")') is None
 button('Undo');wait('document.querySelector("[data-node-id=c]") !== null')
@@ -255,7 +260,7 @@ req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause',
 assert positions==js('return [...document.querySelectorAll(".row-shell")].map(e=>({top:e.getBoundingClientRect().top,height:e.getBoundingClientRect().height}))')
 assert js('return document.querySelector("[data-row-id=a]").getBoundingClientRect().left < document.querySelector(".row-shell").getBoundingClientRect().left')
 (ARTIFACTS/'revealed-actions.png').write_bytes(base64.b64decode(req('/screenshot')))
-button('Move down');assert stored()[1]['id']=='a';assert not stored()[0]['done']
+button('Delete cell');assert [n['id'] for n in stored()]==['c','b'];button('Undo');assert stored()==fixture
 assert js('return document.querySelector(".row-shell.revealed")') is None
 click('button[aria-label="Actions for Beta"]');keys('\ue00c');assert js('return document.querySelector(".row-shell.revealed")') is None
 print('Unified control long-press/click and fixed-layout slide actions passed.')
@@ -266,7 +271,7 @@ req('/window/rect',{'width':500,'height':844});load(fixture)
 click('button[aria-label="Actions for Alpha"]')
 req('/actions',{'actions':[{'type':'key','id':'keys','actions':[{'type':'pause','duration':250}]}]})
 (ARTIFACTS/'revealed-actions-narrow.png').write_bytes(base64.b64decode(req('/screenshot')))
-button('Move down');assert stored()[1]['id']=='a'
+button('Delete cell');assert [n['id'] for n in stored()]==['c','b']
 print('Narrow action tray remains usable.')
 
 # Leaf clicks toggle; held subtree completion previews and commits atomically.
@@ -304,6 +309,7 @@ print('Leaf clicks, descendant previews, cancellation, commit, reopen and reload
 
 # Directory connectors replace guides without changing row geometry or task data.
 req('/window/rect',{'width':1280,'height':1100});load(hierarchy)
+button('Directory guides')
 positions=js('return [...document.querySelectorAll(".row-shell")].map(e=>({x:e.getBoundingClientRect().x,y:e.getBoundingClientRect().y,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height}))')
 button('Directory guides')
 assert js('return document.querySelector(".directory-guides") !== null')
@@ -325,7 +331,7 @@ assert stored()==hierarchy
 print('Directory guides preserve geometry, data, folding and subtree focus; switch back passed.')
 
 # Path trunks stay dark through earlier siblings; title highlights are optional.
-load(hierarchy);button('Directory guides');click('[data-node-id=examples]')
+load(hierarchy);click('[data-node-id=examples]')
 def path_color(id,selector,pseudo=None):
  return js('return getComputedStyle(document.querySelector(arguments[0]).closest(".branch").querySelector(arguments[1]),arguments[2]).backgroundColor', '[data-row-id='+id+']',selector,pseudo)
 for id in ('plan','slides'):
