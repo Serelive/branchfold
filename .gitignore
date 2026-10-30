@@ -116,3 +116,14 @@ playwright-report/
 
 # Local cloud credentials / environment-owned credential mount
 .aws
+
+# Local temporary materials (e.g., for testing)
+
+materials/
+
+# Local test sandboxes (e.g., for testing)
+sandbox/
+
+# Codex
+
+.codex/
