@@ -1,8 +1,9 @@
-import { validToolName } from './toolAnnotation';
+import { validToolName, validTools, uniqueTools } from './toolAnnotation';
 export interface TaskNode {
   id: string;
   title: string;
   tool?: string;
+  tools?: string[];
   done: boolean;
   children: TaskNode[];
 }
@@ -38,8 +39,9 @@ export function parseForest(raw: string): Forest {
   function valid(nodes: unknown): nodes is Forest {
     return Array.isArray(nodes) && nodes.every(node => {
       if (!node || typeof node !== 'object' || typeof node.id !== 'string' || !node.id ||
-          ('tool' in node && !validToolName(node.tool)) || ids.has(node.id) || typeof node.title !== 'string' || typeof node.done !== 'boolean') return false;
+          ('tools' in node && (!validTools(node.tools) || 'tool' in node)) || ('tool' in node && !validToolName(node.tool)) || ids.has(node.id) || typeof node.title !== 'string' || typeof node.done !== 'boolean') return false;
       if ('tool' in node && typeof node.tool === 'string') node.tool = node.tool.trim();
+      if ('tools' in node && validTools(node.tools)) node.tools = uniqueTools(node.tools);
       ids.add(node.id);
       return valid(node.children);
     });

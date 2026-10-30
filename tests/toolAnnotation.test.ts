@@ -44,3 +44,13 @@ it('preserves metadata in structural operations and rejects invalid backup label
   expect(parseForest(serializeForest([{ ...tree[0], tool: ' ChatGPT ' }]))[0].tool).toBe('ChatGPT');
   expect(toolColor(' ChatGPT ')).toBe(toolColor('chatgpt'));
 });
+
+it('round-trips multiple tools while retaining legacy single-tool compatibility', () => {
+  const forest = importMarkdown('- [ ] Plan <!--branchfold:{"tools":["ChatGPT"," Notion ","chatgpt"]}-->\n');
+  expect(forest[0].tools).toEqual(['ChatGPT', 'Notion']);
+  expect(forest[0].title).toBe('Plan');
+  expect(treeSignature(importMarkdown(exportMarkdown(forest)))).toBe(treeSignature(forest));
+  expect(parseForest(serializeForest(forest))).toEqual(forest);
+  expect(importMarkdown('- [ ] Plan <!--branchfold:{"tools":[]}-->\n')[0].tools).toBeUndefined();
+  expect(() => parseForest(JSON.stringify({ version: 1, nodes: [{ ...forest[0], tool: 'Conflict' }] }))).toThrow();
+});

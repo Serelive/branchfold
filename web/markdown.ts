@@ -1,4 +1,4 @@
-import { readToolComment, validToolName } from './toolAnnotation';
+import { readToolComment, validToolName, validTools, taskTools, toolFields } from './toolAnnotation';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
@@ -31,7 +31,7 @@ export function importMarkdown(source: string): Forest {
           return text.slice(inline.position?.start.offset, inline.position?.end.offset);
         }).join('') : '';
         if (tool) title = title.replace(/ $/, '');
-        const task: TaskNode = { id: crypto.randomUUID(), title, ...(tool ? { tool } : {}), done: typeof node.checked === 'boolean' ? node.checked : empty![1].toLowerCase() === 'x', children: [] };
+        const task: TaskNode = { id: crypto.randomUUID(), title, ...(tool ? toolFields(tool) : {}), done: typeof node.checked === 'boolean' ? node.checked : empty![1].toLowerCase() === 'x', children: [] };
         destination.push(task);
         destination = task.children;
       }
@@ -58,7 +58,9 @@ export function exportMarkdown(forest: Forest): string {
         .replace(/[\r\n\t]/g, char => `&#${char.charCodeAt(0)};`)
         .replace(/^ +| +$/g, spaces => '&#32;'.repeat(spaces.length));
       if (node.tool !== undefined && !validToolName(node.tool)) throw new Error('Invalid tool name.');
-      const annotation = node.tool === undefined ? '' : ` <!--branchfold:${JSON.stringify({ tool: node.tool.trim() })}-->`;
+      if (node.tools !== undefined && !validTools(node.tools)) throw new Error('Invalid tool name.');
+      const tools = taskTools(node);
+      const annotation = tools.length ? ` <!--branchfold:${JSON.stringify(toolFields(tools))}-->` : '';
       lines.push(`${'  '.repeat(depth)}- [${node.done ? 'x' : ' '}] ${title}${annotation}`);
       write(node.children, depth + 1);
     }

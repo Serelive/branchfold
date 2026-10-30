@@ -14,7 +14,7 @@ exports.run = async function () {
     const document = await vscode.workspace.openTextDocument(vscode.Uri.file(file));
     await vscode.window.showTextDocument(document);
     const port = createEditorPort(document);
-    const request = () => ({ ...port.current(), tree: JSON.stringify({ version: 1, nodes: [{ id: 'root', title: 'Renamed', tool: 'ChatGPT', done: true, children: [{ id: 'new', title: 'New child', done: false, children: [] }] }] }) });
+    const request = () => ({ ...port.current(), tree: JSON.stringify({ version: 1, nodes: [{ id: 'root', title: 'Renamed', tools: ['ChatGPT', 'Notion'], done: true, children: [{ id: 'new', title: 'New child', done: false, children: [] }] }] }) });
     const recoveryStore = new Map();
     const context = { extensionUri: vscode.Uri.file(path.resolve(__dirname, '../extension')), workspaceState: { get: key => recoveryStore.get(key), update: async (key, value) => { if (value === undefined) recoveryStore.delete(key); else recoveryStore.set(key, value); } } };
     const panel = await openDocument(context, document.uri);
@@ -50,13 +50,11 @@ exports.run = async function () {
           await new Promise(resolve => requestAnimationFrame(resolve));
           const badgeBox = badge.getBoundingClientRect(), titleBox = document.querySelector('input.title').getBoundingClientRect();
           if (badgeBox.width < 10 || badgeBox.left < titleBox.right) throw new Error('Badge overlaps title in narrow layout');
-          document.querySelector('.actions-trigger').click();
-          await waitFor(() => document.querySelector('.row-shell.revealed'));
-          const toolButton = Array.from(document.querySelectorAll('.row-shell.revealed .action-panel button')).find(button => button.textContent === 'Tool');
-          toolButton.click();
+          document.querySelector('button[aria-label^="Assign tools to "]').click();
           await waitFor(() => document.querySelector('[role="dialog"] input'));
+          if (getComputedStyle(document.querySelector('.tool-choices')).display !== 'grid') throw new Error('Tool choices must form a vertical list');
           const toolInput = document.querySelector('[role="dialog"] input');
-          if (toolInput.value !== 'ChatGPT' || document.activeElement !== toolInput) throw new Error('Tool editor did not load or focus');
+          if (!toolInput.checked || document.activeElement !== toolInput) throw new Error('Tool editor did not load or focus');
           toolInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
           await waitFor(() => !document.querySelector('[role="dialog"]'));
           api.postMessage({ type: 'appearanceProbe', samples, badgeColors, loaded: document.readyState });
@@ -82,7 +80,7 @@ exports.run = async function () {
     passed.push('real webview renders tasks and preserves Branchfold colors through light/dark/light switching');
     passed.push('tool badges survive theme switches and narrow layout; tool editor focuses and cancels');
     passed.push('real VS Code webview loads built assets and completes host handshake');
-    const recoveryTree = JSON.stringify({ version: 1, nodes: [{ id: 'recovery', title: 'Unsaved recovery', tool: '工具', done: false, children: [] }] });
+    const recoveryTree = JSON.stringify({ version: 1, nodes: [{ id: 'recovery', title: 'Unsaved recovery', tools: ['工具', 'Obsidian'], done: false, children: [] }] });
     const draftMessage = { type: 'draft', dirty: true, document: { ...port.current(), name: 'BRANCHES.md' }, tree: recoveryTree };
     await new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('Draft was not received')), 10000);
@@ -96,7 +94,7 @@ exports.run = async function () {
     });
     panel.dispose();
     const recovery = await recovered;
-    assert.equal(recovery.getText(), '- [ ] Unsaved recovery <!--branchfold:{"tool":"工具"}-->\n');
+    assert.equal(recovery.getText(), '- [ ] Unsaved recovery <!--branchfold:{"tools":["工具","Obsidian"]}-->\n');
     assert.equal(recoveryStore.get('branchfold.draft:' + document.uri.toString()).tree, recoveryTree);
     await vscode.window.showTextDocument(recovery);
     await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
@@ -106,7 +104,7 @@ exports.run = async function () {
     assert.equal(await fs.readFile(file, 'utf8'), original);
     passed.push('loading and preparing edits leaves the original document unchanged');
     await saveTree(port, initial);
-    assert.equal(await fs.readFile(file, 'utf8'), '\uFEFF- [x] Renamed <!--branchfold:{"tool":"ChatGPT"}-->\r\n  - [ ] New child\r\n');
+    assert.equal(await fs.readFile(file, 'utf8'), '\uFEFF- [x] Renamed <!--branchfold:{"tools":["ChatGPT","Notion"]}-->\r\n  - [ ] New child\r\n');
     assert.equal(document.isDirty, false);
     passed.push('explicit Save writes the structured tree, omits notes and headings, and uses the document encoding/EOL');
     await vscode.commands.executeCommand('undo');

@@ -278,3 +278,11 @@ button:focus:not(:focus-visible) { outline: none; }
 .tool-editor input { width: 100%; font: inherit; color: var(--text); background: var(--page); border: 1px solid var(--muted); padding: 8px; }
 .tool-editor p { font-size: 13px; }
 .tool-editor > div { display: flex; justify-content: flex-end; gap: 8px; }
+.tool-badges { display: flex; gap: 3px; max-width: 26%; min-width: 0; overflow-x: auto; }
+.tool-badges .tool-badge { max-width: none; flex: 0 0 auto; }
+.tool-choices { max-height: 40vh; overflow-y: auto; }
+.tool-choices label { display: flex; align-items: center; gap: 8px; padding: 5px; }
+.tool-choices input { width: auto; }
+.settings-panel textarea { display: block; width: 100%; min-height: 110px; background: var(--page); color: var(--text); font: inherit; }
+.tool-editor > .tool-choices { display: grid; justify-content: stretch; gap: 0; }
+.tool-choices label { overflow-wrap: anywhere; }

@@ -1,4 +1,6 @@
-import { toolColor } from './toolAnnotation';
+import ToolCatalogSettings from './ToolCatalogSettings';
+import { CATALOG_KEY, loadCatalog, mergeCatalog, discoverTools, rankedTools } from './toolCatalog';
+import { toolColor, taskTools, toolFields } from './toolAnnotation';
 import ToolEditor from './ToolEditor';
 import { useEffect, useRef, useState, type PointerEvent, type KeyboardEvent } from 'react';
 import { addNode, updateNode, toggleCompletion, serializeForest, parseForest, findNode, nodeLocation, nodePath, visibleNodes, deleteNode, moveNode, moveRelative, outlineMove, type OutlineMove, type Forest, type DropPosition } from './tree';
@@ -34,6 +36,9 @@ function Editor({ document: host }: AppProps) {
     catch { return { nodes: [] as Forest, error: true }; }
   });
   const [forest, setForest] = useState(initial.nodes);
+  const [catalog, setCatalog] = useState(() => loadCatalog(initial.nodes));
+  useEffect(() => { try { localStorage.setItem(CATALOG_KEY, JSON.stringify(catalog)); } catch { /* Session choices remain usable. */ } }, [catalog]);
+  const toolOptions = rankedTools(catalog, forest);
   const [directoryGuides, setDirectoryGuides] = useState(true);
   const [leafDrawings, setLeafDrawings] = useState(true);
   const [uncheckedBars, setUncheckedBars] = useState(false);
@@ -383,17 +388,17 @@ function Editor({ document: host }: AppProps) {
             onBlur={() => { editGroup.current = null; setEditingId(current => current === node.id ? null : current); }}
             onCompositionStart={() => { composing.current = true; }} onCompositionEnd={() => { composing.current = false; }}
             onChange={event => change(updateNode(forest, node.id, n => ({ ...n, title: event.target.value })), node.id)} />
-          {node.tool && <span className={`tool-badge tool-color-${toolColor(node.tool)}`} title={node.tool}>{node.tool}</span>}
+          {taskTools(node).length > 0 && <span className="tool-badges">{taskTools(node).map(tool => <span key={tool} className={`tool-badge tool-color-${toolColor(tool)}`} title={tool}>{tool}</span>)}</span>}
           <button className="row-action" aria-label={t('Add sibling after {title}', { title: label })} title={t("Add sibling (B in navigation)")} onClick={() => sibling(node.id)}>{t("+ Next")}</button>
           <button className="row-action" aria-label={t('Add child to {title}', { title: label })} title={t("Add child (C in navigation)")} onClick={() => create(node.id)}>{t("+ Child")}</button>
-          <button className="row-action" aria-label={t('Focus subtree {title}', { title: label })} title={t("Focus subtree")} onClick={() => zoom(node.id)}>↗</button>
+          <button className="row-action" aria-label={t('Assign tools to {title}', { title: label })} onClick={() => { setActionsId(null); setEditingId(null); setToolId(node.id); }}>{t("+Tool")}</button>
           <button className="actions-trigger" aria-label={`${actionsOpen ? t("Close") : t("Actions for")} ${label}`}
             aria-expanded={actionsOpen} title={actionsOpen ? t("Close actions") : t("Reveal actions")}
             onClick={() => setActionsId(actionsOpen ? null : node.id)}>{actionsOpen ? '›' : '‹'}</button>
         </div>
         <div className="action-panel" role="group" aria-label={t('Actions for {title}', { title: label })} aria-hidden={!actionsOpen} inert={!actionsOpen}
           onFocusCapture={() => setSelectedId(node.id)}>
-          <button onClick={() => act(() => { setEditingId(null); setToolId(node.id); })}>{t("Tool")}</button>
+          <button aria-label={t('Focus subtree {title}', { title: label })} onClick={() => act(() => zoom(node.id))}>{t("Focus subtree")}</button>
           <button className="danger" aria-label={t("Delete cell")} title={t("Delete only this cell; promote its children in place")} onClick={() => act(() => remove(node.id, false, true))}>{t("Delete cell")}</button>
           <button className="danger" aria-label={t("Delete subtree")} title={t("Delete subtree")} onClick={() => act(() => requestDelete(node.id))}>{t("Delete subtree")}</button>
         </div>
@@ -406,9 +411,9 @@ function Editor({ document: host }: AppProps) {
 
   return <main className="outline-editor" onKeyDown={keyboard}>
     <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">{t("LOCAL PROTOTYPE")}</span></header>
-    {toolId && <ToolEditor initial={findNode(forest, toolId)?.tool ?? ''}
+    {toolId && <ToolEditor initial={taskTools(findNode(forest, toolId) ?? {})} options={toolOptions} onCreate={name => setCatalog(current => mergeCatalog(current, [name]))}
       onClose={() => { setToolId(null); focus(toolId); }}
-      onSave={tool => { change(updateNode(forest, toolId, node => { const { tool: previous, ...rest } = node; return tool ? { ...rest, tool } : rest; })); setToolId(null); focus(toolId); }} />}
+      onSave={tools => { change(updateNode(forest, toolId, node => { const { tool: previous, tools: previousTools, ...rest } = node; return { ...rest, ...toolFields(tools) }; })); setToolId(null); focus(toolId); }} />}
     {host?.toolbar}
     <section className="intro"><p className="eyebrow">{t("A LITTLE STRUCTURE. ROOM TO CHANGE.")}</p><h1>{t("Make room for the next step.")}</h1><p>{t("A living task tree for plans that evolve with action.")}</p></section>
     {initial.error ? <section role="alert" className="warning"><h2>{t("Your saved tree could not be opened.")}</h2><p>{t("Editing is paused to protect existing data. Storage may be unavailable, or the saved format may be invalid. No data has been overwritten. Restore browser storage access or recover the original data before reloading.")}</p></section> : <>
@@ -418,6 +423,7 @@ function Editor({ document: host }: AppProps) {
           <input ref={markdownInput} type="file" hidden accept=".md,.markdown,text/markdown,text/plain" aria-label={t("Markdown import")} onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'md'); event.target.value = ''; }} />
           <input ref={fileInput} type="file" hidden accept=".json,application/json" aria-label={t("JSON backup")} onChange={event => { const file = event.target.files?.[0]; if (file) void readBackup(file, 'json'); event.target.value = ''; }} />
           <SettingsPanel>
+            <ToolCatalogSettings names={toolOptions} manual={catalog.manual} onChange={setCatalog} />
             <fieldset><legend>{t("Tree display")}</legend>
             <button aria-pressed={directoryGuides} onClick={() => setDirectoryGuides(current => !current)}>{t("Directory guides")}</button>
             {directoryGuides && <button aria-pressed={ancestorTitles} onClick={() => setAncestorTitles(current => !current)}>{t("Ancestor titles")}</button>}
@@ -439,7 +445,7 @@ function Editor({ document: host }: AppProps) {
           <p>{t('{tasks} tasks in {roots} roots.', { tasks: flatten(pendingImport).length, roots: pendingImport.length })} {importMode === 'append' ? t("The imported roots will follow the existing roots.") : forest.length ? t("Current work will be replaced. Export it first if needed.") : t("The imported tasks will fill your empty outline.")}{' '}{t("Undo is available until you close this page.")}</p>
           {importFormat === 'md' && <p>{t("Only checklist tasks are imported. Headings, notes, and other unstructured content are omitted; the original file stays unchanged.")}</p>}
           <ul>{pendingImport.slice(0, 5).map(node => <li key={node.id}>{node.title || t("Untitled task")}</li>)}</ul>
-          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(next[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? t("Append tasks") : forest.length ? t("Replace tree") : t("Import tree")}</button>
+          <button onClick={() => { const next = importMode === 'append' ? appendForest(forest, pendingImport) : pendingImport; change(next); setCatalog(current => mergeCatalog(current, discoverTools(pendingImport))); setPendingImport(null); setViewRootId(null); setCollapsed(new Set()); setMovedId(null); setPendingDelete(null); setEditingId(null); setSelectedId(next[0]?.id ?? null); setNotice('Backup imported. Undo is available.'); }}>{importMode === 'append' ? t("Append tasks") : forest.length ? t("Replace tree") : t("Import tree")}</button>
           <button onClick={() => { importVersion.current++; setPendingImport(null); }}>{t("Cancel import")}</button>
         </section>}
         {deletion && <section className="warning" aria-label={t("Delete confirmation")}><p>{t('Delete “{title}” and its {count} descendants? Undo can recover them during this session.', { title: deletion.title || t('Untitled task'), count: flatten(deletion.children).length })}</p>

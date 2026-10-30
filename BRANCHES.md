@@ -1,6 +1,6 @@
 # Branchfold — Markdown-native project interface
 
-Current focus: Completed the accepted b1_v3 requirements: tool annotations and badges in both hosts, unchecked-bar default off, and version-3 document archival. Await the next review or requested refinement.
+Current focus: Completed multi-tool assignment, editable tool lists, and relocated Focus controls in both hosts. Await the next requested refinement.
 
 Stage: branch 1, version 3 (`feat/markdown-integration`), inherited from `main`, version 3.
 
@@ -56,6 +56,10 @@ The working outline editor provides the interaction foundation. Its development 
   - [x] Implement annotations across Markdown/JSON, shared UI, persistence, and undo; default unchecked bars off
   - [x] Validate 70 automated tests, type checking, both builds, and real VS Code badge themes/narrow layout, editor focus, annotated saves, recovery, undo, and conflicts
   - [x] Absorb lasting decisions into the shared editor reference and archive the version-3 implementation, review, and re-review
+- [x] Refine shared tool assignment controls
+  - [x] Move Focus into slide actions; add +Tool with multiple selection and Create
+  - [x] Discover imported names, seed defaults, persist editable lists, and support frequency/manual order
+  - [x] Validate 73 tests, both builds, legacy/multi-tool round trips, shared interactions, and real VS Code save/recovery, theme, and layout checks
 - [ ] Connect a task to project work
   - [ ] Attach and open a project-relative file link using ordinary Markdown
   - [ ] Test document-relative resolution, spaces, encoded paths, and moved or missing files

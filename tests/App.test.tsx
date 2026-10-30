@@ -71,7 +71,8 @@ const fixture = [
 ];
 function seed() { localStorage.setItem(STORAGE_KEY, serializeForest(fixture)); }
 async function actions(user: ReturnType<typeof userEvent.setup>, title: string) {
-  await user.click(screen.getByRole('button', { name: `Actions for ${title}` }));
+  const trigger = screen.queryByRole('button', { name: `Actions for ${title}` });
+  if (trigger) await user.click(trigger);
 }
 
 it('moves by keyboard, preserves focus, and restores edits with undo and redo', async () => {
@@ -97,6 +98,7 @@ it('supports extension collapse, focus, keyboard reparent and subtree recovery',
   await fold(user, 'Alpha', false);
   expect(screen.queryByDisplayValue('Child')).toBeNull();
   await fold(user, 'Alpha', true);
+  await actions(user, 'Alpha');
   await actions(user, 'Alpha');
   await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
   expect(screen.queryByDisplayValue('Beta')).toBeNull();
@@ -193,6 +195,7 @@ it('ignores composition keys and normal text shortcuts, with explicit escape to 
 
 it('preserves subtree context and collapsed branches across outdent and undo', async () => {
   seed(); const user = userEvent.setup(); render(<App document={{ initialForest: fixture, onChange: nodes => localStorage.setItem(STORAGE_KEY, serializeForest(nodes)), onExport: vi.fn(), onSave: vi.fn(), status: '', toolbar: null }} />);
+  await actions(user, 'Alpha');
   await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
   await user.click(screen.getByDisplayValue('Child'));
   await user.keyboard('{Shift>}{Tab}{/Shift}');
@@ -446,6 +449,7 @@ it('tracks the selected ancestor path separately from passing sibling trunks', a
   expect(onPath()).toEqual(['Root', 'Branch', 'Target']);
   expect(screen.getByDisplayValue('Earlier').closest('.branch')!.classList.contains('before-path')).toBe(true);
   expect(screen.getByDisplayValue('Other').closest('.branch')!.classList.contains('on-path')).toBe(false);
+  await actions(user, 'Branch');
   await user.click(screen.getByRole('button', { name: 'Focus subtree Branch' }));
   await user.click(screen.getByDisplayValue('Target'));
   expect(onPath()).toEqual(['Branch', 'Target']);
@@ -457,10 +461,11 @@ it('tracks the selected ancestor path separately from passing sibling trunks', a
 
 it('deletes only a website cell in place, restores it with undo, and keeps the tray minimal', async () => {
   seed(); const user = userEvent.setup(); render(<App />);
+  await actions(user, 'Alpha');
   await user.click(screen.getByRole('button', { name: 'Focus subtree Alpha' }));
   await actions(user, 'Alpha');
   const tray = screen.getByRole('group', { name: 'Actions for Alpha' });
-  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Tool', 'Delete cell', 'Delete subtree']);
+  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Focus subtree', 'Delete cell', 'Delete subtree']);
   await user.click(within(tray).getByRole('button', { name: 'Delete cell' }));
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes.map((n: {id: string}) => n.id)).toEqual(['c', 'b']);
   expect(screen.getByRole('treeitem', { name: 'Child' }).getAttribute('aria-level')).toBe('1');
@@ -517,7 +522,7 @@ it.each(['website', 'extension'])('toggles unchecked bars independently and prom
   expect(marker('Unchecked')).toBeNull();
   await actions(user, 'Unchecked');
   const tray = screen.getByRole('group', { name: 'Actions for Unchecked' });
-  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Tool', 'Delete cell', 'Delete subtree']);
+  expect(within(tray).getAllByRole('button').map(b => b.textContent)).toEqual(['Focus subtree', 'Delete cell', 'Delete subtree']);
   await user.click(within(tray).getByRole('button', { name: 'Delete cell' }));
   expect(screen.getByRole('treeitem', { name: 'Leaf' }).getAttribute('aria-level')).toBe('1');
   expect(onSave).not.toHaveBeenCalled();
@@ -560,20 +565,45 @@ it.each(['website', 'extension'])('edits, clears and undoes tool labels in the %
   localStorage.setItem(STORAGE_KEY, serializeForest(nodes));
   render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
   expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
-  await actions(user, 'Task');
-  await user.click(screen.getByRole('button', { name: 'Tool' }));
-  const input = screen.getByRole('textbox', { name: 'Suggested tool' });
-  await user.clear(input); await user.type(input, '工具');
+  await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
+  const input = screen.getByRole('textbox', { name: 'New tool' });
+  await user.click(screen.getByRole('checkbox', { name: 'ChatGPT' }));
+  await user.type(input, '工具');
+  await user.click(screen.getByRole('button', { name: 'Create' }));
   await user.click(screen.getByRole('button', { name: 'Apply' }));
   expect(document.querySelector('.tool-badge')?.textContent).toBe('工具');
   await user.click(screen.getByRole('button', { name: 'Undo' }));
   expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
-  await actions(user, 'Task'); await user.click(screen.getByRole('button', { name: 'Tool' }));
-  await user.clear(screen.getByRole('textbox', { name: 'Suggested tool' }));
+  await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
+  await user.click(screen.getByRole('checkbox', { name: 'ChatGPT' }));
   await user.click(screen.getByRole('button', { name: 'Apply' }));
   expect(document.querySelector('.tool-badge')).toBeNull();
   expect(screen.getByDisplayValue('Task')).toBeTruthy();
   expect(onSave).not.toHaveBeenCalled();
   if (mode === 'extension') expect(onChange.mock.calls.at(-1)![0][0].tool).toBeUndefined();
   else expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tool).toBeUndefined();
+});
+
+it('assigns several tools and persists a manually ordered catalog separately from tasks', async () => {
+  const user = userEvent.setup();
+  localStorage.setItem(STORAGE_KEY, serializeForest([{ id: 'a', title: 'Task', done: false, tools: ['Imported', 'Notion'], children: [] }]));
+  const view = render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
+  for (const name of ['Imported', 'Notion', 'VSCode', 'Obsidian', 'ChatGPT']) expect(screen.getByRole('checkbox', { name })).toBeTruthy();
+  await user.click(screen.getByRole('checkbox', { name: 'VSCode' }));
+  await user.type(screen.getByRole('textbox', { name: 'New tool' }), 'Custom');
+  await user.click(screen.getByRole('button', { name: 'Create' }));
+  await user.click(screen.getByRole('button', { name: 'Apply' }));
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tools).toEqual(['Imported', 'Notion', 'VSCode', 'Custom']);
+  await openSettings(user);
+  const list = screen.getByRole('textbox', { name: 'Tool list' });
+  await user.clear(list); await user.type(list, 'Custom\nNotion\nImported\nVSCode\nObsidian\nChatGPT');
+  await user.click(screen.getByRole('button', { name: 'Save tool list' }));
+  view.unmount(); render(<App />);
+  await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
+  expect(screen.getAllByRole('checkbox').map(el => el.parentElement!.textContent)).toEqual(['Custom', 'Notion', 'Imported', 'VSCode', 'Obsidian', 'ChatGPT']);
+  await user.click(screen.getByRole('button', { name: 'Cancel' }));
+  await actions(user, 'Task');
+  expect(screen.getByRole('button', { name: 'Focus subtree Task' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: 'Tool' })).toBeNull();
 });
