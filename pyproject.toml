@@ -1,7 +1,7 @@
 [project]
 name = "branchfold"
 version = "0.1.0"
-description = "Add your description here"
+description = "Retained Python scaffold for Branchfold development; the application uses React and TypeScript."
 readme = "README.md"
 authors = [
     { name = "serelive", email = "serelive@mail.ustc.edu.cn" }

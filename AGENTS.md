@@ -36,7 +36,7 @@ Favor the smallest representation that preserves the user's meaning. Ordinary Ma
 
 ## Markdown interoperability and data integrity
 
-**Approved import/edit workflow (b1_v2 review):** “Structured parts” are checklist task structures; “unstructured parts” are the other document content. The web app is an external import–edit–export tool: imports copy structured tasks into its independent working tree and establish no live link to the input file. The VS Code extension uses the same editor with import–edit–save: edits stay in its working tree until explicit Save, which replaces the selected file with standard checklist Markdown. This conversion intentionally omits unstructured content; concise/detailed context views are retired. Markdown and JSON imports share the same task model, with append and replace options. Directory guides, ancestor titles, and leaf drawings default to enabled.
+**Current import/edit workflow:** “Structured parts” are checklist task structures; “unstructured parts” are the other document content. The web app is an external import–edit–export tool: imports copy structured tasks into its independent working tree and establish no live link to the input file. The VS Code extension uses the same editor with import–edit–save: edits stay in its working tree until explicit Save, which replaces the selected file with standard checklist Markdown. This conversion intentionally omits unstructured content; concise/detailed context views are retired. Markdown and JSON imports share the same task model, with append and replace options. Directory guides, ancestor titles, and leaf drawings default to enabled.
 
 Keep the original file unchanged before Save, refresh clean extension views automatically, and retain unsaved work when external changes conflict. The conversion above is an explicit exception to source-preserving writes; apply the following preservation rules to any future source-preserving operation.
 
@@ -73,7 +73,7 @@ Avoid implementing aesthetic experiments (weighted branches, mandatory color-cod
 
 Keep responsibilities separable:
 
-1. **Markdown adapter:** recognize supported task structures, map source ranges, apply narrow edits, and preserve unrelated content.
+1. **Markdown adapter:** recognize checklist structures and convert working trees to Markdown. Future source-preserving operations must map ranges and preserve unrelated content.
 2. **Domain operations:** task-tree selection, reorder/reparent, completion, artifact association, and invariants; test without rendering.
 3. **Host/file adapter:** read and write project documents, watch for external changes, open/select project files, and report conflicts.
 4. **UI:** focused tree rendering, direct editing, keyboard and pointer interactions, and artifact navigation.
@@ -82,7 +82,7 @@ Prefer clean interfaces over prematurely extracting many packages. One repositor
 
 A browser-only prototype cannot assume unrestricted filesystem access; an IDE extension, desktop wrapper, or explicitly authorized local service may be needed. Choose and test one host at a time. Do not add a backend, account system, sync service, or elaborate multi-project index without a concrete requirement.
 
-Treat any existing JSON/browser-storage format as **legacy prototype data** until an explicit, tested migration or compatibility decision is made. Never silently discard users' existing trees.
+Version-1 JSON backups and browser storage are supported compatibility paths. Preserve them alongside Markdown; future migrations require explicit behavior and recovery tests.
 
 ## Development priorities (not automatic authorization)
 
@@ -148,3 +148,11 @@ Maintain factual accuracy, necessary technical detail, and honest uncertainty. F
 Branchfold should let a user open a project's existing Markdown task tree, focus on a meaningful part of it, revise tasks, navigate to relevant project files, and associate work with its artifacts **without creating a second plan to maintain**. It must keep the Markdown document safe and useful to ordinary editors and coding agents.
 
 A more attractive outline alone is not enough. Continue expanding the product only when a real task demonstrates an advantage over maintaining the Markdown directly.
+
+## Repository conventions
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/development.md](docs/development.md) for contribution and validation commands. Keep behavior in [docs/shared-editor.md](docs/shared-editor.md), user instructions in [docs/user-guide.md](docs/user-guide.md), and milestones in BRANCHES.md. Issues/PRs hold discussions; avoid duplicating them as permanent reports.
+
+Absorb lasting review decisions before archiving raw records under `docs/archive/`. Distinguish historical validation from current checks. QuickFix needs no report; QuickFeature updates the relevant reference. Honor explicit re-review gates.
+
+Track npm/uv lockfiles. Ignore builds, credentials, personal editor/agent state, and the independent sandbox. Never create outward-pointing sandbox links. Do not choose a license, claim a private reporting channel exists, or change GitHub settings without the maintainer's decision.

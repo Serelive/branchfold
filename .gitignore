@@ -1,128 +1,57 @@
-# ============================================================
-# Python
-# ============================================================
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-
-# Build / packaging artifacts
-build/
+# Dependencies, local runtimes, generated builds
+node_modules/
+.tools/
 dist/
-wheels/
-*.egg-info/
-.eggs/
-*.egg
-MANIFEST
-pip-wheel-metadata/
+build/
+*.tsbuildinfo
+*.vsix
 
-# ============================================================
-# Virtual environments (created by uv venv / uv sync)
-# ============================================================
+# Python tooling
 .venv/
 venv/
-env/
-ENV/
-
-# ============================================================
-# uv
-# ============================================================
-# Ignore uv's local cache directory (regenerable)
+__pycache__/
+*.py[cod]
+*.egg-info/
 .uv-cache/
 .uv_cache/
-.uv/
-
-# NOTE: uv.lock MUST be committed.
-# It pins exact dependency versions for reproducible installs.
-# Do NOT add uv.lock to this file.
-
-# ============================================================
-# Environment variables / secrets
-# ============================================================
-.env
-.env.local
-.env.*.local
-*.env
-secrets.json
-
-# Keep .env.example (or .env.template) if your project provides one
-!.env.example
-!.env.template
-
-# ============================================================
-# Testing / coverage / type-checking / linting caches
-# ============================================================
 .pytest_cache/
-.tox/
-.nox/
-.coverage
-.coverage.*
-coverage.xml
-htmlcov/
 .mypy_cache/
 .ruff_cache/
-.pyright/
-.hypothesis/
 
-# ============================================================
-# IDEs and editors
-# ============================================================
-.vscode/
-.idea/
+# Test output and logs
+coverage/
+.coverage*
+htmlcov/
+coverage.xml
+test-results/
+playwright-report/
+*.log
+*.pid
+
+# Credentials and local environment
+.env
+.env.*
+*.env
+!.env.example
+!.env.template
+secrets.json
+/.aws
+
+# Personal editor/agent state
+/.idea/
+/.vscode/
+/.codex/
+/.agents/
 *.swp
 *.swo
 *~
-
-# ============================================================
-# Operating system files
-# ============================================================
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
 Thumbs.db
-ehthumbs.db
 
-# ============================================================
-# Logs and runtime state
-# ============================================================
-*.log
-logs/
-*.pid
-*.seed
-*.pid.lock
-
-# ============================================================
-# Jupyter (if applicable)
-# ============================================================
-.ipynb_checkpoints/
-
-# ============================================================
-# Project-specific generated outputs (adjust to your layout)
-# ============================================================
-# tmp/
-# out/
-# data/*
-# !data/.gitkeep
-
-# Local JavaScript tooling and generated frontend files
-.tools/
-node_modules/
-*.tsbuildinfo
-test-results/
-playwright-report/
-
-# Local cloud credentials / environment-owned credential mount
-.aws
-
-# Codex
-
-.codex
-
-# Local sandbox project and source backup
+# Independent local test project and private materials
 /sandbox/
 /materials/branchfold-backup.json
 /material/branchfold-backup.json
-materials/b1_v3_extension.png
+/materials/b1_v3_extension.png
+
+# Keep package-lock.json and uv.lock tracked.

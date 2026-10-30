@@ -60,4 +60,10 @@ Drafts persist in VS Code workspace state against their source snapshot. Reopeni
 
 The [Markdown adapter](../web/markdown.ts), [task model](../web/tree.ts), [annotation helpers](../web/toolAnnotation.ts), and [shared editor](../web/App.tsx) implement the format and interactions. The [document session](../web/Workspace.tsx) and [host controller](../extension/controller.ts) govern explicit saving and conflicts.
 
-Run `npm test` and `npm run build:extension` for automated behavior, types, and both builds. The [VS Code integration test](../tests/vscode.integration.cjs) checks actual webview rendering, theme switching, annotated saves, recovery, undo, and external-edit conflicts; its launch command is in the [README](../README.md). Automated checks do not cover native Fcitx5 or a manual visual inspection of every layout.
+Run `npm test` and `npm run build:extension` for automated behavior, types, and both builds. The [VS Code integration test](../tests/vscode.integration.cjs) checks actual webview rendering, theme switching, annotated saves, recovery, undo, and external-edit conflicts; its launch command is in [development and testing](development.md). Automated checks do not cover native Fcitx5 or a manual visual inspection of every layout.
+
+## Hierarchy visuals
+
+Directory guides highlight the route from the visible root to the selected handle. Ancestor titles optionally use the cell-selection color; selected titles receive no additional highlight. Earlier siblings on the route darken only their vertical trunk, not their handles or horizontal connectors. Upper/lower stem overlays share the highlight; horizontal arms start beyond the trunk to avoid pale one-pixel gaps. Focused views start at the visible root.
+
+Unchecked leaves use a 1.5 px plain ring or an asymmetric leaf outline with stalk and vein in 2 px strokes. Leaf drawings defaults on. The stalk meets the directory connector with a 3 px gap, within the same 18 px icon area as other handles. Checked leaves retain the filled circle/check mark. Expandable unchecked rings use 3 px strokes. View options change session state, not tasks; animation respects reduced motion.
