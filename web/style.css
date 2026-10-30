@@ -272,17 +272,21 @@ button:focus:not(:focus-visible) { outline: none; }
 :root[data-theme="dark"] .tool-color-3 { --tool-bg: #304b3d; --tool-fg: #d6eddf; }
 :root[data-theme="dark"] .tool-color-4 { --tool-bg: #304659; --tool-fg: #d8e8f6; }
 :root[data-theme="dark"] .tool-color-5 { --tool-bg: #493b58; --tool-fg: #e8dff4; }
-.tool-editor-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; background: #0006; padding: 16px; }
-.tool-editor { width: min(400px, 100%); padding: 20px; border-radius: 12px; background: var(--surface); color: var(--text); box-shadow: 0 8px 30px #0003; }
-.tool-editor label { display: grid; gap: 8px; }
-.tool-editor input { width: 100%; font: inherit; color: var(--text); background: var(--page); border: 1px solid var(--muted); padding: 8px; }
-.tool-editor p { font-size: 13px; }
-.tool-editor > div { display: flex; justify-content: flex-end; gap: 8px; }
 .tool-badges { display: flex; gap: 3px; max-width: 26%; min-width: 0; overflow-x: auto; }
 .tool-badges .tool-badge { max-width: none; flex: 0 0 auto; }
-.tool-choices { max-height: 40vh; overflow-y: auto; }
-.tool-choices label { display: flex; align-items: center; gap: 8px; padding: 5px; }
-.tool-choices input { width: auto; }
+
 .settings-panel textarea { display: block; width: 100%; min-height: 110px; background: var(--page); color: var(--text); font: inherit; }
-.tool-editor > .tool-choices { display: grid; justify-content: stretch; gap: 0; }
-.tool-choices label { overflow-wrap: anywhere; }
+
+.tool-popover { position: fixed; z-index: 30; width: min(240px, calc(100vw - 16px)); max-height: calc(100vh - 16px); overflow-y: auto; padding: 10px; border: 1px solid var(--guide); border-radius: 14px; background: var(--surface); color: var(--text); box-shadow: 0 6px 24px #0003; transform-origin: left var(--tool-origin); animation: tool-unfold 140ms ease-out; }
+@keyframes tool-unfold { from { opacity: 0; transform: scaleY(.7); } to { opacity: 1; transform: scaleY(1); } }
+.tool-choices { display: grid; gap: 6px; }
+.tool-choice { max-width: none; width: 100%; text-align: left; border: 1px solid transparent; font: inherit; font-size: 12px; padding: 5px 8px; white-space: normal; overflow-wrap: anywhere; }
+.tool-choice[aria-checked="true"] { border-color: currentColor; }
+.tool-choice-check { display: inline-block; width: 18px; }
+.tool-create { --tool-bg: var(--control-active); --tool-fg: var(--text); }
+.tool-editor-actions, .tool-create-input { display: flex; gap: 6px; margin-top: 10px; }
+.tool-editor-actions { justify-content: flex-end; }
+.tool-editor-actions button, .tool-create-input button { font-size: 12px; padding: 5px 8px; }
+.tool-create-input input { min-width: 0; width: 100%; font: inherit; color: var(--text); background: var(--page); border: 1px solid var(--muted); border-radius: 5px; padding: 5px; }
+.tool-popover p { font-size: 12px; }
+@media (prefers-reduced-motion: reduce) { .tool-popover { animation: none; } }

@@ -566,10 +566,12 @@ it.each(['website', 'extension'])('edits, clears and undoes tool labels in the %
   render(<App document={mode === 'extension' ? { initialForest: nodes, onChange, onSave, onExport: vi.fn(), status: '', toolbar: null } : undefined} />);
   expect(document.querySelector('.tool-badge')?.textContent).toBe('ChatGPT');
   await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
+  expect(screen.queryByRole('textbox', { name: 'New tool' })).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Create' }));
   const input = screen.getByRole('textbox', { name: 'New tool' });
   await user.click(screen.getByRole('checkbox', { name: 'ChatGPT' }));
   await user.type(input, '工具');
-  await user.click(screen.getByRole('button', { name: 'Create' }));
+  await user.click(screen.getByRole('button', { name: 'Add' }));
   await user.click(screen.getByRole('button', { name: 'Apply' }));
   expect(document.querySelector('.tool-badge')?.textContent).toBe('工具');
   await user.click(screen.getByRole('button', { name: 'Undo' }));
@@ -591,8 +593,9 @@ it('assigns several tools and persists a manually ordered catalog separately fro
   await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
   for (const name of ['Imported', 'Notion', 'VSCode', 'Obsidian', 'ChatGPT']) expect(screen.getByRole('checkbox', { name })).toBeTruthy();
   await user.click(screen.getByRole('checkbox', { name: 'VSCode' }));
-  await user.type(screen.getByRole('textbox', { name: 'New tool' }), 'Custom');
   await user.click(screen.getByRole('button', { name: 'Create' }));
+  await user.type(screen.getByRole('textbox', { name: 'New tool' }), 'Custom');
+  await user.click(screen.getByRole('button', { name: 'Add' }));
   await user.click(screen.getByRole('button', { name: 'Apply' }));
   expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tools).toEqual(['Imported', 'Notion', 'VSCode', 'Custom']);
   await openSettings(user);
@@ -601,9 +604,30 @@ it('assigns several tools and persists a manually ordered catalog separately fro
   await user.click(screen.getByRole('button', { name: 'Save tool list' }));
   view.unmount(); render(<App />);
   await user.click(screen.getByRole('button', { name: 'Assign tools to Task' }));
-  expect(screen.getAllByRole('checkbox').map(el => el.parentElement!.textContent)).toEqual(['Custom', 'Notion', 'Imported', 'VSCode', 'Obsidian', 'ChatGPT']);
+  expect(screen.getAllByRole('checkbox').map(el => el.textContent!.slice(1))).toEqual(['Custom', 'Notion', 'Imported', 'VSCode', 'Obsidian', 'ChatGPT']);
   await user.click(screen.getByRole('button', { name: 'Cancel' }));
   await actions(user, 'Task');
   expect(screen.getByRole('button', { name: 'Focus subtree Task' })).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Tool' })).toBeNull();
+});
+
+it('opens a local tag chooser, reveals Create input on demand, and dismisses outside without applying', async () => {
+  const user = userEvent.setup(); seed(); render(<App />);
+  const trigger = screen.getByRole('button', { name: 'Assign tools to Alpha' });
+  await user.click(trigger);
+  const panel = screen.getByRole('dialog', { name: 'Assign tools' });
+  expect(panel.getAttribute('aria-modal')).toBeNull();
+  expect(document.querySelector('.tool-editor-backdrop')).toBeNull();
+  const option = within(panel).getByRole('checkbox', { name: 'Notion' });
+  expect(option.classList.contains('tool-badge')).toBe(true);
+  await user.click(option);
+  expect(screen.queryByRole('textbox', { name: 'New tool' })).toBeNull();
+  await user.click(within(panel).getByRole('button', { name: 'Create' }));
+  expect(document.activeElement).toBe(screen.getByRole('textbox', { name: 'New tool' }));
+  await user.keyboard('{Escape}');
+  expect(document.activeElement).toBe(trigger);
+  await user.click(trigger);
+  await user.click(screen.getByRole('button', { name: /Add root task/ }));
+  expect(screen.queryByRole('dialog', { name: 'Assign tools' })).toBeNull();
+  expect(JSON.parse(localStorage.getItem(STORAGE_KEY)!).nodes[0].tool).toBeUndefined();
 });

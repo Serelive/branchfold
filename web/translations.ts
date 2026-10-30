@@ -1,6 +1,6 @@
 // UI strings only: task titles and imported document contents are never translated.
 export const chinese: Record<string, string> = {
-  '+Tool': '+工具', 'Assign tools': '分配工具', 'Assign tools to {title}': '为“{title}”分配工具',
+  'Add': '添加', '+Tool': '+工具', 'Assign tools': '分配工具', 'Assign tools to {title}': '为“{title}”分配工具',
   'New tool': '新工具', 'Create': '创建', 'Tool list': '工具列表', 'Save tool list': '保存工具列表',
   'Rank by frequency': '按使用频率排序', 'One tool per line; edit the order here.': '每行一个工具；可在此调整顺序。',
   'Editing this list does not change tools already assigned to tasks.': '编辑此列表不会更改任务已分配的工具。',

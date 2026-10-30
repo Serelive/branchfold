@@ -51,6 +51,7 @@ function Editor({ document: host }: AppProps) {
   const [selectedId, setSelectedId] = useState<string | null>(initial.nodes[0]?.id ?? null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewRootId, setViewRootId] = useState<string | null>(null);
+  const toolAnchor = useRef<HTMLButtonElement | null>(null);
   const [toolId, setToolId] = useState<string | null>(null);
   const [actionsId, setActionsId] = useState<string | null>(null);
   const suppressControlClick = useRef<string | null>(null);
@@ -391,7 +392,7 @@ function Editor({ document: host }: AppProps) {
           {taskTools(node).length > 0 && <span className="tool-badges">{taskTools(node).map(tool => <span key={tool} className={`tool-badge tool-color-${toolColor(tool)}`} title={tool}>{tool}</span>)}</span>}
           <button className="row-action" aria-label={t('Add sibling after {title}', { title: label })} title={t("Add sibling (B in navigation)")} onClick={() => sibling(node.id)}>{t("+ Next")}</button>
           <button className="row-action" aria-label={t('Add child to {title}', { title: label })} title={t("Add child (C in navigation)")} onClick={() => create(node.id)}>{t("+ Child")}</button>
-          <button className="row-action" aria-label={t('Assign tools to {title}', { title: label })} onClick={() => { setActionsId(null); setEditingId(null); setToolId(node.id); }}>{t("+Tool")}</button>
+          <button className="row-action" aria-label={t('Assign tools to {title}', { title: label })} aria-expanded={toolId === node.id} onClick={event => { toolAnchor.current = event.currentTarget; setActionsId(null); setEditingId(null); setToolId(toolId === node.id ? null : node.id); }}>{t("+Tool")}</button>
           <button className="actions-trigger" aria-label={`${actionsOpen ? t("Close") : t("Actions for")} ${label}`}
             aria-expanded={actionsOpen} title={actionsOpen ? t("Close actions") : t("Reveal actions")}
             onClick={() => setActionsId(actionsOpen ? null : node.id)}>{actionsOpen ? '›' : '‹'}</button>
@@ -411,8 +412,8 @@ function Editor({ document: host }: AppProps) {
 
   return <main className="outline-editor" onKeyDown={keyboard}>
     <header><div className="brand">⤷ Branchfold <span lang="zh">丛序</span></div><span className="badge">{t("LOCAL PROTOTYPE")}</span></header>
-    {toolId && <ToolEditor initial={taskTools(findNode(forest, toolId) ?? {})} options={toolOptions} onCreate={name => setCatalog(current => mergeCatalog(current, [name]))}
-      onClose={() => { setToolId(null); focus(toolId); }}
+    {toolId && toolAnchor.current && <ToolEditor key={toolId} anchor={toolAnchor.current} initial={taskTools(findNode(forest, toolId) ?? {})} options={toolOptions} onCreate={name => setCatalog(current => mergeCatalog(current, [name]))}
+      onClose={(restoreFocus = true) => { setToolId(null); if (restoreFocus) toolAnchor.current?.focus(); }}
       onSave={tools => { change(updateNode(forest, toolId, node => { const { tool: previous, tools: previousTools, ...rest } = node; return { ...rest, ...toolFields(tools) }; })); setToolId(null); focus(toolId); }} />}
     {host?.toolbar}
     <section className="intro"><p className="eyebrow">{t("A LITTLE STRUCTURE. ROOM TO CHANGE.")}</p><h1>{t("Make room for the next step.")}</h1><p>{t("A living task tree for plans that evolve with action.")}</p></section>
