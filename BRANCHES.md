@@ -19,7 +19,8 @@ Issues and PRs hold individual discussions. This tree tracks milestones, not Git
   - [x] Add PR/main CI for tests, types, and both builds
   - [x] Validate locally: 81 tests, TypeScript and both builds; check active documentation links, YAML syntax, and ignore rules
   - [ ] Choose a project license
-  - [ ] Confirm the first GitHub CI run; optionally require checks through a main-branch ruleset
+  - [x] Confirm the first GitHub CI run after push (maintainer confirmed, 2026-10-31)
+  - [ ] Consider requiring CI checks through a main-branch ruleset
   - [ ] Configure private security reporting before documenting it as available
 - [ ] Connect a task to project work
   - [ ] Attach and open project-relative files using ordinary Markdown links
